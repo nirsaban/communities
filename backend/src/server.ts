@@ -3,10 +3,14 @@ import env from './config/env';
 import logger from './config/logger';
 import { connectDB, disconnectDB } from './config/db';
 import { startRecurringEventsJob } from './jobs/recurringEvents.job';
+import { startSubscriptionRetryJob } from './jobs/subscriptionRetry.job';
+import { startExpirePaymentsJob } from './jobs/expirePayments.job';
 
 async function main(): Promise<void> {
   await connectDB();
   startRecurringEventsJob();
+  startSubscriptionRetryJob();
+  startExpirePaymentsJob();
   const app = buildApp();
   const server = app.listen(env.PORT, () => {
     logger.info({ msg: 'server.listening', port: env.PORT, env: env.NODE_ENV });
