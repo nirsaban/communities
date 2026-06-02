@@ -20,7 +20,8 @@
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.ts\"",
     "migrate:up": "echo 'No migrations yet (Mongoose handles schema). Indexes ensured on connect.'",
     "create:superadmin": "tsx scripts/createSuperAdmin.ts",
-    "demo:reset": "tsx scripts/demoReset.ts"
+    "demo:reset": "tsx scripts/demoReset.ts",
+    "migrate:stripe-to-payplus": "tsx scripts/migrateStripeToPayplus.ts"
   },
   "dependencies": {
     "axios": "^1.16.1",
