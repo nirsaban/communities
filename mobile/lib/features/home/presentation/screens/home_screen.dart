@@ -411,9 +411,10 @@ String _formatPrice(int cents, String currency) {
       return '₪$amount';
     case 'EUR':
       return '€$amount';
-    case 'USD':
+    case 'ILS':
     default:
-      return '\$$amount';
+      // ILS-only at v1 — fall back to the shekel sign so legacy USD rows still render.
+      return '₪$amount';
   }
 }
 

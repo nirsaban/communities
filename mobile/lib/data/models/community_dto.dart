@@ -116,7 +116,7 @@ class MyRsvpEvent {
     this.locationKind = 'physical',
     this.priceKind = 'free',
     this.priceCents = 0,
-    this.currency = 'USD',
+    this.currency = 'ILS',
   });
 
   final String id;
@@ -145,7 +145,7 @@ class MyRsvpEvent {
       locationKind: (loc?['type'] as String?) ?? 'physical',
       priceKind: (price?['type'] as String?) ?? 'free',
       priceCents: (price?['priceCents'] as num?)?.toInt() ?? 0,
-      currency: (price?['currency'] as String?) ?? 'USD',
+      currency: (price?['currency'] as String?) ?? 'ILS',
     );
   }
 }

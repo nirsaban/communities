@@ -44,8 +44,8 @@ dependencies:
 
   cupertino_icons: ^1.0.8
 
-  # Payments — open Stripe Checkout in the system browser (decision: external,
-  # not in-app webview — see docs/DECISIONS.md).
+  # Payments — open the PayPlus hosted page in the system browser (decision:
+  # external, not in-app webview — see docs/DECISIONS.md).
   url_launcher: ^6.3.1
 
   # Design system fonts (DESIGN_LOCK.md: DM Sans body, DM Serif Display display)

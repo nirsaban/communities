@@ -317,7 +317,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           final qp = state.uri.queryParameters;
           return RefundReceivedScreen(
             amountCents: int.tryParse(qp['amountCents'] ?? '0') ?? 0,
-            currency: qp['currency'] ?? 'USD',
+            currency: qp['currency'] ?? 'ILS',
             last4: qp['last4'],
             reference: qp['ref'],
           );

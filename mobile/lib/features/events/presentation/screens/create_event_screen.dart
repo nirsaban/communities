@@ -100,22 +100,22 @@ class _State extends ConsumerState<CreateEventScreen> {
   }
 
   Map<String, dynamic> _pricingPayload(bool isAdmin) {
-    if (!isAdmin) return {'type': 'free', 'priceCents': 0, 'currency': 'USD'};
+    if (!isAdmin) return {'type': 'free', 'priceCents': 0, 'currency': 'ILS'};
     switch (_pricing) {
       case _Pricing.paid:
         final p = int.tryParse(_priceCtrl.text.trim()) ?? 0;
         return {
           'type': 'paid',
           'priceCents': p * 100,
-          'currency': 'USD',
+          'currency': 'ILS',
           'subscriptionIncluded': _subsIncluded,
         };
       case _Pricing.subscription:
-        return {'type': 'subscription_only', 'priceCents': 0, 'currency': 'USD'};
+        return {'type': 'subscription_only', 'priceCents': 0, 'currency': 'ILS'};
       case _Pricing.external:
-        return {'type': 'external', 'priceCents': 0, 'currency': 'USD'};
+        return {'type': 'external', 'priceCents': 0, 'currency': 'ILS'};
       case _Pricing.free:
-        return {'type': 'free', 'priceCents': 0, 'currency': 'USD'};
+        return {'type': 'free', 'priceCents': 0, 'currency': 'ILS'};
     }
   }
 

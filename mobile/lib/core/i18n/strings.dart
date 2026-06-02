@@ -179,7 +179,9 @@ class S {
   static const payNow = 'שלם עכשיו';
   static const checkoutOpening = 'פותח מסך תשלום מאובטח...';
   static const checkoutOpenedExternally =
-      'הופנית לדף תשלום של Stripe. חזור לאפליקציה לאחר התשלום.';
+      'הופנית לדף תשלום מאובטח. חזור לאפליקציה לאחר התשלום.';
+  /// Shown beside the spinner while CheckoutNotifier polls /payments/success.
+  static const checkoutProcessing = 'מעבד תשלום...';
   static const checkoutOpenFailed = 'לא ניתן לפתוח את דף התשלום.';
   static const subscriptions = 'מנויים';
   static const mySubscriptions = 'המנויים שלי';
@@ -390,14 +392,15 @@ class S {
   static const checkoutLineTicket = 'כרטיס לאירוע';
   static const checkoutLineProcessing = 'עמלת עיבוד';
   static const checkoutTotal = 'סה״כ לתשלום';
-  static const checkoutSecuredBy = 'מאובטח על-ידי Stripe — נתוני הכרטיס לא נשמרים באפליקציה.';
+  static const checkoutSecuredBy =
+      'מאובטח על-ידי PayPlus — נתוני הכרטיס לא נשמרים באפליקציה.';
   static const checkoutPay = 'שלם';
   static const checkoutOpenedSnack = 'פותח את מסך התשלום. חזור לאפליקציה לאחר התשלום.';
 
   static const paymentSuccessTitle = 'התשלום התקבל!';
   static const paymentSuccessBody = 'שמרנו לך מקום באירוע.';
   static const paymentSuccessReceipt = 'קבלה';
-  static const paymentSuccessConfirming = 'מאמת מול Stripe...';
+  static const paymentSuccessConfirming = 'מאמת תשלום...';
   static const paymentSuccessTimeoutHint = 'אם זה לוקח יותר ממספר רגעים, רענן את ההרשמות שלי.';
   static const viewMyRsvps = 'צפה בהרשמות שלי';
   static const paymentReturnDone = 'סיום';
@@ -510,7 +513,7 @@ class S {
   static const eventPricingPaid = 'בתשלום';
   static const eventPricingSubscription = 'מנוי';
   static const eventPricingExternal = 'תשלום חיצוני';
-  static const eventPriceField = 'מחיר (USD)';
+  static const eventPriceField = 'מחיר (₪)';
   static const eventSubsIncluded = 'חינם למנויים';
   static const eventPublishCta = 'פרסם אירוע';
   static const eventSaveCta = 'שמור שינויים';
@@ -730,7 +733,7 @@ class S {
   static const superUserDisabled = 'החשבון הושבת.';
   static const superUserEnabled = 'החשבון הופעל מחדש.';
   static const superSettingsTitle = 'הגדרות פלטפורמה';
-  static const superSettingsBilling = 'מפתחות חיוב (Stripe)';
+  static const superSettingsBilling = 'מפתחות חיוב (PayPlus)';
   static const superSettingsMaintenance = 'מצב תחזוקה';
   static const superSettingsAllowSignups = 'אפשר הרשמות חדשות';
   static const superSettingsEmailTemplates = 'תבניות אימייל';

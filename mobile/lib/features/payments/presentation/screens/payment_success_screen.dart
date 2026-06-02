@@ -48,7 +48,7 @@ class _State extends ConsumerState<PaymentSuccessScreen> with WidgetsBindingObse
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed && !_confirmed) {
-      // The user just came back from the external Stripe page — refresh once.
+      // The user just came back from the external PayPlus page — refresh once.
       ref.invalidate(myRsvpsProvider(const MyRsvpsQuery(bucket: 'upcoming')));
     }
   }

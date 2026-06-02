@@ -19,7 +19,7 @@ class _S extends ConsumerState<PlatformSettingsScreen> {
   bool _maintenance = false;
   bool _allowSignups = true;
   bool _hydrated = false;
-  bool _stripeRevealed = false;
+  bool _payplusRevealed = false;
 
   Future<void> _patch({bool? maintenance, bool? signups}) async {
     try {
@@ -59,7 +59,7 @@ class _S extends ConsumerState<PlatformSettingsScreen> {
               _allowSignups = (s['allowSignups'] as bool?) ?? true;
               _hydrated = true;
             }
-            final masked = (s['stripeKeyMasked'] as String?) ?? '';
+            final masked = (s['payplusKeyMasked'] as String?) ?? '';
             return SafeArea(
               top: false,
               child: ListView(
@@ -87,13 +87,13 @@ class _S extends ConsumerState<PlatformSettingsScreen> {
                           children: [
                             Expanded(
                               child: Text(
-                                _stripeRevealed ? 'sk_test_••••••••_REDACTED' : masked,
+                                _payplusRevealed ? 'pp_test_••••••••_REDACTED' : masked,
                                 style: t.bodyMedium!.copyWith(fontFamily: 'monospace'),
                               ),
                             ),
                             TextButton(
-                              onPressed: () => setState(() => _stripeRevealed = !_stripeRevealed),
-                              child: Text(_stripeRevealed ? 'הסתר' : 'חשוף'),
+                              onPressed: () => setState(() => _payplusRevealed = !_payplusRevealed),
+                              child: Text(_payplusRevealed ? 'הסתר' : 'חשוף'),
                             ),
                           ],
                         ),

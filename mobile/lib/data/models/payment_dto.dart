@@ -1,14 +1,51 @@
 // DTOs that mirror the backend payment / subscription / finances envelopes.
 
+/// Result of POSTing /events/:eid/checkout or /communities/:cid/subscribe.
+/// [paymentUrl] is the hosted PayPlus page; mobile launches it in the
+/// system browser and polls /api/v1/payments/success?ref=<paymentId>.
 class CheckoutResultDto {
-  CheckoutResultDto({required this.sessionUrl, required this.paymentId});
-  final String sessionUrl;
+  CheckoutResultDto({required this.paymentUrl, required this.paymentId});
+  final String paymentUrl;
   final String paymentId;
 
   factory CheckoutResultDto.fromJson(Map<String, dynamic> json) {
     return CheckoutResultDto(
-      sessionUrl: json['sessionUrl'] as String,
-      paymentId: (json['paymentId'] as String?) ?? '',
+      paymentUrl: json['paymentUrl'] as String,
+      paymentId: (json['paymentId'] as String?) ??
+          (json['subscriptionId'] as String?) ??
+          '',
+    );
+  }
+}
+
+/// Polled by the checkout screen after the user returns from PayPlus.
+/// Mirror of GET /api/v1/payments/success?ref=<paymentId>.
+class PaymentStatusDto {
+  PaymentStatusDto({
+    required this.status,
+    required this.paymentId,
+    this.amountCents,
+    this.currency,
+    this.installments,
+  });
+
+  /// One of 'pending' | 'succeeded' | 'failed' | 'refunded' | 'partial_refund' | 'unknown'.
+  final String status;
+  final String? paymentId;
+  final int? amountCents;
+  final String? currency;
+  final int? installments;
+
+  bool get isTerminal =>
+      status == 'succeeded' || status == 'failed' || status == 'refunded';
+
+  factory PaymentStatusDto.fromJson(Map<String, dynamic> json) {
+    return PaymentStatusDto(
+      status: (json['status'] as String?) ?? 'unknown',
+      paymentId: json['paymentId'] as String?,
+      amountCents: (json['amountCents'] as num?)?.toInt(),
+      currency: json['currency'] as String?,
+      installments: (json['installments'] as num?)?.toInt(),
     );
   }
 }

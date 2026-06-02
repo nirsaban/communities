@@ -651,13 +651,12 @@ class _StickyPayBar extends StatelessWidget {
 String _formatPrice(int cents, String currency) {
   final amount = (cents / 100).toStringAsFixed((cents % 100 == 0) ? 0 : 2);
   switch (currency.toUpperCase()) {
-    case 'ILS':
-      return '₪$amount';
     case 'EUR':
       return '€$amount';
-    case 'USD':
+    case 'ILS':
     default:
-      return '\$$amount';
+      // ILS-only at v1 — fall back to the shekel sign so legacy USD rows still render.
+      return '₪$amount';
   }
 }
 
