@@ -337,7 +337,8 @@ export interface WebhookEvent {
 
 export function verifyWebhook(rawBody: Buffer, signature: string): WebhookEvent {
   const ok = client().verifyWebhookSignature({ rawBody, signature });
-  if (!ok) throw AppError.unauthorized('Invalid PayPlus webhook signature');
+  // Spec says 401 for bad signature; AppError.unauthenticated() maps to 401.
+  if (!ok) throw AppError.unauthenticated('Invalid PayPlus webhook signature');
   let parsed: WebhookEvent;
   try {
     parsed = JSON.parse(rawBody.toString('utf8')) as WebhookEvent;

@@ -165,3 +165,78 @@ rm -rf backend/uploads/*
 ## Deploy
 
 Production deploy is out of scope for the current phase set (P0–P3). See PRD 16 for the future workflow: GitHub Actions → ghcr.io → SSH deploy to VPS with `docker compose pull && up -d`.
+
+## Payments — PayPlus
+
+### Local credentials
+
+PayPlus credentials live in `backend/.env`. The required vars:
+
+| Var | Source | Notes |
+|---|---|---|
+| `PAYPLUS_API_KEY` | dashboard.payplus.co.il → Account → API | Used in `Authorization: <API_KEY>.<SECRET_KEY>` header |
+| `PAYPLUS_SECRET_KEY` | dashboard.payplus.co.il → Account → API | — |
+| `PAYPLUS_PAGE_REQUEST_UID` | dashboard → Hosted Pages → create template | Identifies the look + behaviour of the checkout page |
+| `PAYPLUS_WEBHOOK_SECRET` | dashboard → Webhooks → signing secret | HMAC-SHA256 secret over the raw body |
+| `PAYPLUS_API_BASE_URL` | (default) `https://restapi.payplus.co.il/api/v1.0` | — |
+| `PAYPLUS_SANDBOX_MODE` | `true` in dev, `false` in production | When true, the client logs `[PAYPLUS-SANDBOX]` to stdout in lieu of calling PayPlus |
+| `PAYMENT_CURRENCY` | `ILS` | Only ILS at v1 |
+| `PAYMENT_MAX_INSTALLMENTS` | `12` (PayPlus תשלומים cap) | Per-event cap can be lower via `Event.pricing.maxInstallments` |
+| `PLATFORM_PAYMENT_NOTIFY_URL` | e.g. `https://api.example.com/api/v1/webhooks/payplus` | Where PayPlus posts webhook events |
+| `PLATFORM_PAYMENT_SUCCESS_URL` | e.g. `https://api.example.com/api/v1/payments/success` | Browser redirect target after a successful charge |
+| `PLATFORM_PAYMENT_FAILURE_URL` | e.g. `https://api.example.com/api/v1/payments/failure` | Browser redirect target on failure / cancel |
+
+In dev, leave the three credential vars blank — `PAYPLUS_SANDBOX_MODE=true` (the default) routes every outbound call to `PayPlusSandboxClient`, which logs to stdout. In production, `env.ts` hard-fails at startup if any of `PAYPLUS_API_KEY` / `PAYPLUS_SECRET_KEY` / `PAYPLUS_WEBHOOK_SECRET` is missing and sandbox isn't explicitly enabled.
+
+### Exercising the webhook locally
+
+The webhook is mounted at `POST /api/v1/webhooks/payplus`. To get PayPlus to reach a local API, tunnel via ngrok:
+
+```bash
+ngrok http 3000
+# copy the https://<id>.ngrok.io URL
+```
+
+Then in the PayPlus dashboard set the webhook URL to `https://<id>.ngrok.io/api/v1/webhooks/payplus`. Set `PLATFORM_PAYMENT_NOTIFY_URL` in `.env` to the same value so the checkout page knows where to call back.
+
+### Forging a webhook for tests
+
+The handler verifies an HMAC-SHA256 hex digest over the raw body using `PAYPLUS_WEBHOOK_SECRET`. Replicate it from a shell:
+
+```bash
+SECRET=$(grep PAYPLUS_WEBHOOK_SECRET backend/.env | cut -d= -f2)
+BODY='{"id":"evt_local_1","type":"payment_success","data":{"transaction_uid":"pp_tx_1","more_info":"{\"paymentId\":\"PAYMENT_OBJECT_ID\",\"communityId\":\"COMMUNITY_OBJECT_ID\",\"userId\":\"USER_OBJECT_ID\",\"eventId\":\"EVENT_OBJECT_ID\",\"kind\":\"event\"}"}}'
+SIG=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$SECRET" -hex | sed 's/^.* //')
+curl -X POST http://localhost:3000/api/v1/webhooks/payplus \
+  -H "Content-Type: application/json" \
+  -H "x-payplus-signature: $SIG" \
+  --data "$BODY"
+```
+
+A `200 { received: true, handled: true }` response means the webhook resolved a Payment row.
+
+### Sandbox payments end-to-end (no PayPlus account required)
+
+In sandbox mode, `POST /api/v1/events/:eid/checkout` returns a `paymentUrl` that points at our own `/payments/success` endpoint with a `ref=<paymentId>` query param. Open it in a browser; the response is a `{ status: 'pending' }` JSON envelope (the mobile poll loop reads this). To simulate the webhook landing, fire the curl recipe above with the real `paymentId`. The Payment row flips to `succeeded` and the corresponding RSVP appears as `going`.
+
+### Issuing a refund
+
+```bash
+# Admin only — Sub Admin returns 403 (blockSubAdminFromFinancial)
+curl -X POST http://localhost:3000/api/v1/payments/PAYMENT_OBJECT_ID/refund \
+  -H "Authorization: Bearer ADMIN_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"amountCents":4900,"reason":"requested_by_customer"}'
+```
+
+The server calls PayPlus's refund endpoint (or logs `[PAYPLUS-SANDBOX] refund` in sandbox mode), updates `Payment.refundedAmountCents`, flips status to `partial_refund` or `refunded`, and — if the event's `refundPolicyHours` window is still open and the refund is full — cancels the RSVP and fires a `refund.received` notification.
+
+### Stripe → PayPlus migration (one-shot)
+
+```bash
+cd backend
+npm run migrate:stripe-to-payplus           # writes
+npm run migrate:stripe-to-payplus -- --dry  # counts only
+```
+
+The script renames legacy Stripe fields to the gateway-agnostic ones described in `docs/DECISIONS.md`. It is idempotent — re-running on a migrated DB updates zero rows.

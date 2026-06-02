@@ -31,16 +31,7 @@ export const payplusWebhook = asyncHandler(async (req: Request, res: Response) =
     bodyPreview: truncated,
   });
 
-  let event;
-  try {
-    event = verifyWebhook(req.body, signature);
-  } catch (err) {
-    if (err instanceof AppError && err.code === 'UNAUTHORIZED') {
-      // Spec says return 401 on invalid signature.
-      throw err;
-    }
-    throw err;
-  }
+  const event = verifyWebhook(req.body, signature);
 
   const outcome = await applyWebhook(event);
   logger.info({
