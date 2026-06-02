@@ -23,7 +23,8 @@ import { auditFromReq } from '../services/audit.service';
 const _platformSettings = {
   maintenanceMode: false,
   allowSignups: true,
-  stripeKeyMasked: '••••••••••••••••',
+  paymentGateway: 'payplus',
+  payplusKeyMasked: '••••••••••••••••',
 };
 
 async function loadById(req: Request) {

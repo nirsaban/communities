@@ -120,7 +120,7 @@ export const doRsvp = asyncHandler(async (req: Request, res: Response) => {
     });
     created(res, rsvpDoc.toClientJSON());
   } catch (err) {
-    // Paid event → kick off Stripe Checkout and respond 402 with the URL.
+    // Paid event → kick off PayPlus hosted-page checkout and respond 402 with the URL.
     if (err instanceof AppError && err.code === 'PAYMENT_REQUIRED') {
       const checkout = await startEventCheckout(req.params.eid, req.user);
       await auditFromReq(req, {
@@ -133,7 +133,7 @@ export const doRsvp = asyncHandler(async (req: Request, res: Response) => {
         error: {
           code: 'PAYMENT_REQUIRED',
           message: 'Checkout required for paid event',
-          details: { checkoutUrl: checkout.sessionUrl, paymentId: String(checkout.payment._id) },
+          details: { checkoutUrl: checkout.paymentUrl, paymentId: String(checkout.payment._id) },
         },
       });
       return;

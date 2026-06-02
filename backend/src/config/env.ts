@@ -40,19 +40,47 @@ const envSchema = z.object({
   UPLOAD_DIR: z.string().default('./uploads'),
   MAX_UPLOAD_BYTES: z.coerce.number().int().positive().default(524_288_000),
 
-  // Stripe (test mode in dev). Optional so existing P0–P3 tests keep working without keys.
-  STRIPE_SECRET_KEY: z.string().optional(),
-  STRIPE_WEBHOOK_SECRET: z.string().optional(),
-  STRIPE_API_VERSION: z.string().default('2025-09-30.clover'),
-  STRIPE_PLATFORM_FEE_BPS: z.coerce.number().int().min(0).max(10_000).default(500),
-  STRIPE_SUBSCRIPTION_MONTHLY_PRICE_ID: z.string().optional(),
-  STRIPE_SUBSCRIPTION_ANNUAL_PRICE_ID: z.string().optional(),
-  CHECKOUT_SUCCESS_URL: z
+  // PayPlus (Israeli gateway, platform-managed v1). API_KEY/SECRET_KEY/WEBHOOK_SECRET are
+  // optional in dev to keep `npm run dev` working without creds — the PayPlusClient falls
+  // back to a stdout-logging sandbox client when SANDBOX_MODE=true. In production they
+  // are required (validated at startup via the cross-field refinement below).
+  PAYPLUS_API_KEY: z.string().optional(),
+  PAYPLUS_SECRET_KEY: z.string().optional(),
+  PAYPLUS_PAGE_REQUEST_UID: z.string().optional(),
+  PAYPLUS_WEBHOOK_SECRET: z.string().optional(),
+  PAYPLUS_API_BASE_URL: z.string().default('https://restapi.payplus.co.il/api/v1.0'),
+  PAYPLUS_SANDBOX_MODE: z
+    .union([z.boolean(), z.string()])
+    .transform((v) => (typeof v === 'boolean' ? v : v.toLowerCase() === 'true'))
+    .default(true),
+
+  PAYMENT_CURRENCY: z.string().default('ILS'),
+  PAYMENT_MAX_INSTALLMENTS: z.coerce.number().int().min(1).max(12).default(12),
+
+  PLATFORM_PAYMENT_NOTIFY_URL: z
     .string()
-    .default('http://localhost:3000/payments/success?session_id={CHECKOUT_SESSION_ID}'),
-  CHECKOUT_CANCEL_URL: z.string().default('http://localhost:3000/payments/cancel'),
+    .default('http://localhost:3000/api/v1/webhooks/payplus'),
+  PLATFORM_PAYMENT_SUCCESS_URL: z
+    .string()
+    .default('http://localhost:3000/api/v1/payments/success'),
+  PLATFORM_PAYMENT_FAILURE_URL: z
+    .string()
+    .default('http://localhost:3000/api/v1/payments/failure'),
 
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'http', 'debug', 'silly']).default('info'),
+}).superRefine((env, ctx) => {
+  // In production, PayPlus credentials are mandatory — the sandbox fallback is dev-only.
+  if (env.NODE_ENV === 'production' && !env.PAYPLUS_SANDBOX_MODE) {
+    for (const key of ['PAYPLUS_API_KEY', 'PAYPLUS_SECRET_KEY', 'PAYPLUS_WEBHOOK_SECRET'] as const) {
+      if (!env[key]) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: [key],
+          message: `${key} is required in production unless PAYPLUS_SANDBOX_MODE=true`,
+        });
+      }
+    }
+  }
 });
 
 export type AppEnv = z.infer<typeof envSchema> & {

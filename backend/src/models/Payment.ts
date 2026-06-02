@@ -7,6 +7,8 @@ export type PaymentStatus =
   | 'refunded'
   | 'partial_refund';
 
+export type PaymentGateway = 'payplus' | 'external';
+
 export interface IPayment extends Document {
   _id: Types.ObjectId;
   communityId: Types.ObjectId;
@@ -14,10 +16,13 @@ export interface IPayment extends Document {
   eventId?: Types.ObjectId;
   rsvpId?: Types.ObjectId;
   subscriptionId?: Types.ObjectId;
-  stripePaymentIntentId?: string;
-  stripeCheckoutSessionId?: string;
+  gateway: PaymentGateway;
+  gatewayTransactionId?: string;
+  gatewayPaymentPageId?: string;
+  gatewayToken?: string;
   amountCents: number;
   currency: string;
+  installments: number;
   status: PaymentStatus;
   refundedAmountCents: number;
   metadata?: Record<string, unknown>;
@@ -33,10 +38,20 @@ const paymentSchema = new Schema<IPayment>(
     eventId: { type: Schema.Types.ObjectId, ref: 'Event', index: true },
     rsvpId: { type: Schema.Types.ObjectId, ref: 'EventRSVP' },
     subscriptionId: { type: Schema.Types.ObjectId, ref: 'Subscription' },
-    stripePaymentIntentId: { type: String },
-    stripeCheckoutSessionId: { type: String },
+    gateway: {
+      type: String,
+      enum: ['payplus', 'external'],
+      default: 'payplus',
+      required: true,
+    },
+    gatewayTransactionId: { type: String },
+    gatewayPaymentPageId: { type: String },
+    // gatewayToken is the PayPlus payment token used for subsequent token charges
+    // (recurring retries). Never returned to the client — controllers use .select('-gatewayToken').
+    gatewayToken: { type: String, select: false },
     amountCents: { type: Number, required: true, min: 0 },
-    currency: { type: String, required: true, default: 'USD' },
+    currency: { type: String, required: true, default: 'ILS' },
+    installments: { type: Number, default: 1, min: 1, max: 12 },
     status: {
       type: String,
       enum: ['pending', 'succeeded', 'failed', 'refunded', 'partial_refund'],
@@ -50,9 +65,10 @@ const paymentSchema = new Schema<IPayment>(
 
 paymentSchema.index({ communityId: 1, createdAt: -1 });
 paymentSchema.index({ userId: 1, status: 1 });
-// Sparse unique: lookup-friendly without conflicting on pending rows that don't yet have an intent.
-paymentSchema.index({ stripePaymentIntentId: 1 }, { unique: true, sparse: true });
-paymentSchema.index({ stripeCheckoutSessionId: 1 }, { unique: true, sparse: true });
+paymentSchema.index({ eventId: 1, status: 1 });
+// Sparse unique: lookup-friendly without conflicting on pending rows that don't yet have a gateway txn id.
+paymentSchema.index({ gatewayTransactionId: 1 }, { unique: true, sparse: true });
+paymentSchema.index({ gatewayPaymentPageId: 1 }, { sparse: true });
 
 paymentSchema.methods.toClientJSON = function toClientJSON(this: IPayment) {
   return {
@@ -62,8 +78,13 @@ paymentSchema.methods.toClientJSON = function toClientJSON(this: IPayment) {
     eventId: this.eventId ? String(this.eventId) : null,
     rsvpId: this.rsvpId ? String(this.rsvpId) : null,
     subscriptionId: this.subscriptionId ? String(this.subscriptionId) : null,
+    gateway: this.gateway,
+    gatewayTransactionId: this.gatewayTransactionId ?? null,
+    gatewayPaymentPageId: this.gatewayPaymentPageId ?? null,
+    // gatewayToken intentionally omitted — never returned in client responses.
     amountCents: this.amountCents,
     currency: this.currency,
+    installments: this.installments,
     status: this.status,
     refundedAmountCents: this.refundedAmountCents,
     createdAt: this.createdAt,

@@ -39,3 +39,12 @@ export const uploadLimiter = rateLimit({
   limit: 20,
   ...standardOptions,
 });
+
+// /api/v1/payments/success?ref=… is polled by the mobile checkout screen every
+// 2s for up to 60s after the user returns from the PayPlus hosted page. Cap at
+// 10 requests / minute / IP to keep that loop honest without breaking the UX.
+export const paymentSuccessLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 10,
+  ...standardOptions,
+});
