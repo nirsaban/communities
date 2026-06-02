@@ -1,0 +1,60 @@
+{
+  "screen": "EventsList",
+  "route": "/events",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "FilterButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "CalendarToggle",
+      "type": "iconButton"
+    },
+    {
+      "name": "SegmentedControl",
+      "type": "segmented",
+      "options": [
+        "Upcoming",
+        "Past",
+        "All"
+      ]
+    },
+    {
+      "name": "FilterChips",
+      "type": "chipGroup",
+      "scrollable": true
+    },
+    {
+      "name": "EventCard",
+      "type": "card",
+      "repeat": true
+    },
+    {
+      "name": "BottomNav",
+      "type": "nav",
+      "active": "Events"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated",
+    "empty"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "SegmentedControl → filter by time",
+    "FilterChips → category/price/date",
+    "CalendarToggle → calendar view"
+  ]
+}

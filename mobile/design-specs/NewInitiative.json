@@ -1,0 +1,58 @@
+{
+  "screen": "NewInitiative",
+  "route": "/initiatives/new",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "CloseButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "CoverUpload",
+      "type": "image",
+      "height": 96,
+      "borderRadius": 12
+    },
+    {
+      "name": "TitleField",
+      "type": "textField"
+    },
+    {
+      "name": "CategorySelect",
+      "type": "select"
+    },
+    {
+      "name": "DescriptionField",
+      "type": "textArea"
+    },
+    {
+      "name": "TargetDateField",
+      "type": "textField"
+    },
+    {
+      "name": "PublishButton",
+      "type": "button",
+      "style": "primary",
+      "width": "full",
+      "height": 50
+    }
+  ],
+  "states": [
+    "default",
+    "focused"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "PublishButton → moderation queue before going live"
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "screen": "OnboardingCarousel",
+  "route": "/welcome",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "SkipButton",
+      "type": "button",
+      "style": "ghost"
+    },
+    {
+      "name": "Illustration",
+      "type": "image",
+      "height": 336,
+      "width": "full",
+      "borderRadius": 20
+    },
+    {
+      "name": "SlideTitle",
+      "type": "text",
+      "style": "displayLarge",
+      "color": "onBackground",
+      "maxLines": 2
+    },
+    {
+      "name": "SlideBody",
+      "type": "text",
+      "style": "bodyLarge",
+      "color": "muted"
+    },
+    {
+      "name": "PageDots",
+      "type": "indicator",
+      "count": 3
+    },
+    {
+      "name": "ContinueButton",
+      "type": "button",
+      "style": "primary",
+      "width": "full",
+      "height": 50
+    }
+  ],
+  "states": [
+    "populated"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 24
+  },
+  "interactions": [
+    "SwipeGesture → advances slide",
+    "ContinueButton → next slide or signup",
+    "SkipButton → signup"
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "screen": "AdminEventList",
+  "route": "/admin/events",
+  "roles": [
+    "subadmin",
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "FilterButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "SegmentedControl",
+      "type": "segmented",
+      "options": [
+        "Published",
+        "Drafts",
+        "Past"
+      ]
+    },
+    {
+      "name": "AdminEventCard",
+      "type": "card",
+      "repeat": true
+    },
+    {
+      "name": "NewEventFab",
+      "type": "fab"
+    },
+    {
+      "name": "BottomNav",
+      "type": "nav",
+      "active": "Events"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated",
+    "empty"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "NewEventFab → event composer",
+    "AdminEventCard → admin event detail",
+    "shows status + attendance + manager"
+  ]
+}

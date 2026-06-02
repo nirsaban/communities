@@ -1,0 +1,75 @@
+{
+  "screen": "InviteMember",
+  "route": "/admin/members/invite",
+  "roles": [
+    "subadmin",
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "CloseButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "SegmentedControl",
+      "type": "segmented",
+      "options": [
+        "Single",
+        "Bulk CSV"
+      ]
+    },
+    {
+      "name": "EmailChipsField",
+      "type": "chipInput"
+    },
+    {
+      "name": "RoleSelect",
+      "type": "select"
+    },
+    {
+      "name": "NoteField",
+      "type": "textArea"
+    },
+    {
+      "name": "InviteLinkRow",
+      "type": "card",
+      "trailing": "copyButton"
+    },
+    {
+      "name": "SendButton",
+      "type": "button",
+      "style": "primary",
+      "width": "full"
+    }
+  ],
+  "states": [
+    "default",
+    "focused"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "AdminRoleOption",
+      "hiddenFor": [
+        "subadmin"
+      ]
+    },
+    {
+      "component": "CSVDropZone",
+      "shownFor": [
+        "Bulk CSV tab"
+      ]
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "SendButton → email invites",
+    "Bulk CSV tab → mass import"
+  ]
+}

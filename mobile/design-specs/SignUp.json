@@ -1,0 +1,77 @@
+{
+  "screen": "SignUp",
+  "route": "/signup",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "Title",
+      "type": "text",
+      "style": "displayLarge",
+      "color": "onBackground"
+    },
+    {
+      "name": "FullNameField",
+      "type": "textField"
+    },
+    {
+      "name": "EmailField",
+      "type": "textField"
+    },
+    {
+      "name": "PasswordField",
+      "type": "textField",
+      "trailing": "revealToggle"
+    },
+    {
+      "name": "PasswordStrengthMeter",
+      "type": "progress"
+    },
+    {
+      "name": "TermsCheckbox",
+      "type": "checkbox"
+    },
+    {
+      "name": "CreateAccountButton",
+      "type": "button",
+      "style": "primary",
+      "width": "full",
+      "height": 50
+    },
+    {
+      "name": "SocialButtons",
+      "type": "button",
+      "style": "secondary"
+    }
+  ],
+  "states": [
+    "default",
+    "focused",
+    "error",
+    "loading"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "CreateAccountButton",
+      "disabledUntil": "TermsCheckbox checked"
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "CreateAccountButton → email verification",
+    "SocialButtons → SSO (Apple/Google)",
+    "blur → inline validation"
+  ]
+}

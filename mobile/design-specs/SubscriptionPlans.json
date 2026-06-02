@@ -1,0 +1,53 @@
+{
+  "screen": "SubscriptionPlans",
+  "route": "/subscribe",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "CloseButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "Title",
+      "type": "text",
+      "style": "displayMedium"
+    },
+    {
+      "name": "BillingToggle",
+      "type": "segmented",
+      "options": [
+        "Annual",
+        "Monthly"
+      ]
+    },
+    {
+      "name": "PlanCard",
+      "type": "card",
+      "featureList": true
+    },
+    {
+      "name": "SubscribeButton",
+      "type": "button",
+      "style": "primary",
+      "width": "full"
+    }
+  ],
+  "states": [
+    "default"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "BillingToggle → annual/monthly with savings tag",
+    "SubscribeButton → Stripe checkout → success"
+  ]
+}

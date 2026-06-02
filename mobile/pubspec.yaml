@@ -1,0 +1,70 @@
+name: community_app
+description: Community Management SaaS — Flutter mobile app (iOS + Android).
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+  flutter: ">=3.24.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # Networking
+  dio: ^5.7.0
+
+  # Navigation
+  go_router: ^14.6.1
+
+  # Local storage
+  flutter_secure_storage: ^9.2.2
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+
+  # Forms
+  flutter_form_builder: ^10.3.0
+  form_builder_validators: ^11.0.0
+
+  # Env config per build flavor
+  flutter_dotenv: ^5.2.1
+
+  # Images
+  cached_network_image: ^3.4.1
+
+  # Utils
+  intl: ^0.20.2
+  uuid: ^4.5.1
+
+  cupertino_icons: ^1.0.8
+
+  # Payments — open Stripe Checkout in the system browser (decision: external,
+  # not in-app webview — see docs/DECISIONS.md).
+  url_launcher: ^6.3.1
+
+  # Design system fonts (DESIGN_LOCK.md: DM Sans body, DM Serif Display display)
+  google_fonts: ^6.2.1
+
+  # Material Symbols Rounded (DESIGN_LOCK.md: "All icons: Material Symbols Rounded, size 24px")
+  material_symbols_icons: ^4.2784.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  mocktail: ^1.0.4
+  riverpod_generator: ^2.4.3
+  build_runner: ^2.4.13
+
+flutter:
+  uses-material-design: true
+  assets:
+    - .env.development
+    - .env.staging
+    - .env.production

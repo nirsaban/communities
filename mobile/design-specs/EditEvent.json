@@ -1,0 +1,67 @@
+{
+  "screen": "EditEvent",
+  "route": "/admin/events/:id/edit",
+  "roles": [
+    "subadmin",
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "SaveButton",
+      "type": "link"
+    },
+    {
+      "name": "StatusChip",
+      "type": "chip"
+    },
+    {
+      "name": "TitleField",
+      "type": "textField"
+    },
+    {
+      "name": "DateField",
+      "type": "textField"
+    },
+    {
+      "name": "LocationField",
+      "type": "textField"
+    },
+    {
+      "name": "AssignedManagerSelect",
+      "type": "select"
+    },
+    {
+      "name": "SaveChangesButton",
+      "type": "button",
+      "style": "primary"
+    },
+    {
+      "name": "CancelEventButton",
+      "type": "button",
+      "style": "secondary",
+      "color": "error"
+    }
+  ],
+  "states": [
+    "default",
+    "focused"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "CancelEventButton → destructive confirm + notify attendees",
+    "capacity can't drop below current RSVPs",
+    "AssignedManagerSelect → assign dialog"
+  ]
+}

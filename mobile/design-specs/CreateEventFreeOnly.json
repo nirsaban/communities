@@ -1,0 +1,83 @@
+{
+  "screen": "CreateEventFreeOnly",
+  "route": "/admin/events/new",
+  "roles": [
+    "subadmin"
+  ],
+  "components": [
+    {
+      "name": "CloseButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "DraftButton",
+      "type": "link"
+    },
+    {
+      "name": "CoverUpload",
+      "type": "image",
+      "height": 96
+    },
+    {
+      "name": "TitleField",
+      "type": "textField"
+    },
+    {
+      "name": "DateField",
+      "type": "textField"
+    },
+    {
+      "name": "TimeField",
+      "type": "textField"
+    },
+    {
+      "name": "LocationField",
+      "type": "textField"
+    },
+    {
+      "name": "PriceField",
+      "type": "textField",
+      "disabled": true,
+      "trailing": "lockIcon"
+    },
+    {
+      "name": "CapacityField",
+      "type": "textField"
+    },
+    {
+      "name": "WaitlistToggle",
+      "type": "toggle"
+    },
+    {
+      "name": "PublishButton",
+      "type": "button",
+      "style": "primary",
+      "width": "full"
+    }
+  ],
+  "states": [
+    "default",
+    "focused"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "PriceField",
+      "disabledFor": [
+        "subadmin"
+      ],
+      "note": "locked → free only"
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "PriceField locked with guard hint (admin only)",
+    "PublishButton → publishes free event"
+  ]
+}

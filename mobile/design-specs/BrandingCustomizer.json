@@ -1,0 +1,48 @@
+{
+  "screen": "BrandingCustomizer",
+  "route": "/admin/settings/branding",
+  "roles": [
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "SaveButton",
+      "type": "link"
+    },
+    {
+      "name": "LogoUpload",
+      "type": "image",
+      "height": 64,
+      "width": 64,
+      "borderRadius": 16
+    },
+    {
+      "name": "BrandColorPicker",
+      "type": "colorPicker"
+    },
+    {
+      "name": "LivePreviewCard",
+      "type": "card"
+    }
+  ],
+  "states": [
+    "default"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--brand)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "BrandColorPicker → updates --brand token",
+    "LivePreviewCard → re-renders member surfaces with brand color"
+  ]
+}

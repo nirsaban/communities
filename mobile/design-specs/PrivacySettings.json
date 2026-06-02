@@ -1,0 +1,47 @@
+{
+  "screen": "PrivacySettings",
+  "route": "/settings/privacy",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "VisibilityRadioCards",
+      "type": "radioGroup",
+      "options": [
+        "Members",
+        "Everyone",
+        "Only me"
+      ]
+    },
+    {
+      "name": "VisibilityToggles",
+      "type": "list"
+    },
+    {
+      "name": "BlockedMembersRow",
+      "type": "listRow",
+      "trailing": "chevron"
+    }
+  ],
+  "states": [
+    "default"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 14
+  },
+  "interactions": [
+    "VisibilityRadioCards → drives public profile reveal",
+    "BlockedMembersRow → sub-screen"
+  ]
+}

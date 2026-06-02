@@ -1,0 +1,64 @@
+{
+  "screen": "CommunityWelcome",
+  "route": "/c/:slug/welcome",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "CoverImage",
+      "type": "image",
+      "height": 300,
+      "width": "full",
+      "borderRadius": 0
+    },
+    {
+      "name": "CommunityLogo",
+      "type": "avatar",
+      "height": 72,
+      "width": 72,
+      "borderRadius": 20
+    },
+    {
+      "name": "Title",
+      "type": "text",
+      "style": "displayLarge",
+      "color": "onBackground",
+      "maxLines": 2
+    },
+    {
+      "name": "Description",
+      "type": "text",
+      "style": "bodyLarge",
+      "color": "muted"
+    },
+    {
+      "name": "StatChips",
+      "type": "chipGroup"
+    },
+    {
+      "name": "ContinueButton",
+      "type": "button",
+      "style": "primary",
+      "width": "full",
+      "height": 50
+    }
+  ],
+  "states": [
+    "populated"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--brand)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "ContinueButton → rules ack or home",
+    "statusBar → inverts white over cover",
+    "configurable per community (cover/logo/copy/brand)"
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "screen": "MyEvents",
+  "route": "/manage/events",
+  "roles": [
+    "event_manager"
+  ],
+  "components": [
+    {
+      "name": "Header",
+      "type": "text",
+      "style": "displayMedium"
+    },
+    {
+      "name": "RoleAvatar",
+      "type": "avatar"
+    },
+    {
+      "name": "SegmentedControl",
+      "type": "segmented",
+      "options": [
+        "Upcoming",
+        "Past"
+      ]
+    },
+    {
+      "name": "EventManageCard",
+      "type": "card",
+      "repeat": true
+    },
+    {
+      "name": "BottomNav",
+      "type": "nav",
+      "active": "MyEvents"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated",
+    "empty"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "EventManageCard → command center",
+    "scoped to assigned events only"
+  ]
+}

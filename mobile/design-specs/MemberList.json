@@ -1,0 +1,52 @@
+{
+  "screen": "MemberList",
+  "route": "/admin/members",
+  "roles": [
+    "subadmin",
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "FilterButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "SearchField",
+      "type": "search"
+    },
+    {
+      "name": "RoleFilterChips",
+      "type": "chipGroup"
+    },
+    {
+      "name": "MemberRow",
+      "type": "listRow",
+      "repeat": true,
+      "leading": "checkbox",
+      "trailing": "roleBadge"
+    },
+    {
+      "name": "BulkActionBar",
+      "type": "floatingBar"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated",
+    "empty",
+    "selection"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 0
+  },
+  "interactions": [
+    "checkbox → multi-select reveals BulkActionBar (message/export/remove)",
+    "MemberRow → member detail"
+  ]
+}

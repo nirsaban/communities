@@ -1,0 +1,52 @@
+{
+  "screen": "EventQA",
+  "route": "/events/:id/qa",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "QuestionCard",
+      "type": "card",
+      "repeat": true
+    },
+    {
+      "name": "UpvotePill",
+      "type": "chip"
+    },
+    {
+      "name": "PinnedAnswer",
+      "type": "card",
+      "variant": "accent"
+    },
+    {
+      "name": "AskComposer",
+      "type": "input",
+      "sticky": true,
+      "trailing": "sendButton"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated",
+    "empty"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 12
+  },
+  "interactions": [
+    "UpvotePill → upvote question",
+    "AskComposer → post question",
+    "sorted by votes; organizer answers pinned"
+  ]
+}

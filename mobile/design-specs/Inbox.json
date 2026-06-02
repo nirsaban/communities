@@ -1,0 +1,54 @@
+{
+  "screen": "Inbox",
+  "route": "/inbox",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "MarkAllReadButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "ActionableBanner",
+      "type": "card",
+      "variant": "accentWash"
+    },
+    {
+      "name": "GroupLabel",
+      "type": "text",
+      "style": "labelSmall"
+    },
+    {
+      "name": "NotificationRow",
+      "type": "listRow",
+      "repeat": true,
+      "leading": "typeIcon",
+      "trailing": "unreadDot"
+    },
+    {
+      "name": "BottomNav",
+      "type": "nav",
+      "active": "Inbox"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated",
+    "empty"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 10
+  },
+  "interactions": [
+    "ActionableBanner → claim waitlist",
+    "NotificationRow → deep link to source",
+    "MarkAllReadButton → clears unread"
+  ]
+}

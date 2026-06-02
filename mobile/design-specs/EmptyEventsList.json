@@ -1,0 +1,67 @@
+{
+  "screen": "EmptyEventsList",
+  "route": "/events",
+  "roles": [
+    "member",
+    "admin",
+    "subadmin"
+  ],
+  "components": [
+    {
+      "name": "TopBar",
+      "type": "topbar"
+    },
+    {
+      "name": "SegmentedControl",
+      "type": "segmented"
+    },
+    {
+      "name": "EmptyStateBlob",
+      "type": "icon"
+    },
+    {
+      "name": "Headline",
+      "type": "text",
+      "style": "displayMedium"
+    },
+    {
+      "name": "NotifyButton",
+      "type": "button",
+      "style": "secondary"
+    },
+    {
+      "name": "BottomNav",
+      "type": "nav",
+      "active": "Events"
+    }
+  ],
+  "states": [
+    "empty"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "CreateFirstEventCTA",
+      "shownFor": [
+        "admin",
+        "subadmin"
+      ]
+    },
+    {
+      "component": "NotifyButton",
+      "shownFor": [
+        "member"
+      ]
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 24
+  },
+  "interactions": [
+    "admin variant CTA → create first event"
+  ]
+}

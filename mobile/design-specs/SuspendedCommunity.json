@@ -1,0 +1,53 @@
+{
+  "screen": "SuspendedCommunity",
+  "route": "/c/:slug",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "WarningBlob",
+      "type": "icon",
+      "color": "warning"
+    },
+    {
+      "name": "Headline",
+      "type": "text",
+      "style": "titleLarge"
+    },
+    {
+      "name": "Body",
+      "type": "text",
+      "style": "bodyLarge",
+      "color": "muted"
+    },
+    {
+      "name": "OtherCommunitiesButton",
+      "type": "button",
+      "style": "secondary"
+    },
+    {
+      "name": "SupportButton",
+      "type": "button",
+      "style": "ghost"
+    }
+  ],
+  "states": [
+    "error"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)",
+    "warning": "var(--warning)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 24
+  },
+  "interactions": [
+    "shown when Super Admin suspended community",
+    "reassures membership safe",
+    "→ other communities"
+  ]
+}

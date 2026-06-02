@@ -1,0 +1,66 @@
+{
+  "screen": "ProfileSetup",
+  "route": "/onboard/profile",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "ProgressBar",
+      "type": "progress",
+      "segments": 2
+    },
+    {
+      "name": "StepLabel",
+      "type": "text",
+      "style": "labelSmall",
+      "color": "muted"
+    },
+    {
+      "name": "Title",
+      "type": "text",
+      "style": "displayMedium",
+      "color": "onBackground"
+    },
+    {
+      "name": "AvatarUpload",
+      "type": "avatar",
+      "height": 104,
+      "width": 104
+    },
+    {
+      "name": "DisplayNameField",
+      "type": "textField"
+    },
+    {
+      "name": "UsernameField",
+      "type": "textField",
+      "trailing": "availabilityCheck"
+    },
+    {
+      "name": "ContinueButton",
+      "type": "button",
+      "style": "primary",
+      "width": "full",
+      "height": 50
+    }
+  ],
+  "states": [
+    "default",
+    "focused"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "AvatarUpload → photo picker/camera, fallback initials",
+    "UsernameField → live availability",
+    "ContinueButton → interests"
+  ]
+}

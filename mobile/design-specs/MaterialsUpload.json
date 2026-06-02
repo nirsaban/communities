@@ -1,0 +1,60 @@
+{
+  "screen": "MaterialsUpload",
+  "route": "/manage/events/:id/materials/new",
+  "roles": [
+    "event_manager",
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "FileDropZone",
+      "type": "upload",
+      "height": 150
+    },
+    {
+      "name": "UploadProgressCard",
+      "type": "card",
+      "progress": true
+    },
+    {
+      "name": "TitleField",
+      "type": "textField"
+    },
+    {
+      "name": "DescriptionField",
+      "type": "textArea"
+    },
+    {
+      "name": "AttendeesOnlyToggle",
+      "type": "toggle"
+    },
+    {
+      "name": "AddButton",
+      "type": "button",
+      "style": "primary",
+      "width": "full"
+    }
+  ],
+  "states": [
+    "default",
+    "uploading",
+    "error"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "FileDropZone → picker (pdf/mp4/ppt)",
+    "AttendeesOnlyToggle → gates member materials page"
+  ]
+}

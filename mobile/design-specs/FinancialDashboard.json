@@ -1,0 +1,73 @@
+{
+  "screen": "FinancialDashboard",
+  "route": "/admin/finances",
+  "roles": [
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "ExportButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "SegmentedControl",
+      "type": "segmented",
+      "options": [
+        "Month",
+        "Quarter",
+        "Year"
+      ]
+    },
+    {
+      "name": "KPIGrid",
+      "type": "grid",
+      "kpis": [
+        "Gross revenue",
+        "MRR"
+      ]
+    },
+    {
+      "name": "RevenueBarChart",
+      "type": "barChart"
+    },
+    {
+      "name": "RevenueBySourceList",
+      "type": "list"
+    },
+    {
+      "name": "ExportCSVButton",
+      "type": "button",
+      "style": "secondary"
+    },
+    {
+      "name": "BottomNav",
+      "type": "nav",
+      "active": "Finances"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "EntireScreen",
+      "hiddenFor": [
+        "subadmin",
+        "event_manager"
+      ]
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "ExportCSVButton → download accounting CSV",
+    "SegmentedControl → time range"
+  ]
+}

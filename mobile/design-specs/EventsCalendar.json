@@ -1,0 +1,56 @@
+{
+  "screen": "EventsCalendar",
+  "route": "/events?view=calendar",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "MonthSwitcher",
+      "type": "stepper"
+    },
+    {
+      "name": "WeekdayHeader",
+      "type": "grid"
+    },
+    {
+      "name": "CalendarGrid",
+      "type": "grid",
+      "eventDots": true
+    },
+    {
+      "name": "AgendaLabel",
+      "type": "text",
+      "style": "labelSmall"
+    },
+    {
+      "name": "EventCard",
+      "type": "card",
+      "repeat": true
+    },
+    {
+      "name": "BottomNav",
+      "type": "nav",
+      "active": "Events"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated",
+    "empty"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "CalendarGrid → tap day filters agenda",
+    "MonthSwitcher → prev/next month",
+    "selectedDay → accent fill"
+  ]
+}

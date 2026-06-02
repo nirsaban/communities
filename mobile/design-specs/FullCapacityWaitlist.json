@@ -1,0 +1,57 @@
+{
+  "screen": "FullCapacityWaitlist",
+  "route": "/events/:id",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "CoverImage",
+      "type": "image",
+      "height": 240,
+      "width": "full"
+    },
+    {
+      "name": "SoldOutChip",
+      "type": "chip",
+      "color": "error"
+    },
+    {
+      "name": "EventTitle",
+      "type": "text",
+      "style": "displayMedium"
+    },
+    {
+      "name": "CapacityBar",
+      "type": "progress",
+      "full": true
+    },
+    {
+      "name": "WaitingNote",
+      "type": "card"
+    },
+    {
+      "name": "JoinWaitlistButton",
+      "type": "button",
+      "style": "primary"
+    }
+  ],
+  "states": [
+    "full"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)",
+    "error": "var(--error)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "RSVP swaps to Join the waitlist",
+    "full capacity bar + live waiting count",
+    "join → waitlist confirmation"
+  ]
+}

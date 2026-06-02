@@ -1,0 +1,64 @@
+{
+  "screen": "InitiativeModeration",
+  "route": "/admin/initiatives/pending",
+  "roles": [
+    "subadmin",
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "PendingCard",
+      "type": "card",
+      "repeat": true
+    },
+    {
+      "name": "ApproveButton",
+      "type": "button",
+      "style": "primary",
+      "color": "success"
+    },
+    {
+      "name": "RejectButton",
+      "type": "button",
+      "style": "secondary"
+    },
+    {
+      "name": "RejectReasonField",
+      "type": "textArea"
+    },
+    {
+      "name": "SendRejectionButton",
+      "type": "button",
+      "style": "danger"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated",
+    "empty"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "RejectReasonField",
+      "shownFor": [
+        "rejecting state"
+      ]
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 12
+  },
+  "interactions": [
+    "ApproveButton → publishes initiative",
+    "RejectButton → requires reason sent to author"
+  ]
+}

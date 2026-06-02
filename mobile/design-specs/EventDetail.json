@@ -1,0 +1,84 @@
+{
+  "screen": "EventDetail",
+  "route": "/events/:id",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "CoverImage",
+      "type": "image",
+      "height": 288,
+      "width": "full",
+      "borderRadius": 0
+    },
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "ShareButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "BookmarkButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "StatusChip",
+      "type": "chip"
+    },
+    {
+      "name": "EventTitle",
+      "type": "text",
+      "style": "displayMedium",
+      "color": "onBackground",
+      "maxLines": 2
+    },
+    {
+      "name": "DateRow",
+      "type": "listRow"
+    },
+    {
+      "name": "LocationRow",
+      "type": "listRow"
+    },
+    {
+      "name": "AboutText",
+      "type": "text",
+      "style": "bodyLarge"
+    },
+    {
+      "name": "SpeakerList",
+      "type": "list"
+    },
+    {
+      "name": "StickyPayBar",
+      "type": "footer"
+    },
+    {
+      "name": "RSVPButton",
+      "type": "button",
+      "style": "primary"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated",
+    "error"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "RSVPButton → free=confirmation / paid=checkout / full=waitlist",
+    "ShareButton → deep link",
+    "statusBar inverts over cover"
+  ]
+}

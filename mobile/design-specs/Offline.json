@@ -1,0 +1,55 @@
+{
+  "screen": "Offline",
+  "route": "/offline",
+  "roles": [
+    "member",
+    "admin",
+    "subadmin",
+    "event_manager",
+    "super_admin"
+  ],
+  "components": [
+    {
+      "name": "OfflineBanner",
+      "type": "banner",
+      "spinner": true
+    },
+    {
+      "name": "FeedHeader",
+      "type": "header",
+      "dimmed": true
+    },
+    {
+      "name": "CachedContent",
+      "type": "list",
+      "dimmed": true,
+      "nonInteractive": true
+    },
+    {
+      "name": "LastSyncedLabel",
+      "type": "text",
+      "style": "labelSmall"
+    },
+    {
+      "name": "BottomNav",
+      "type": "nav"
+    }
+  ],
+  "states": [
+    "offline"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 0
+  },
+  "interactions": [
+    "persistent reconnect banner + spinner",
+    "cached content dimmed/non-interactive",
+    "auto-recovers"
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "screen": "EmailVerification",
+  "route": "/verify",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "IconBlob",
+      "type": "icon",
+      "height": 96,
+      "width": 96,
+      "borderRadius": 30
+    },
+    {
+      "name": "Title",
+      "type": "text",
+      "style": "displayMedium",
+      "color": "onBackground"
+    },
+    {
+      "name": "Body",
+      "type": "text",
+      "style": "bodyLarge",
+      "color": "muted"
+    },
+    {
+      "name": "OTPInput",
+      "type": "otp",
+      "length": 6
+    },
+    {
+      "name": "VerifyButton",
+      "type": "button",
+      "style": "primary",
+      "width": "full",
+      "height": 50
+    },
+    {
+      "name": "ResendTimer",
+      "type": "text",
+      "style": "bodyMedium",
+      "color": "accent"
+    }
+  ],
+  "states": [
+    "default",
+    "focused",
+    "error",
+    "loading"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "ResendTimer",
+      "disabledUntil": "countdown reaches 0"
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 24
+  },
+  "interactions": [
+    "OTPInput → auto-advance + paste, auto-submit on 6th digit",
+    "VerifyButton → profile setup"
+  ]
+}

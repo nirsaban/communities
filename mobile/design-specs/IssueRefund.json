@@ -1,0 +1,73 @@
+{
+  "screen": "IssueRefund",
+  "route": "/admin/events/:id/refund",
+  "roles": [
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "OrderCard",
+      "type": "card"
+    },
+    {
+      "name": "SegmentedControl",
+      "type": "segmented",
+      "options": [
+        "Full refund",
+        "Partial"
+      ]
+    },
+    {
+      "name": "ReasonSelect",
+      "type": "select"
+    },
+    {
+      "name": "Scrim",
+      "type": "scrim"
+    },
+    {
+      "name": "ConfirmDialog",
+      "type": "dialog"
+    },
+    {
+      "name": "RefundButton",
+      "type": "button",
+      "style": "danger"
+    }
+  ],
+  "states": [
+    "default",
+    "confirm"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "PartialAmountField",
+      "shownFor": [
+        "Partial selected"
+      ]
+    },
+    {
+      "component": "EntireScreen",
+      "hiddenFor": [
+        "subadmin",
+        "event_manager"
+      ]
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)",
+    "danger": "var(--error)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 14
+  },
+  "interactions": [
+    "RefundButton → ConfirmDialog with amount+recipient → Stripe refund → member sees refund received"
+  ]
+}

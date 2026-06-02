@@ -1,0 +1,49 @@
+{
+  "screen": "NotificationPreferences",
+  "route": "/settings/notifications",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "ChannelHeader",
+      "type": "row",
+      "labels": [
+        "Push",
+        "Email"
+      ]
+    },
+    {
+      "name": "PrefRow",
+      "type": "listRow",
+      "repeat": true,
+      "trailing": "dualToggle"
+    }
+  ],
+  "states": [
+    "default"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "PushColumnBanner",
+      "shownFor": [
+        "OS push disabled"
+      ]
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 14
+  },
+  "interactions": [
+    "dualToggle → per-type × per-channel, saves instantly"
+  ]
+}

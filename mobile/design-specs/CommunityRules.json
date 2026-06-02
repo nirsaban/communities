@@ -1,0 +1,57 @@
+{
+  "screen": "CommunityRules",
+  "route": "/c/:slug/rules",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "Title",
+      "type": "text",
+      "style": "titleLarge"
+    },
+    {
+      "name": "Body",
+      "type": "text",
+      "style": "bodyLarge",
+      "color": "muted"
+    },
+    {
+      "name": "RuleList",
+      "type": "list",
+      "numbered": true
+    },
+    {
+      "name": "AgreeCheckbox",
+      "type": "checkbox"
+    },
+    {
+      "name": "AgreeButton",
+      "type": "button",
+      "style": "primary",
+      "width": "full",
+      "height": 50
+    }
+  ],
+  "states": [
+    "default"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "AgreeButton",
+      "disabledUntil": "AgreeCheckbox checked"
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 14
+  },
+  "interactions": [
+    "AgreeButton → home; acknowledgment timestamped on membership",
+    "optional per community admin toggle"
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "screen": "CommunitiesList",
+  "route": "/super/communities",
+  "roles": [
+    "super_admin"
+  ],
+  "components": [
+    {
+      "name": "FilterButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "SearchField",
+      "type": "search"
+    },
+    {
+      "name": "StatusFilterChips",
+      "type": "chipGroup"
+    },
+    {
+      "name": "CommunityRow",
+      "type": "listRow",
+      "repeat": true,
+      "trailing": "statusBadge"
+    },
+    {
+      "name": "NewCommunityFab",
+      "type": "fab"
+    },
+    {
+      "name": "BottomNav",
+      "type": "nav",
+      "active": "Communities"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated",
+    "empty"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 0
+  },
+  "theme": "dark",
+  "interactions": [
+    "NewCommunityFab → create wizard",
+    "CommunityRow → community detail",
+    "suspended rows dimmed"
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "screen": "AttendeeList",
+  "route": "/manage/events/:id/attendees",
+  "roles": [
+    "event_manager",
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "QRScanButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "SearchField",
+      "type": "search"
+    },
+    {
+      "name": "SegmentedControl",
+      "type": "segmented",
+      "options": [
+        "All",
+        "Going",
+        "Checked in",
+        "Waitlist"
+      ]
+    },
+    {
+      "name": "AttendeeRow",
+      "type": "listRow",
+      "repeat": true,
+      "trailing": "checkInBox"
+    },
+    {
+      "name": "CheckInAllFab",
+      "type": "fab"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated",
+    "empty"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 0
+  },
+  "interactions": [
+    "checkInBox → mark attendance",
+    "QRScanButton → fast door check-in",
+    "CheckInAllFab → bulk check-in"
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "screen": "GlobalUserList",
+  "route": "/super/users",
+  "roles": [
+    "super_admin"
+  ],
+  "components": [
+    {
+      "name": "FilterButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "SearchField",
+      "type": "search"
+    },
+    {
+      "name": "RoleFilterChips",
+      "type": "chipGroup"
+    },
+    {
+      "name": "UserRow",
+      "type": "listRow",
+      "repeat": true,
+      "trailing": "roleBadge"
+    },
+    {
+      "name": "BottomNav",
+      "type": "nav",
+      "active": "Users"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated",
+    "empty"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 0
+  },
+  "theme": "dark",
+  "interactions": [
+    "SearchField → email/name across all tenants",
+    "UserRow → user detail",
+    "disabled accounts dimmed"
+  ]
+}

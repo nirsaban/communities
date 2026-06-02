@@ -1,0 +1,54 @@
+{
+  "screen": "EmptyHomeFeed",
+  "route": "/home",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "FeedHeader",
+      "type": "header"
+    },
+    {
+      "name": "EmptyStateBlob",
+      "type": "icon"
+    },
+    {
+      "name": "Headline",
+      "type": "text",
+      "style": "displayMedium"
+    },
+    {
+      "name": "Body",
+      "type": "text",
+      "style": "bodyMedium",
+      "color": "muted"
+    },
+    {
+      "name": "ExploreButton",
+      "type": "button",
+      "style": "primary"
+    },
+    {
+      "name": "BottomNav",
+      "type": "nav",
+      "active": "Home"
+    }
+  ],
+  "states": [
+    "empty"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 24
+  },
+  "interactions": [
+    "keeps full chrome so it reads ready not broken",
+    "ExploreButton → events"
+  ]
+}

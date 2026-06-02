@@ -1,0 +1,56 @@
+{
+  "screen": "CancelSubscription",
+  "route": "/me/membership/cancel",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "WarningBlob",
+      "type": "icon",
+      "color": "warning"
+    },
+    {
+      "name": "Title",
+      "type": "text",
+      "style": "displayMedium"
+    },
+    {
+      "name": "LosesCard",
+      "type": "card"
+    },
+    {
+      "name": "KeepButton",
+      "type": "button",
+      "style": "secondary"
+    },
+    {
+      "name": "CancelAnywayButton",
+      "type": "button",
+      "style": "ghost",
+      "color": "error"
+    }
+  ],
+  "states": [
+    "default"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)",
+    "warning": "var(--warning)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "leads with Keep",
+    "CancelAnyway → cancels at period end (not immediate)",
+    "states access-until date"
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "screen": "AdminWizardBranding",
+  "route": "/admin/setup/2",
+  "roles": [
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "ProgressBar",
+      "type": "progress",
+      "segments": 6
+    },
+    {
+      "name": "Title",
+      "type": "text",
+      "style": "displayMedium"
+    },
+    {
+      "name": "CoverUpload",
+      "type": "image",
+      "height": 104,
+      "borderRadius": 12
+    },
+    {
+      "name": "LogoUpload",
+      "type": "image",
+      "height": 72,
+      "width": 72,
+      "borderRadius": 16
+    },
+    {
+      "name": "BrandColorPicker",
+      "type": "colorPicker"
+    },
+    {
+      "name": "ContinueButton",
+      "type": "button",
+      "style": "primary",
+      "width": "full",
+      "height": 50
+    }
+  ],
+  "states": [
+    "default"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "BrandColorPicker → writes --brand token, re-skins member surfaces",
+    "all optional with defaults"
+  ]
+}

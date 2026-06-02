@@ -1,0 +1,57 @@
+{
+  "screen": "CreateCommunity",
+  "route": "/super/communities/new",
+  "roles": [
+    "super_admin"
+  ],
+  "components": [
+    {
+      "name": "CloseButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "Title",
+      "type": "text",
+      "style": "displayMedium"
+    },
+    {
+      "name": "NameField",
+      "type": "textField"
+    },
+    {
+      "name": "AdminEmailField",
+      "type": "textField"
+    },
+    {
+      "name": "CategorySelect",
+      "type": "select"
+    },
+    {
+      "name": "PlanSelect",
+      "type": "select"
+    },
+    {
+      "name": "CreateButton",
+      "type": "button",
+      "style": "primary",
+      "width": "full"
+    }
+  ],
+  "states": [
+    "default",
+    "focused"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "theme": "dark",
+  "interactions": [
+    "CreateButton → provisions tenant + emails Community Admin onboarding invite"
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "screen": "MemberProfile",
+  "route": "/me",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "SettingsButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "Avatar",
+      "type": "avatar",
+      "height": 88,
+      "width": 88
+    },
+    {
+      "name": "Name",
+      "type": "text",
+      "style": "titleLarge"
+    },
+    {
+      "name": "Bio",
+      "type": "text",
+      "style": "bodyLarge"
+    },
+    {
+      "name": "StatCards",
+      "type": "row"
+    },
+    {
+      "name": "InterestChips",
+      "type": "chipGroup"
+    },
+    {
+      "name": "ShortcutList",
+      "type": "card"
+    },
+    {
+      "name": "EditProfileButton",
+      "type": "button",
+      "style": "secondary"
+    },
+    {
+      "name": "BottomNav",
+      "type": "nav",
+      "active": "Profile"
+    }
+  ],
+  "states": [
+    "populated"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "ProfileFields",
+      "hiddenFor": [
+        "honors privacy settings on public view"
+      ]
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 18
+  },
+  "interactions": [
+    "SettingsButton → settings",
+    "ShortcutList → RSVPs/initiatives/communities",
+    "EditProfileButton → edit"
+  ]
+}

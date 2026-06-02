@@ -1,0 +1,52 @@
+{
+  "screen": "PaymentFailure",
+  "route": "/pay/failed",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "ErrorBlob",
+      "type": "icon",
+      "color": "error"
+    },
+    {
+      "name": "Title",
+      "type": "text",
+      "style": "displayMedium"
+    },
+    {
+      "name": "DeclinedCard",
+      "type": "card"
+    },
+    {
+      "name": "TryAgainButton",
+      "type": "button",
+      "style": "primary"
+    },
+    {
+      "name": "DifferentCardButton",
+      "type": "button",
+      "style": "secondary"
+    }
+  ],
+  "states": [
+    "error"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)",
+    "error": "var(--error)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "reassures: no charge made, spot held 10 min",
+    "TryAgainButton → retry",
+    "DifferentCardButton → new method",
+    "surfaces decline reason"
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "screen": "ContentModeration",
+  "route": "/admin/moderation",
+  "roles": [
+    "subadmin",
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "FilterButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "FlaggedCard",
+      "type": "card",
+      "repeat": true
+    },
+    {
+      "name": "ReportChip",
+      "type": "chip"
+    },
+    {
+      "name": "KeepButton",
+      "type": "button",
+      "style": "secondary"
+    },
+    {
+      "name": "WarnButton",
+      "type": "button",
+      "style": "secondary"
+    },
+    {
+      "name": "RemoveButton",
+      "type": "button",
+      "style": "danger"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated",
+    "empty"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 12
+  },
+  "interactions": [
+    "KeepButton/WarnButton/RemoveButton → moderation actions",
+    "Remove notifies author + logs action"
+  ]
+}

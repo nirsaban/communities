@@ -1,0 +1,59 @@
+{
+  "screen": "QAManagement",
+  "route": "/manage/events/:id/qa",
+  "roles": [
+    "event_manager",
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "FilterButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "UnansweredCard",
+      "type": "card",
+      "variant": "accent"
+    },
+    {
+      "name": "AnswerButton",
+      "type": "button",
+      "style": "primary",
+      "size": "sm"
+    },
+    {
+      "name": "PinButton",
+      "type": "button",
+      "style": "secondary",
+      "size": "sm"
+    },
+    {
+      "name": "ResolvedCard",
+      "type": "card"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated",
+    "empty"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 12
+  },
+  "interactions": [
+    "AnswerButton → reply",
+    "PinButton → pin answer",
+    "mark resolved",
+    "unanswered float to top"
+  ]
+}
