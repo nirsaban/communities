@@ -4,6 +4,7 @@ import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../../commons.dart';
 import '../../../../core/i18n/strings.dart';
+import '../../../../core/utils/format_currency.dart';
 import '../../../../shared/widgets/widgets.dart';
 
 /// Spec: design-specs/RefundReceived.json (route "/pay/refund", role: member).
@@ -13,7 +14,7 @@ class RefundReceivedScreen extends StatelessWidget {
   const RefundReceivedScreen({
     super.key,
     this.amountCents = 0,
-    this.currency = 'USD',
+    this.currency = 'ILS',
     this.last4,
     this.reference,
   });
@@ -23,18 +24,7 @@ class RefundReceivedScreen extends StatelessWidget {
   final String? last4;
   final String? reference;
 
-  String get _amount {
-    final n = (amountCents / 100).toStringAsFixed((amountCents % 100 == 0) ? 0 : 2);
-    switch (currency.toUpperCase()) {
-      case 'ILS':
-        return '₪$n';
-      case 'EUR':
-        return '€$n';
-      case 'USD':
-      default:
-        return '\$$n';
-    }
-  }
+  String get _amount => formatILS(amountCents);
 
   @override
   Widget build(BuildContext context) {

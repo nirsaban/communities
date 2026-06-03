@@ -77,6 +77,7 @@ class EventPricingDto {
     required this.kind,
     required this.priceCents,
     required this.currency,
+    this.maxInstallments = 1,
     this.refundPolicyHours,
     this.externalUrl,
     this.subscriptionIncluded,
@@ -85,6 +86,8 @@ class EventPricingDto {
   final EventPricingKind kind;
   final int priceCents;
   final String currency;
+  /// Capped at 12 — PayPlus תשלומים supports 1..12 monthly installments.
+  final int maxInstallments;
   final int? refundPolicyHours;
   final String? externalUrl;
   final bool? subscriptionIncluded;
@@ -95,7 +98,8 @@ class EventPricingDto {
     return EventPricingDto(
       kind: _pricingKindFromString(json['type'] as String?),
       priceCents: (json['priceCents'] as num?)?.toInt() ?? 0,
-      currency: json['currency'] as String? ?? 'USD',
+      currency: json['currency'] as String? ?? 'ILS',
+      maxInstallments: (json['maxInstallments'] as num?)?.toInt() ?? 1,
       refundPolicyHours: (json['refundPolicyHours'] as num?)?.toInt(),
       externalUrl: json['externalUrl'] as String?,
       subscriptionIncluded: json['subscriptionIncluded'] as bool?,
@@ -239,7 +243,7 @@ class EventDto {
           .toList(),
       pricing: json['pricing'] is Map<String, dynamic>
           ? EventPricingDto.fromJson(json['pricing'] as Map<String, dynamic>)
-          : EventPricingDto(kind: EventPricingKind.free, priceCents: 0, currency: 'USD'),
+          : EventPricingDto(kind: EventPricingKind.free, priceCents: 0, currency: 'ILS'),
       status: json['status'] as String? ?? 'published',
       visibility: json['visibility'] as String? ?? 'community',
       managers: (json['managers'] as List?)?.cast<String>() ?? const [],

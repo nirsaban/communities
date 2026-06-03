@@ -216,7 +216,7 @@ export async function rsvp(
       event.pricing.subscriptionIncluded === true &&
       (await hasActiveSubscription(user._id, event.communityId));
     if (!subscriberCovered) {
-      // The controller catches this and returns 402 with the Stripe checkout URL.
+      // The controller catches this and returns 402 with the PayPlus checkout URL.
       throw AppError.paymentRequired('Checkout required for paid event', {
         eventId: String(event._id),
         priceCents: event.pricing.priceCents,

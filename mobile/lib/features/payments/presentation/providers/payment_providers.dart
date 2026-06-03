@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -19,56 +21,132 @@ final Provider<LaunchUrl> urlLauncherProvider = Provider<LaunchUrl>((_) {
   return (uri) => launchUrl(uri, mode: LaunchMode.externalApplication);
 });
 
+/// Result of the poll loop. `confirmed` means PayPlus webhook flipped the
+/// Payment to succeeded; `failed` means the webhook reported a failure;
+/// `timeout` means the 60s poll window elapsed without a verdict.
+enum CheckoutOutcome { confirmed, failed, timeout, cancelled }
+
 class CheckoutState {
   const CheckoutState({
     this.isLoading = false,
+    this.isPolling = false,
     this.errorMessage,
-    this.lastSessionUrl,
+    this.lastPaymentUrl,
+    this.lastPaymentId,
+    this.outcome,
   });
   final bool isLoading;
+  final bool isPolling;
   final String? errorMessage;
-  final String? lastSessionUrl;
+  final String? lastPaymentUrl;
+  final String? lastPaymentId;
+  final CheckoutOutcome? outcome;
 
-  CheckoutState copyWith({bool? isLoading, String? errorMessage, String? lastSessionUrl}) {
+  CheckoutState copyWith({
+    bool? isLoading,
+    bool? isPolling,
+    String? errorMessage,
+    String? lastPaymentUrl,
+    String? lastPaymentId,
+    CheckoutOutcome? outcome,
+  }) {
     return CheckoutState(
       isLoading: isLoading ?? this.isLoading,
+      isPolling: isPolling ?? this.isPolling,
       errorMessage: errorMessage,
-      lastSessionUrl: lastSessionUrl ?? this.lastSessionUrl,
+      lastPaymentUrl: lastPaymentUrl ?? this.lastPaymentUrl,
+      lastPaymentId: lastPaymentId ?? this.lastPaymentId,
+      outcome: outcome,
     );
   }
 }
 
 class CheckoutNotifier extends StateNotifier<CheckoutState> {
-  CheckoutNotifier({required this.repo, required this.launcher}) : super(const CheckoutState());
+  CheckoutNotifier({required this.repo, required this.launcher})
+      : super(const CheckoutState());
 
   final PaymentRepository repo;
   final LaunchUrl launcher;
 
-  /// Kick off an event checkout: create the Stripe session, launch its URL.
-  Future<bool> payForEvent(String eventId) async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
+  // Tunables. Spec: poll every 2s up to 60s.
+  static const Duration pollInterval = Duration(seconds: 2);
+  static const Duration pollTimeout = Duration(seconds: 60);
+
+  /// Kick off an event checkout: create the PayPlus page, launch its URL in the
+  /// system browser, then poll our /payments/success endpoint until the webhook
+  /// resolves the Payment.
+  Future<CheckoutOutcome> payForEvent(String eventId) async {
+    state = state.copyWith(isLoading: true, errorMessage: null, outcome: null);
     try {
       final result = await repo.startEventCheckout(eventId);
-      final opened = await launcher(Uri.parse(result.sessionUrl));
-      state = state.copyWith(isLoading: false, lastSessionUrl: result.sessionUrl);
-      return opened;
+      final opened = await launcher(Uri.parse(result.paymentUrl));
+      state = state.copyWith(
+        isLoading: false,
+        lastPaymentUrl: result.paymentUrl,
+        lastPaymentId: result.paymentId,
+      );
+      if (!opened) {
+        state = state.copyWith(outcome: CheckoutOutcome.failed);
+        return CheckoutOutcome.failed;
+      }
+      return _pollUntilTerminal(result.paymentId);
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
-      return false;
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.toString(),
+        outcome: CheckoutOutcome.failed,
+      );
+      return CheckoutOutcome.failed;
     }
   }
 
-  Future<bool> subscribe(String communityId, {String plan = 'monthly'}) async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
+  Future<CheckoutOutcome> subscribe(String communityId, {String plan = 'monthly'}) async {
+    state = state.copyWith(isLoading: true, errorMessage: null, outcome: null);
     try {
       final result = await repo.startSubscriptionCheckout(communityId, plan: plan);
-      final opened = await launcher(Uri.parse(result.sessionUrl));
-      state = state.copyWith(isLoading: false, lastSessionUrl: result.sessionUrl);
-      return opened;
+      final opened = await launcher(Uri.parse(result.paymentUrl));
+      state = state.copyWith(
+        isLoading: false,
+        lastPaymentUrl: result.paymentUrl,
+        lastPaymentId: result.paymentId,
+      );
+      if (!opened) {
+        state = state.copyWith(outcome: CheckoutOutcome.failed);
+        return CheckoutOutcome.failed;
+      }
+      return _pollUntilTerminal(result.paymentId);
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
-      return false;
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.toString(),
+        outcome: CheckoutOutcome.failed,
+      );
+      return CheckoutOutcome.failed;
     }
+  }
+
+  Future<CheckoutOutcome> _pollUntilTerminal(String paymentId) async {
+    if (paymentId.isEmpty) return CheckoutOutcome.timeout;
+    state = state.copyWith(isPolling: true);
+    final deadline = DateTime.now().add(pollTimeout);
+    while (DateTime.now().isBefore(deadline)) {
+      await Future<void>.delayed(pollInterval);
+      try {
+        final status = await repo.getPaymentStatus(paymentId);
+        if (status.status == 'succeeded') {
+          state = state.copyWith(isPolling: false, outcome: CheckoutOutcome.confirmed);
+          return CheckoutOutcome.confirmed;
+        }
+        if (status.status == 'failed') {
+          state = state.copyWith(isPolling: false, outcome: CheckoutOutcome.failed);
+          return CheckoutOutcome.failed;
+        }
+      } catch (_) {
+        // Transient — keep polling until the deadline.
+      }
+    }
+    state = state.copyWith(isPolling: false, outcome: CheckoutOutcome.timeout);
+    return CheckoutOutcome.timeout;
   }
 }
 

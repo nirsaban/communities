@@ -10,7 +10,7 @@ Live record of what's been built, deviations from the PRDs, and what's next.
 ### P1 — Backend skeleton + auth ✅ (TypeScript)
 ### P2 — Multi-tenant + roles ✅
 ### P3 — Events MVP ✅ (one-time only — recurring added in P5)
-### P4 — Payments ✅ (Stripe + webhooks + finances dashboard)
+### P4 — Payments ✅ (PayPlus + webhooks + finances dashboard, ILS) — _was Stripe, swapped 2026-06-02; see entry at the bottom of this file_
 ### Mobile auth scaffold ✅ (login → home end-to-end, Hebrew RTL, Android + web verified)
 ### P5 — Initiatives, recurring events, discussions, notification scaffold ✅
 
@@ -157,3 +157,77 @@ flutter test            # 18 tests pass
 > Small backend additions for P6: expose `GET /api/v1/me/feed` (PRD 13 §Me) that returns a personalized list — for v1 just merge recent events + recent initiatives + recent posts, no ranking. Add `GET /api/v1/me/rsvps` and `GET /api/v1/me/managed-events`. Tests + lint + typecheck green; update `docs/PROGRESS.md` + `docs/DECISIONS.md`.
 >
 > No changes to recurring events, payments, initiatives moderation backend, or notification scaffolding in P6.
+
+---
+
+## 2026-06-02 — Stripe → PayPlus migration (replaces P4 payments stack)
+
+The Stripe payment surface from P4 has been replaced with PayPlus (Israeli gateway). The product targets Israeli communities collecting ILS, and Stripe does not onboard Israeli merchants. The migration was platform-managed (single PayPlus merchant account, flat SaaS fee) with SAQ-A PCI scope via hosted pages.
+
+### Backend — removed
+
+- `backend/src/services/stripe.service.ts` — the entire `StripeService` interface + `RealStripeService` + `StubStripeService`.
+- `backend/src/services/webhook.service.ts` — Stripe-typed `handleWebhookEvent` + per-event handlers.
+- `backend/src/controllers/payment-dev.controller.ts` — the dev-only HTML stub Checkout page (no longer needed; `PayPlusSandboxClient` is the dev fallback).
+- `backend/tests/helpers/fakeStripe.ts`, `backend/tests/unit/stripe.service.test.ts`, `backend/tests/unit/realStripe.service.test.ts`, the legacy `payments.test.ts`.
+- `stripe` npm dependency (uninstalled).
+- `Subscription.stripeSubscriptionId` / `stripeCustomerId`, `Payment.stripePaymentIntentId` / `stripeCheckoutSessionId`, `Community.stripeAccountId`. All four are dropped from the schemas; the migration script preserves data by renaming.
+
+### Backend — added
+
+- `backend/src/services/payment/PayPlusClient.ts` — axios-based REST client + `PayPlusSandboxClient` (gated by `PAYPLUS_SANDBOX_MODE`) + `verifyHmacSignature(secret, body, sig)` exported for the webhook handler.
+- `backend/src/services/payment/GatewayService.ts` — the single entry point controllers may use. Persists Payment / Subscription rows before the gateway call; owns the webhook state machine (`payment_success`, `payment_failure`, `recurring_payment_success/failure`, `recurring_cancelled`, `refund_success`); emits notifications on terminal transitions.
+- `backend/src/controllers/webhook.controller.ts` — rewritten as `payplusWebhook`, raw-body, HMAC-verified before parsing, truncated body logging.
+- `backend/src/jobs/subscriptionRetry.job.ts` — daily @ 04:00, re-charges `gatewayToken` for past_due subscriptions; ≥3 failed attempts → cancelled + notification.
+- `backend/src/jobs/expirePayments.job.ts` — every 15 min, flips pending Payment rows older than 30 min to failed.
+- `backend/src/middleware/rateLimiter.ts` — new `paymentSuccessLimiter` (10/min/IP) for the `/payments/success` poll endpoint.
+- `backend/scripts/migrateStripeToPayplus.ts` + `npm run migrate:stripe-to-payplus` — one-shot, idempotent field renames at the native MongoDB driver level.
+- Payment / Subscription models rewritten as gateway-agnostic (`gateway: 'payplus' | 'external'`, `gatewayTransactionId` (unique sparse), `gatewayPaymentPageId`, `gatewayToken` (`select: false`), `gatewaySubscriptionId`); Payment gains `installments` (1..12); Subscription gains `failedAttempts`.
+- `Event.pricing` now defaults `currency='ILS'` and adds `maxInstallments` (1..12).
+
+### Mobile — changed
+
+- `data/models/payment_dto.dart` — `CheckoutResultDto.sessionUrl` → `paymentUrl`; new `PaymentStatusDto` for the poll loop.
+- `data/repositories/payment_repository.dart` — `getPaymentStatus(paymentId)` added.
+- `features/payments/presentation/providers/payment_providers.dart` — `CheckoutNotifier` now polls `/payments/success?ref=…` every 2s up to 60s after launching the URL; returns a `CheckoutOutcome` enum (`confirmed | failed | timeout | cancelled`) so the UI can branch cleanly.
+- `features/payments/presentation/screens/checkout_screen.dart` — single CTA "לתשלום", "עד X תשלומים" line when `maxInstallments > 1`, inline "מעבד תשלום..." while polling.
+- `core/utils/format_currency.dart` — new `formatILS(int agorot)` + `formatInstallments(…)` helper. Replaces inline `_money` helpers across mobile.
+- `features/payments/presentation/screens/finances_screen.dart` — drops `intl` USD `NumberFormat` in favour of `formatILS`.
+- `features/payments/presentation/screens/refund_received_screen.dart` — defaults to `'ILS'`, uses `formatILS`.
+- `features/super/presentation/screens/platform_settings_screen.dart` — `stripeRevealed/stripeKeyMasked` → `payplusRevealed/payplusKeyMasked`.
+- i18n strings + `Event.pricing.currency` / `Community` defaults: `USD` → `ILS`; `Stripe` → `PayPlus` (checkoutSecuredBy, superSettingsBilling); `'מחיר (USD)'` → `'מחיר (₪)'`.
+
+### Tests
+
+| Suite | Before | After |
+|---|---|---|
+| Unit | `stripe.service.test.ts`, `realStripe.service.test.ts` | `PayPlusClient.test.ts` (`verifyHmacSignature` truth/false + body mutation, `FakePayPlusClient` shape, refund param mapping) |
+| Integration | `payments.test.ts` (Stripe-shaped) | `payments.test.ts` (PayPlus-shaped: 12 cases — checkout shape, gatewayToken non-leak, webhook signature 401, payment_success → succeeded + RSVP, idempotent replay → duplicate:true, payment_failure → failed, recurring_payment_success → active + period extended, admin refund → refunded + RSVP cancelled, sub-admin refund → 403, refund outside policy window → 400, subscribe → incomplete + paymentUrl, cancel → cancelAtPeriodEnd:true) + `GET /payments/success` (unknown/valid) |
+| Migration | none | `migration.test.ts` (3 cases — empty DB no-op, rename Stripe legacy fields, second run is idempotent) |
+
+`npm test` is green: **82 / 82 passing** (was 79 / 79). `npm run typecheck` 0 errors; `npm run lint` 0 errors.
+
+### Coverage gap honestly logged
+
+- `PayPlusRestClient` (the real network path) is exercised only via type-checking; runtime coverage comes from the sandbox client + `FakePayPlusClient` because PayPlus offers no free CI sandbox. A staging environment with real creds is required to exercise the real client end-to-end — see `RUNBOOK.md` § "Exercising the webhook locally" for the ngrok setup. The verifyHmacSignature path itself is exercised directly.
+- `expirePayments.job.ts` and `subscriptionRetry.job.ts` are unit-runnable (`runSubscriptionRetries()` / `expireStalePendingPayments()` are exported) but do not yet have dedicated tests — TODO(v1.5) at the bottom of this entry.
+
+### PayPlus quirks noted during implementation
+
+- The PayPlus REST docs are intermittently unclear about response shapes; the client tolerates `res.data?.data ?? res.data` to handle both wrapped + flat responses. The sandbox client returns the same shape so tests are stable regardless.
+- `Authorization: <API_KEY>.<SECRET_KEY>` is the documented format — note the literal dot separator, not a `Bearer` prefix.
+- Amounts go on the wire in shekels with up to two decimals (`/ 100` from agorot), not in agorot. The model still persists `amountCents`.
+- The supertest webhook tests had to switch from `Buffer` bodies to JSON strings — supertest JSON-encodes a Buffer when `Content-Type: application/json` is set, which would change the bytes the HMAC was computed against. Production PayPlus sends the JSON string directly; the test fix mirrors that.
+- Refund window is read from `Event.pricing.refundPolicyHours` and checked against `Payment.createdAt` inside `GatewayService.issueRefund`. The webhook-side `refund_success` does NOT enforce the window — refunds initiated by support staff via the PayPlus dashboard are honoured unconditionally.
+
+### TODO(v1.5)
+
+- Community-connected model (per-community PayPlus sub-merchant).
+- Field-level encryption for `gatewayToken` at rest (currently `select: false` + DB encryption-at-rest is the perimeter).
+- Alternate Israeli gateways (Tranzila, Cardcom) via the same `PayPlusClient` interface.
+- Multi-currency (USD) at the gateway level.
+- Promo codes.
+- Annual plan in production (the schema supports `plan: 'annual'`; the price + UI bring-up is parked).
+- Apple Pay / Google Pay native SDKs (currently every payment goes through the PayPlus hosted page).
+- EMI licensing review before enabling installments > 6 in production.
+- Dedicated jest coverage for `subscriptionRetry.job.ts` + `expirePayments.job.ts`.

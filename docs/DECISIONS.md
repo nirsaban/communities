@@ -164,3 +164,42 @@ PRD 09 §2.4 says "Stripe Checkout (hosted) for v1". External browser is the saf
 ## 2026-06-01 — Recurring-events cron skipped in `NODE_ENV=test`
 
 **Why:** Tests need deterministic state. `startRecurringEventsJob()` returns null when `env.isTest`, so the job never fires during `npm test`. The materialization service itself is unit-tested directly via `computeOccurrences` and exercised via `materializeAllRecurringParents` in an integration test.
+
+## 2026-06-02 — Swap Stripe for PayPlus (Israeli gateway)
+
+**Why:** Stripe does not onboard Israeli merchants. The product targets Israeli communities collecting ILS, so we replaced the Stripe SDK + Checkout Session flow with PayPlus (https://docs.payplus.co.il). The migration kept the public API stable as much as possible — checkout endpoints still return `{ paymentUrl, paymentId }` (renamed from `sessionUrl`) and the webhook handler shape is preserved, but the Payment / Subscription / Community models are now gateway-agnostic (`gatewayTransactionId`, `gatewayPaymentPageId`, `gatewaySubscriptionId`, `gatewayToken`, plus `gateway: 'payplus' | 'external'`).
+
+**Scope choices:**
+
+- **Platform-managed v1** — a single PayPlus merchant account, no Connect-style sub-merchants. `Community.stripeAccountId` was dropped. Communities receive payouts via the platform at flat SaaS fees (no per-transaction split). Multi-merchant ("community-connected") is `TODO(v1.5)`.
+- **SAQ-A PCI scope** — card data is collected on the PayPlus hosted page, opened via `url_launcher` in the OS browser (not an in-app webview). Backend never touches PANs.
+- **ILS only** — `PAYMENT_CURRENCY=ILS` is the single supported currency. Amounts continue to be persisted as integer cents (`amountCents`), and the PayPlus client converts to shekels on the wire.
+- **תשלומים (installments)** — `Event.pricing.maxInstallments` (1..12) controls the cap shown on the hosted page. Backend defaults to 1 (single payment). UI shows "עד X תשלומים" when `> 1`.
+- **Webhook event mapping** — `payment_success`, `payment_failure`, `recurring_payment_success/failure`, `recurring_cancelled`, `refund_success`. Idempotency is per-row: each handler short-circuits when the target Payment / Subscription is already in its terminal state, so we no longer need a separate `ProcessedWebhook` collection.
+
+**Historical note:** the previous Stripe entry under 2026-06-01 ("Stripe Checkout sessions for events…") is superseded but kept verbatim above so the audit trail stays intact. `docs/STRIPE_REMOVAL_AUDIT.md` is the inventory captured at the start of the migration.
+
+## 2026-06-02 — Gateway abstraction: PayPlusClient + GatewayService
+
+**Why:** Two layers of indirection so v1.5's "community-connected" + Tranzila/Cardcom alternates can land without controller churn:
+
+- `services/payment/PayPlusClient.ts` — pure REST wrapper (axios), zero domain awareness. Exports `getPayPlusClient()` + `_resetPayPlusClient()` (test seam).
+- `services/payment/GatewayService.ts` — the ONLY module controllers may call. Owns persistence (creates Payment / Subscription rows in `pending` / `incomplete` BEFORE the network call so the webhook can always correlate), notifications, and webhook dispatch.
+
+Each lives behind an interface, so swapping providers is one `getXxxClient()` change. `payment.service.ts` is now a thin facade over `GatewayService` — kept around because the read-side helpers (list, financials, my subscriptions) are not gateway-coupled.
+
+## 2026-06-02 — Sandbox client used as the dev/test default
+
+**Why:** PayPlus does not run a free sandbox tier we can ship into CI. We implement a `PayPlusSandboxClient` (alongside `PayPlusRestClient`) that implements the same interface but logs every outbound call as `[PAYPLUS-SANDBOX]` to Winston. Activated automatically when `PAYPLUS_SANDBOX_MODE=true` OR when `PAYPLUS_API_KEY` / `PAYPLUS_SECRET_KEY` are missing in non-production. Production startup hard-fails (Zod `superRefine`) if creds are missing and sandbox isn't explicitly enabled. Tests substitute `FakePayPlusClient` via `_resetPayPlusClient()`.
+
+## 2026-06-02 — Webhook signature: HMAC-SHA256, raw body, `timingSafeEqual`
+
+**Why:** PayPlus signs the webhook body with HMAC-SHA256 (hex digest) using `PAYPLUS_WEBHOOK_SECRET`. Verification happens in `PayPlusClient.verifyWebhookSignature()`, called by `GatewayService.verifyWebhook()` before any JSON parsing. The webhook route is mounted with `express.raw({ type: '*/*' })` BEFORE the global `express.json()`, so the exact signed bytes reach the verifier. `verifyHmacSignature()` uses `crypto.timingSafeEqual` after a length check to prevent timing oracles. Invalid signatures throw `AppError.unauthenticated()` → 401 (per spec). Idempotency is per target row.
+
+## 2026-06-02 — gatewayToken stored `select: false`, never in API responses
+
+**Why:** The PayPlus card token (`gatewayToken`) is a sensitive long-lived credential used by the retry job to re-charge past-due subscriptions. We mark it `select: false` on both `Payment` and `Subscription`, so default `find()` calls (including the ones in controllers + the `toClientJSON()` serializer) cannot accidentally leak it. The retry job loads it explicitly via `.select('+gatewayToken')`. Verified by an integration test (`never returns the gatewayToken to clients`).
+
+## 2026-06-02 — Migration script at the native driver level
+
+**Why:** `scripts/migrateStripeToPayplus.ts` runs `$rename` / `$unset` / `$set` directly on the `payments`, `subscriptions`, `communities`, and `events` collections rather than going through Mongoose models. The script needs to be runnable AFTER the schemas have moved on (the Mongoose models no longer know about `stripePaymentIntentId`), so collection-level updates are the only way to do the renames cleanly. Idempotent: counts then writes, so a re-run on a migrated DB updates zero rows.

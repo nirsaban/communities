@@ -17,7 +17,9 @@ const speakerSchema = z.object({
 const pricingSchema = z.object({
   type: z.enum(['free', 'paid', 'subscription_only', 'external']).default('free'),
   priceCents: z.number().int().min(0).default(0),
-  currency: z.string().length(3).default('USD'),
+  currency: z.string().length(3).default('ILS'),
+  // 1..12 monthly installments — PayPlus תשלומים cap. Default to 1 (single payment).
+  maxInstallments: z.number().int().min(1).max(12).default(1),
   refundPolicyHours: z.number().int().min(0).optional(),
   externalUrl: z.string().url().optional(),
   subscriptionIncluded: z.boolean().optional(),
@@ -58,7 +60,12 @@ export const createEventSchema = z
     location: locationSchema.default({ type: 'physical' }),
     capacity: z.number().int().positive().nullable().optional(),
     speakers: z.array(speakerSchema).max(50).default([]),
-    pricing: pricingSchema.default({ type: 'free', priceCents: 0, currency: 'USD' }),
+    pricing: pricingSchema.default({
+      type: 'free',
+      priceCents: 0,
+      currency: 'ILS',
+      maxInstallments: 1,
+    }),
     visibility: z.enum(['community', 'invite']).default('community'),
     status: z.enum(['draft', 'published']).default('draft'),
   })

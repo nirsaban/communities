@@ -30,7 +30,7 @@ class EventListFilter {
 /// Outcome of a POST /events/:id/rsvp call.
 /// Free or already-paid → [rsvp] populated.
 /// Paid event with no completed payment → backend returns 402 + checkoutUrl,
-/// which we surface as [checkoutUrl] for the caller to hand off to Stripe.
+/// which we surface as [checkoutUrl] for the caller to launch via url_launcher.
 class RsvpOutcome {
   RsvpOutcome({this.rsvp, this.checkoutUrl, this.paymentId});
   final EventRsvpDto? rsvp;

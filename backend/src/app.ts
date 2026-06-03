@@ -34,8 +34,10 @@ export function buildApp(): Express {
     );
   }
 
-  // Stripe webhook MUST receive the raw body for signature verification, so it is
-  // mounted before the JSON parser. Inside the router, express.raw() is wired.
+  // PayPlus webhook MUST receive the raw body for HMAC-SHA256 signature verification.
+  // We therefore mount the webhook router BEFORE the global express.json() parser, and
+  // inside the router (`payment.routes.ts`) use `express.raw({ type: '*/*' })` so the
+  // exact signed bytes survive untouched.
   app.use('/api/v1/webhooks', webhookRouter);
 
   app.use(express.json({ limit: '10mb' }));

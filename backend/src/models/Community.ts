@@ -42,7 +42,6 @@ export interface ICommunity extends Document {
   createdBy?: Types.ObjectId;
   initialAdminId?: Types.ObjectId;
   settings: ICommunitySettings;
-  stripeAccountId?: string;
   onboarding: {
     wizardCompletedAt?: Date;
     steps: IOnboardingSteps;
@@ -101,7 +100,6 @@ const communitySchema = new Schema<ICommunity>(
       rules: String,
       defaultMemberPermissions: { type: Schema.Types.Mixed, default: {} },
     },
-    stripeAccountId: String,
     onboarding: {
       wizardCompletedAt: Date,
       steps: { type: onboardingSteps, default: () => ({}) },

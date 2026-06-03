@@ -5,15 +5,19 @@ import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../../commons.dart';
 import '../../../../core/i18n/strings.dart';
+import '../../../../core/utils/format_currency.dart';
 import '../../../../data/models/event_dto.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../../../events/presentation/providers/event_providers.dart';
 import '../providers/payment_providers.dart';
 
 /// Spec: design-specs/Checkout.json (route "/events/:id/checkout", role: member).
-/// EventSummaryCard, LineItems, TotalRow, StripeCardField (webViewHandoff),
-/// PayButton (primary). PayButton → Stripe Checkout in browser → /pay/success on
-/// return (polling) or /pay/failed on cancel.
+/// EventSummaryCard, LineItems, TotalRow, PayButton (primary).
+///
+/// Tap PayButton → backend creates a PayPlus hosted page → URL launched in the
+/// system browser → mobile polls /payments/success?ref=<paymentId> every 2s up
+/// to 60s (handled inside CheckoutNotifier._pollUntilTerminal) → on confirmed
+/// → /pay/success ; on failed / timeout → /pay/failed.
 class CheckoutScreen extends ConsumerWidget {
   const CheckoutScreen({super.key, required this.eventId});
   final String eventId;
@@ -23,7 +27,8 @@ class CheckoutScreen extends ConsumerWidget {
     final p = context.palette;
     final t = Theme.of(context).textTheme;
     final async = ref.watch(eventDetailProvider(eventId));
-    final isLoading = ref.watch(checkoutProvider).isLoading;
+    final checkout = ref.watch(checkoutProvider);
+    final isBusy = checkout.isLoading || checkout.isPolling;
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -42,21 +47,29 @@ class CheckoutScreen extends ConsumerWidget {
           error: (e, _) => ErrorState(onRetry: () => ref.invalidate(eventDetailProvider(eventId))),
           data: (event) => _Body(
             event: event,
-            isLoading: isLoading,
+            isLoading: checkout.isLoading,
+            isPolling: checkout.isPolling,
             onPay: () async {
-              final ok = await ref.read(checkoutProvider.notifier).payForEvent(event.id);
+              final outcome =
+                  await ref.read(checkoutProvider.notifier).payForEvent(event.id);
               if (!context.mounted) return;
-              if (ok) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text(S.checkoutOpenedSnack)),
-                );
-                GoRouter.of(context).push('/pay/success?eventId=${event.id}');
-              } else {
-                final err = ref.read(checkoutProvider).errorMessage;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(err ?? S.checkoutOpenFailed)),
-                );
-                GoRouter.of(context).push('/pay/failed?eventId=${event.id}');
+              switch (outcome) {
+                case CheckoutOutcome.confirmed:
+                  GoRouter.of(context).push('/pay/success?eventId=${event.id}');
+                  break;
+                case CheckoutOutcome.failed:
+                case CheckoutOutcome.cancelled:
+                  final err = ref.read(checkoutProvider).errorMessage;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(err ?? S.checkoutOpenFailed)),
+                  );
+                  GoRouter.of(context).push('/pay/failed?eventId=${event.id}');
+                  break;
+                case CheckoutOutcome.timeout:
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text(S.checkoutOpenedSnack)),
+                  );
+                  break;
               }
             },
           ),
@@ -67,9 +80,15 @@ class CheckoutScreen extends ConsumerWidget {
 }
 
 class _Body extends StatelessWidget {
-  const _Body({required this.event, required this.isLoading, required this.onPay});
+  const _Body({
+    required this.event,
+    required this.isLoading,
+    required this.isPolling,
+    required this.onPay,
+  });
   final EventDto event;
   final bool isLoading;
+  final bool isPolling;
   final VoidCallback onPay;
 
   @override
@@ -78,7 +97,11 @@ class _Body extends StatelessWidget {
     final t = Theme.of(context).textTheme;
     final dark = Theme.of(context).brightness == Brightness.dark;
     final price = event.pricing.priceCents;
-    final currency = event.pricing.currency;
+    final maxInstallments = event.pricing.maxInstallments;
+    final installmentsLine = formatInstallments(
+      totalAgorot: price,
+      installments: maxInstallments,
+    );
 
     return Column(
       children: [
@@ -102,15 +125,25 @@ class _Body extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      _LineRow(label: S.checkoutLineTicket, value: _money(price, currency)),
+                      _LineRow(label: S.checkoutLineTicket, value: formatILS(price)),
                       const SizedBox(height: 6),
-                      _LineRow(label: S.checkoutLineProcessing, value: _money(0, currency)),
+                      _LineRow(label: S.checkoutLineProcessing, value: formatILS(0)),
                       const Divider(height: 24),
                       _LineRow(
                         label: S.checkoutTotal,
-                        value: _money(price, currency),
+                        value: formatILS(price),
                         emphasize: true,
                       ),
+                      if (installmentsLine != null) ...[
+                        const SizedBox(height: 6),
+                        Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: Text(
+                            installmentsLine,
+                            style: t.labelSmall!.copyWith(color: p.muted, fontSize: 12),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -128,6 +161,23 @@ class _Body extends StatelessWidget {
                     ),
                   ],
                 ),
+                if (isPolling) ...[
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        S.checkoutProcessing,
+                        style: t.bodyMedium!.copyWith(color: p.muted, fontSize: 13),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
@@ -143,8 +193,8 @@ class _Body extends StatelessWidget {
             child: AppButton(
               S.checkoutPay,
               icon: Symbols.lock_rounded,
-              loading: isLoading,
-              onPressed: isLoading ? null : onPay,
+              loading: isLoading || isPolling,
+              onPressed: (isLoading || isPolling) ? null : onPay,
             ),
           ),
         ),
@@ -227,19 +277,6 @@ class _LineRow extends StatelessWidget {
         Text(value, style: style),
       ],
     );
-  }
-}
-
-String _money(int cents, String currency) {
-  final amount = (cents / 100).toStringAsFixed((cents % 100 == 0) ? 0 : 2);
-  switch (currency.toUpperCase()) {
-    case 'ILS':
-      return '₪$amount';
-    case 'EUR':
-      return '€$amount';
-    case 'USD':
-    default:
-      return '\$$amount';
   }
 }
 

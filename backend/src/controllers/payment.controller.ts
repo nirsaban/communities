@@ -14,6 +14,7 @@ import {
   computeFinancials,
 } from '../services/payment.service';
 import { Community } from '../models/Community';
+import { Payment } from '../models/Payment';
 import { EventModel } from '../models/Event';
 
 export const checkout = asyncHandler(async (req: Request, res: Response) => {
@@ -25,7 +26,7 @@ export const checkout = asyncHandler(async (req: Request, res: Response) => {
     targetType: 'payment',
     targetId: result.payment._id,
   });
-  created(res, { sessionUrl: result.sessionUrl, paymentId: String(result.payment._id) });
+  created(res, { paymentUrl: result.paymentUrl, paymentId: String(result.payment._id) });
 });
 
 export const subscribe = asyncHandler(async (req: Request, res: Response) => {
@@ -36,11 +37,14 @@ export const subscribe = asyncHandler(async (req: Request, res: Response) => {
   await auditFromReq(req, {
     action: 'subscription.checkout.start',
     communityId: community._id,
-    targetType: 'community',
-    targetId: community._id,
+    targetType: 'subscription',
+    targetId: result.subscription._id,
     metadata: { plan: req.body.plan },
   });
-  created(res, { sessionUrl: result.sessionUrl });
+  created(res, {
+    paymentUrl: result.paymentUrl,
+    subscriptionId: String(result.subscription._id),
+  });
 });
 
 export const mySubscriptions = asyncHandler(async (req: Request, res: Response) => {
@@ -65,8 +69,6 @@ export const eventPayments = asyncHandler(async (req: Request, res: Response) =>
   if (!mongoose.Types.ObjectId.isValid(req.params.eid)) {
     throw AppError.notFound('Event not found');
   }
-  // Sanity: verify the event still exists (and the caller's loadEventScope already
-  // confirmed they have admin/subadmin scope).
   const event = await EventModel.findById(req.params.eid, { _id: 1, communityId: 1 });
   if (!event) throw AppError.notFound('Event not found');
   const { items, nextCursor } = await listEventPayments(event._id, {
@@ -109,4 +111,45 @@ export const finances = asyncHandler(async (req: Request, res: Response) => {
   if (!req.membership) throw AppError.unauthorized();
   const snapshot = await computeFinancials(req.membership.communityId);
   ok(res, snapshot);
+});
+
+/**
+ * Polled by the mobile checkout screen after the user returns from PayPlus.
+ * No auth. Returns { status, paymentId } so the client can flip to the success
+ * screen as soon as the webhook lands. Never reveals the gatewayToken.
+ */
+export const paymentSuccessLanding = asyncHandler(async (req: Request, res: Response) => {
+  const ref = String(req.query.ref ?? '');
+  if (!mongoose.Types.ObjectId.isValid(ref)) {
+    res.status(200).json({ data: { status: 'unknown', paymentId: null } });
+    return;
+  }
+  const payment = await Payment.findById(ref).select(
+    '_id status gateway gatewayTransactionId amountCents currency installments',
+  );
+  if (!payment) {
+    res.status(200).json({ data: { status: 'unknown', paymentId: null } });
+    return;
+  }
+  res.status(200).json({
+    data: {
+      paymentId: String(payment._id),
+      status: payment.status,
+      gateway: payment.gateway,
+      amountCents: payment.amountCents,
+      currency: payment.currency,
+      installments: payment.installments,
+    },
+  });
+});
+
+/**
+ * Returned to the user's browser/webview when PayPlus signals a failure. Read-only
+ * landing — the actual Payment row is flipped to `failed` by the webhook.
+ */
+export const paymentFailureLanding = asyncHandler(async (req: Request, res: Response) => {
+  const ref = String(req.query.ref ?? '');
+  res.status(200).json({
+    data: { status: 'failed', paymentId: mongoose.Types.ObjectId.isValid(ref) ? ref : null },
+  });
 });

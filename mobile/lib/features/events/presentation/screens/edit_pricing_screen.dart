@@ -47,7 +47,7 @@ class _State extends ConsumerState<EditPricingScreen> {
         'pricing': {
           'type': cents > 0 ? 'paid' : 'free',
           'priceCents': cents,
-          'currency': 'USD',
+          'currency': 'ILS',
         },
       });
       ref.invalidate(eventDetailProvider(widget.eventId));

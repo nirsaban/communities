@@ -10,7 +10,7 @@ import {
 } from '../middleware/role';
 import { loadEventScope } from '../middleware/eventScope';
 import { validate } from '../middleware/validate';
-import { readLimiter, writeLimiter } from '../middleware/rateLimiter';
+import { readLimiter, writeLimiter, paymentSuccessLimiter } from '../middleware/rateLimiter';
 import {
   subscribeSchema,
   refundSchema,
@@ -79,11 +79,13 @@ paymentRouter.post(
   paymentCtl.refund,
 );
 
-// Dev-only stub Stripe surfaces. Guarded inside the controller — return 404 in prod.
-import * as paymentDevCtl from '../controllers/payment-dev.controller';
-paymentRouter.get('/_dev/checkout', paymentDevCtl.checkoutPage);
-paymentRouter.post('/_dev/settle', paymentDevCtl.settle);
-paymentRouter.get('/_dev/done', paymentDevCtl.done);
+// Public landing pages after the user comes back from the PayPlus hosted page.
+// No JWT (the user may be unauthenticated in a webview); the mobile app polls
+// /success?ref=<paymentId> to flip its UI. /success is heavily rate-limited
+// (10/min/IP) to keep the poll loop honest; /failure is unconstrained because
+// it serves a static OK response.
+paymentRouter.get('/success', paymentSuccessLimiter, paymentCtl.paymentSuccessLanding);
+paymentRouter.get('/failure', paymentCtl.paymentFailureLanding);
 
 // Verify the caller is an admin of the community that owns the payment.
 async function refundGuard(req: import('express').Request, _res: import('express').Response, next: import('express').NextFunction): Promise<void> {
@@ -116,10 +118,11 @@ async function refundGuard(req: import('express').Request, _res: import('express
   }
 }
 
-// Stripe webhook — raw body, no JWT, signature verified instead.
+// PayPlus webhook — RAW body (so HMAC verification operates on signed bytes),
+// no JWT, signature verified inside the controller.
 export const webhookRouter = Router();
 webhookRouter.post(
-  '/stripe',
-  express.raw({ type: 'application/json', limit: '1mb' }),
-  webhookCtl.stripeWebhook,
+  '/payplus',
+  express.raw({ type: '*/*', limit: '1mb' }),
+  webhookCtl.payplusWebhook,
 );

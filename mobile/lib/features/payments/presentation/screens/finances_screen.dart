@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../core/i18n/strings.dart';
+import '../../../../core/utils/format_currency.dart';
 import '../providers/payment_providers.dart';
 
 class FinancesScreen extends ConsumerWidget {
@@ -12,8 +12,7 @@ class FinancesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(financesProvider(communityId));
-    final usd = NumberFormat.currency(locale: 'he', symbol: '\$');
-    String fmt(int cents) => usd.format(cents / 100);
+    String fmt(int cents) => formatILS(cents);
     return Scaffold(
       appBar: AppBar(title: const Text(S.financialDashboard)),
       body: SafeArea(

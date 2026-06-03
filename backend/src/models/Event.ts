@@ -32,6 +32,7 @@ export interface IPricing {
   type: PricingType;
   priceCents: number;
   currency: string;
+  maxInstallments: number;
   refundPolicyHours?: number;
   externalUrl?: string;
   subscriptionIncluded?: boolean;
@@ -107,7 +108,9 @@ const pricingSchema = new Schema<IPricing>(
       default: 'free',
     },
     priceCents: { type: Number, default: 0, min: 0 },
-    currency: { type: String, default: 'USD' },
+    currency: { type: String, default: 'ILS' },
+    // Capped at 12 — PayPlus תשלומים supports 1–12 monthly installments.
+    maxInstallments: { type: Number, default: 1, min: 1, max: 12 },
     refundPolicyHours: Number,
     externalUrl: String,
     subscriptionIncluded: Boolean,
@@ -137,7 +140,10 @@ const eventSchema = new Schema<IEvent>(
     location: { type: locationSchema, default: () => ({ type: 'physical' }) },
     capacity: { type: Number, default: null, min: 1 },
     speakers: { type: [speakerSchema], default: [] },
-    pricing: { type: pricingSchema, default: () => ({ type: 'free', priceCents: 0, currency: 'USD' }) },
+    pricing: {
+      type: pricingSchema,
+      default: () => ({ type: 'free', priceCents: 0, currency: 'ILS', maxInstallments: 1 }),
+    },
     status: {
       type: String,
       enum: ['draft', 'published', 'cancelled', 'completed'],

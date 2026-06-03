@@ -20,9 +20,11 @@
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.ts\"",
     "migrate:up": "echo 'No migrations yet (Mongoose handles schema). Indexes ensured on connect.'",
     "create:superadmin": "tsx scripts/createSuperAdmin.ts",
-    "demo:reset": "tsx scripts/demoReset.ts"
+    "demo:reset": "tsx scripts/demoReset.ts",
+    "migrate:stripe-to-payplus": "tsx scripts/migrateStripeToPayplus.ts"
   },
   "dependencies": {
+    "axios": "^1.16.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -35,7 +37,6 @@
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "node-cron": "^3.0.3",
-    "stripe": "^17.7.0",
     "winston": "^3.17.0",
     "zod": "^3.23.8"
   },
