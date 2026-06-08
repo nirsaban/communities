@@ -1,0 +1,53 @@
+/* ============================================================
+   GALLERY CHROME — shared dark editorial canvas for batch sheets
+   ============================================================ */
+:root{ --canvas:#161513; --canvas-2:#1f1d1a; --ink:#FAFAF7; --ink-2:#A8A399; --hair:#2e2b27; --coral:#FF5C35; }
+*{ box-sizing:border-box; }
+body.gallery{ margin:0; background:var(--canvas); color:var(--ink);
+  font-family:"DM Sans", system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
+::selection{ background:var(--coral); color:#fff; }
+
+/* ---- masthead ---- */
+.gx-head{ padding:72px 56px 8px; max-width:1320px; }
+.gx-mark{ display:flex; align-items:center; gap:13px; margin-bottom:34px; }
+.gx-logo{ width:34px; height:34px; position:relative; }
+.gx-logo i{ position:absolute; width:22px; height:22px; border-radius:50%; }
+.gx-logo i:nth-child(1){ left:0; top:6px; background:var(--coral); }
+.gx-logo i:nth-child(2){ right:0; top:6px; background:#fff; mix-blend-mode:difference; }
+.gx-word{ font-family:"DM Serif Display", serif; font-size:23px; letter-spacing:-.01em; }
+.gx-eyebrow{ font-size:12.5px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--coral); margin-bottom:18px; }
+.gx-head h1{ font-family:"DM Serif Display", serif; font-weight:400; font-size:54px; line-height:1.02; letter-spacing:-.015em; margin:0 0 20px; max-width:15ch; }
+.gx-head p.lede{ font-size:17px; line-height:1.55; color:var(--ink-2); max-width:62ch; margin:0; }
+.gx-meta{ display:flex; flex-wrap:wrap; gap:10px; margin-top:28px; }
+.gx-meta .pill{ display:inline-flex; align-items:center; gap:7px; height:32px; padding:0 13px; border-radius:99px;
+  border:1px solid var(--hair); font-size:12.5px; font-weight:500; color:var(--ink-2); }
+.gx-meta .pill b{ color:var(--ink); font-weight:600; }
+.gx-meta .pill .sw{ width:12px; height:12px; border-radius:3px; }
+
+/* ---- section ---- */
+.sect{ padding:56px 56px 24px; max-width:1320px; }
+.sect-head{ display:flex; align-items:baseline; gap:18px; border-top:1px solid var(--hair); padding-top:30px; margin-bottom:8px; }
+.sect-num{ font-family:"DM Mono", monospace; font-size:13px; color:var(--coral); font-weight:500; }
+.sect-head h2{ font-family:"DM Serif Display", serif; font-weight:400; font-size:32px; letter-spacing:-.01em; margin:0; }
+.sect-head .sub{ font-size:14px; color:var(--ink-2); margin-left:auto; max-width:40ch; text-align:right; }
+
+/* deck of phones */
+.deck{ display:flex; flex-wrap:wrap; gap:54px 44px; padding:40px 0 8px; align-items:flex-start; }
+
+/* annotation block under each phone */
+.unit{ width:375px; flex:0 0 auto; }
+.anno{ padding:18px 4px 0; }
+.anno .a-top{ display:flex; align-items:center; gap:10px; margin-bottom:7px; }
+.anno .a-name{ font-weight:700; font-size:15px; letter-spacing:-.01em; }
+.anno .a-route{ font-family:"DM Mono", monospace; font-size:11.5px; color:var(--coral); background:rgba(255,92,53,.1);
+  padding:2px 7px; border-radius:5px; }
+.anno .a-roles{ display:flex; flex-wrap:wrap; gap:5px; margin-bottom:9px; }
+.anno .a-roles span{ font-size:10.5px; font-weight:600; letter-spacing:.02em; padding:2px 8px; border-radius:99px;
+  background:var(--canvas-2); color:var(--ink-2); border:1px solid var(--hair); }
+.anno .a-notes{ font-size:12.5px; line-height:1.5; color:var(--ink-2); }
+.anno .a-notes b{ color:var(--ink); font-weight:600; }
+.tag-dark{ font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#9bb6ff; }
+.tag-light{ font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#ffd27a; }
+
+.gx-foot{ padding:48px 56px 80px; max-width:1320px; color:var(--ink-2); font-size:13px; border-top:1px solid var(--hair); margin-top:40px; }
+.gx-foot b{ color:var(--ink); }

@@ -1,0 +1,82 @@
+{
+  "screen": "SubAdminDashboard",
+  "route": "/admin/overview",
+  "roles": [
+    "subadmin"
+  ],
+  "components": [
+    {
+      "name": "CommunitySwitcherPill",
+      "type": "button"
+    },
+    {
+      "name": "NotificationsButton",
+      "type": "iconButton",
+      "badge": true
+    },
+    {
+      "name": "OverviewTitle",
+      "type": "text",
+      "style": "displayMedium"
+    },
+    {
+      "name": "LimitedAdminBadge",
+      "type": "badge",
+      "color": "warning"
+    },
+    {
+      "name": "KPIGrid",
+      "type": "grid",
+      "kpis": [
+        "Members",
+        "Upcoming",
+        "Pending",
+        "Flagged"
+      ]
+    },
+    {
+      "name": "RevenueGuardBanner",
+      "type": "card",
+      "variant": "surface2"
+    },
+    {
+      "name": "ActivityFeed",
+      "type": "list"
+    },
+    {
+      "name": "BottomNav",
+      "type": "nav",
+      "active": "Home"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "RevenueKPI",
+      "hiddenFor": [
+        "subadmin"
+      ]
+    },
+    {
+      "component": "FinancialWidgets",
+      "hiddenFor": [
+        "subadmin"
+      ]
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "LimitedAdminBadge always visible",
+    "RevenueGuardBanner replaces revenue KPI"
+  ]
+}

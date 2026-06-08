@@ -11,8 +11,10 @@ import {
   changeMemberRole,
   removeMember,
   acceptInvitation,
+  peekInvitation,
 } from '../services/community.service';
 import { auditFromReq } from '../services/audit.service';
+import { buildSession } from '../services/auth.service';
 
 export const detail = asyncHandler(async (req: Request, res: Response) => {
   if (!req.membership) throw AppError.unauthorized();
@@ -141,6 +143,11 @@ export const acknowledgeRules = asyncHandler(async (req: Request, res: Response)
   ok(res, m.toClientJSON());
 });
 
+export const peekInvite = asyncHandler(async (req: Request, res: Response) => {
+  const info = await peekInvitation(req.params.token);
+  ok(res, info);
+});
+
 export const acceptInvite = asyncHandler(async (req: Request, res: Response) => {
   const result = await acceptInvitation(req.params.token, req.user || null, req.body);
   await auditFromReq(req, {
@@ -148,11 +155,18 @@ export const acceptInvite = asyncHandler(async (req: Request, res: Response) => 
     communityId: result.membership.communityId,
     targetType: 'membership',
     targetId: result.membership._id,
-    metadata: { createdAccount: result.createdAccount },
+    metadata: { createdAccount: result.createdAccount, actorId: result.user._id },
   });
+  // If the caller wasn't already authenticated (anonymous accept), issue a
+  // session for them so the web /invite page can route them straight in.
+  const wasAuthed = !!req.user;
+  const session = wasAuthed
+    ? null
+    : await buildSession(result.user, req.ip, req.get('user-agent') || undefined);
   ok(res, {
     membership: result.membership.toClientJSON(),
     user: result.user.toSafeJSON(),
     createdAccount: result.createdAccount,
+    tokens: session?.tokens ?? null,
   });
 });

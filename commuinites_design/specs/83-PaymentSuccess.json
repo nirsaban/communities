@@ -1,0 +1,51 @@
+{
+  "screen": "PaymentSuccess",
+  "route": "/pay/success",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "SuccessBlob",
+      "type": "icon",
+      "color": "success"
+    },
+    {
+      "name": "Title",
+      "type": "text",
+      "style": "displayMedium"
+    },
+    {
+      "name": "ReceiptCard",
+      "type": "card"
+    },
+    {
+      "name": "AddToCalendarButton",
+      "type": "button",
+      "style": "primary"
+    },
+    {
+      "name": "ViewRSVPButton",
+      "type": "button",
+      "style": "ghost"
+    }
+  ],
+  "states": [
+    "populated"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)",
+    "success": "var(--success)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "returned from Stripe WebView on success",
+    "spring-scale check",
+    "ViewRSVPButton → My RSVPs"
+  ]
+}

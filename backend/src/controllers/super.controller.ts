@@ -4,7 +4,9 @@ import { Community } from '../models/Community';
 import { User } from '../models/User';
 import { Membership } from '../models/Membership';
 import { Subscription } from '../models/Subscription';
+import { AuditLog } from '../models/AuditLog';
 import { AppError } from '../utils/AppError';
+import { toClientRole } from '../utils/role';
 import { ok, created, noContent } from '../utils/response';
 import asyncHandler from '../utils/asyncHandler';
 import {
@@ -73,7 +75,27 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
 
 export const detail = asyncHandler(async (req: Request, res: Response) => {
   const community = await loadById(req);
-  ok(res, await getCommunity(community));
+  const json = await getCommunity(community);
+  // Cross-tenant owner lookup: the community admin who originally accepted the
+  // bootstrap invite. Shown on the Super CommunityDetailScreen (#75).
+  let owner: { id: string; name: string; email: string } | null = null;
+  if (community.initialAdminId) {
+    const u = await User.findById(community.initialAdminId, { name: 1, email: 1 }).lean();
+    if (u) owner = { id: String(u._id), name: u.name, email: u.email };
+  }
+  if (!owner) {
+    // Fallback: any active membership with admin role.
+    const m = await Membership.findOne({
+      communityId: community._id,
+      role: 'admin',
+      status: 'active',
+    }).lean();
+    if (m) {
+      const u = await User.findById(m.userId, { name: 1, email: 1 }).lean();
+      if (u) owner = { id: String(u._id), name: u.name, email: u.email };
+    }
+  }
+  ok(res, { ...json, owner });
 });
 
 export const update = asyncHandler(async (req: Request, res: Response) => {
@@ -187,18 +209,43 @@ export const listUsers = asyncHandler(async (req: Request, res: Response) => {
     .sort({ createdAt: -1 })
     .limit(100)
     .lean();
+  // Compute membership counts + highest role per user in one aggregate, so the
+  // Super list (#77) can render `email · N communities` and a role badge.
+  const userIds = rows.map((u) => u._id);
+  const membershipAgg = await Membership.aggregate<{
+    _id: mongoose.Types.ObjectId;
+    count: number;
+    roles: string[];
+  }>([
+    { $match: { userId: { $in: userIds }, status: 'active' } },
+    { $group: { _id: '$userId', count: { $sum: 1 }, roles: { $addToSet: '$role' } } },
+  ]);
+  const byUser = new Map<string, { count: number; roles: string[] }>(
+    membershipAgg.map((m) => [String(m._id), { count: m.count, roles: m.roles }]),
+  );
+  // Highest role wins for the badge. Ordering matches the role hierarchy (DB enum).
+  const ROLE_RANK = ['admin', 'subadmin', 'event_manager', 'member'];
+  function topRole(roles: string[]): string {
+    for (const r of ROLE_RANK) if (roles.includes(r)) return r;
+    return 'member';
+  }
   ok(
     res,
-    rows.map((u) => ({
-      id: String(u._id),
-      email: u.email,
-      name: u.name,
-      photoUrl: u.photoUrl ?? null,
-      status: u.status,
-      globalRole: u.globalRole,
-      lastLoginAt: u.lastLoginAt ?? null,
-      createdAt: u.createdAt,
-    })),
+    rows.map((u) => {
+      const m = byUser.get(String(u._id)) ?? { count: 0, roles: [] };
+      return {
+        id: String(u._id),
+        email: u.email,
+        name: u.name,
+        photoUrl: u.photoUrl ?? null,
+        status: u.status,
+        globalRole: u.globalRole,
+        lastLoginAt: u.lastLoginAt ?? null,
+        createdAt: u.createdAt,
+        membershipCount: m.count,
+        topRole: u.globalRole === 'superadmin' ? 'superadmin' : topRole(m.roles),
+      };
+    }),
   );
 });
 
@@ -234,7 +281,7 @@ export const userDetail = asyncHandler(async (req: Request, res: Response) => {
       return {
         membershipId: String(m._id),
         communityId: String(m.communityId),
-        role: m.role,
+        role: toClientRole(m.role),
         status: m.status,
         joinedAt: m.joinedAt,
         community: c
@@ -249,6 +296,26 @@ export const userDetail = asyncHandler(async (req: Request, res: Response) => {
       };
     }),
   });
+});
+
+// POST /api/v1/super/users/:uid/reset-password — kick off a password reset for
+// the target user (mirrors the public forgot-password flow but bypasses the
+// "do not leak which emails exist" guard since the operator is asking).
+export const forcePasswordReset = asyncHandler(async (req: Request, res: Response) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.uid)) {
+    throw AppError.notFound('User not found');
+  }
+  const u = await User.findById(req.params.uid);
+  if (!u) throw AppError.notFound('User not found');
+  // Lazy import to avoid pulling crypto into the controller for the common path.
+  const { startPasswordReset } = await import('../services/auth.service');
+  await startPasswordReset({ email: u.email });
+  await auditFromReq(req, {
+    action: 'user.force_password_reset',
+    targetType: 'user',
+    targetId: u._id,
+  });
+  ok(res, { id: String(u._id), emailed: true });
 });
 
 // POST /api/v1/super/users/:uid/disable
@@ -266,6 +333,58 @@ export const disableUser = asyncHandler(async (req: Request, res: Response) => {
     targetId: u._id,
   });
   ok(res, { id: String(u._id), status: u.status });
+});
+
+// POST /api/v1/super/users/:uid/promote — flip a user to globalRole='superadmin' (PRD 03 §3.4).
+export const promoteUser = asyncHandler(async (req: Request, res: Response) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.uid)) {
+    throw AppError.notFound('User not found');
+  }
+  const u = await User.findById(req.params.uid);
+  if (!u) throw AppError.notFound('User not found');
+  if (u.globalRole === 'superadmin') {
+    ok(res, { id: String(u._id), globalRole: u.globalRole, alreadySuper: true });
+    return;
+  }
+  u.globalRole = 'superadmin';
+  await u.save();
+  await auditFromReq(req, {
+    action: 'user.promote.super',
+    targetType: 'user',
+    targetId: u._id,
+  });
+  ok(res, { id: String(u._id), globalRole: u.globalRole });
+});
+
+// GET /api/v1/super/audit?limit=&before= — recent audit log entries with light actor join.
+export const audit = asyncHandler(async (req: Request, res: Response) => {
+  const limit = Math.min(Number(req.query.limit ?? 50), 200);
+  const before = req.query.before ? new Date(String(req.query.before)) : null;
+  const filter: Record<string, unknown> = {};
+  if (before && !Number.isNaN(before.getTime())) {
+    filter.createdAt = { $lt: before };
+  }
+  const rows = await AuditLog.find(filter).sort({ createdAt: -1 }).limit(limit).lean();
+  const actorIds = rows.map((r) => r.actorId).filter(Boolean);
+  const actors = await User.find({ _id: { $in: actorIds } }, { name: 1, email: 1 }).lean();
+  const byId = new Map(actors.map((u) => [String(u._id), u]));
+  const items = rows.map((r) => ({
+    id: String(r._id),
+    action: r.action,
+    actor: r.actorId
+      ? {
+          id: String(r.actorId),
+          name: byId.get(String(r.actorId))?.name ?? '',
+          email: byId.get(String(r.actorId))?.email ?? '',
+        }
+      : null,
+    actorRole: r.actorRole ?? null,
+    communityId: r.communityId ? String(r.communityId) : null,
+    targetType: r.targetType ?? null,
+    targetId: r.targetId ? String(r.targetId) : null,
+    createdAt: r.createdAt,
+  }));
+  ok(res, items);
 });
 
 // POST /api/v1/super/users/:uid/enable

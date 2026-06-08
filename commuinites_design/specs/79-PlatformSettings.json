@@ -1,0 +1,63 @@
+{
+  "screen": "PlatformSettings",
+  "route": "/super/settings",
+  "roles": [
+    "super_admin"
+  ],
+  "components": [
+    {
+      "name": "BillingCard",
+      "type": "card",
+      "stripeKeyMasked": true
+    },
+    {
+      "name": "MaintenanceModeToggle",
+      "type": "toggle"
+    },
+    {
+      "name": "AllowSignupsToggle",
+      "type": "toggle"
+    },
+    {
+      "name": "EmailTemplatesRow",
+      "type": "listRow"
+    },
+    {
+      "name": "TermsRow",
+      "type": "listRow"
+    },
+    {
+      "name": "BottomNav",
+      "type": "nav",
+      "active": "Settings"
+    }
+  ],
+  "states": [
+    "default"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "BillingKeys",
+      "hiddenFor": [
+        "admin",
+        "subadmin",
+        "event_manager",
+        "member"
+      ]
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "theme": "dark",
+  "interactions": [
+    "Stripe keys reveal-gated",
+    "MaintenanceModeToggle → banner + block writes",
+    "only place billing credentials live"
+  ]
+}

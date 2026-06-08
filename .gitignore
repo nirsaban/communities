@@ -18,6 +18,9 @@ pnpm-debug.log*
 .env.bak
 .env.backup
 .env.*.bak
+.env.prod
+infra/nginx/letsencrypt/
+infra/nginx/acme-challenge/
 
 # Claude Code local state (per-machine settings, agent logs, etc.)
 .claude/settings.local.json
@@ -93,3 +96,4 @@ Desktop.ini
 *.key
 service-account*.json
 secrets/
+.claude/worktrees/

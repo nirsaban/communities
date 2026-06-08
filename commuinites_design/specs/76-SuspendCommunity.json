@@ -1,0 +1,68 @@
+{
+  "screen": "SuspendCommunity",
+  "route": "/super/communities/:id/suspend",
+  "roles": [
+    "super_admin"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "WarningBlob",
+      "type": "icon",
+      "color": "warning"
+    },
+    {
+      "name": "Title",
+      "type": "text",
+      "style": "displayMedium"
+    },
+    {
+      "name": "TypedConfirmField",
+      "type": "textField",
+      "confirmWord": "communityName"
+    },
+    {
+      "name": "ReasonSelect",
+      "type": "select"
+    },
+    {
+      "name": "SuspendButton",
+      "type": "button",
+      "style": "danger",
+      "color": "warning"
+    },
+    {
+      "name": "CancelButton",
+      "type": "button",
+      "style": "ghost"
+    }
+  ],
+  "states": [
+    "default",
+    "focused"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "SuspendButton",
+      "disabledUntil": "typed name matches"
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)",
+    "warning": "var(--warning)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "theme": "dark",
+  "interactions": [
+    "typed-name gate + logged reason",
+    "reversible (warning, not destructive red)",
+    "members see suspended-community screen"
+  ]
+}

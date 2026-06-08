@@ -5,6 +5,11 @@ import { Community } from '../models/Community';
 import { AppError } from '../utils/AppError';
 import type { GlobalRole } from '../models/User';
 
+// Read methods that don't mutate state. Super-admin can observe any community
+// through these (for support / investigation), but per PRD 03 §5 must use
+// /super/* paths for mutations — the bypass narrows accordingly.
+const READ_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+
 export function requireAuth(req: Request, _res: Response, next: NextFunction): void {
   if (!req.user) {
     next(AppError.unauthenticated());
@@ -43,20 +48,38 @@ export function loadMembership(paramName = 'cid'): RequestHandler {
       if (!community || community.deletedAt) {
         throw AppError.notFound('Community not found');
       }
-      // Suspended communities: only super admins can interact.
-      if (community.status !== 'active' && req.user.globalRole !== 'superadmin') {
+      // Suspended communities: only super admins can mutate. Members may still
+      // GET so the SuspendedCommunityScreen can render with `status: 'suspended'`.
+      // Soft-deleted (deletedAt) was already rejected above as 404.
+      if (
+        community.status !== 'active' &&
+        req.user.globalRole !== 'superadmin' &&
+        !READ_METHODS.has(req.method)
+      ) {
         throw AppError.unauthorized('Community is not active');
       }
 
       if (req.user.globalRole === 'superadmin') {
-        // Synthesize an admin-like membership so downstream checks succeed.
-        const synthetic = new Membership({
+        // Prefer the real membership if one exists (so an admin-in-Acme super
+        // still acts as that admin), otherwise fall back to a synthetic admin
+        // for read-only support flows. Mutating endpoints check
+        // `req.membership.isNew` to distinguish (see requireCommunityRole).
+        const real = await Membership.findOne({
           userId: req.user._id,
           communityId: community._id,
-          role: 'admin',
           status: 'active',
         });
-        req.membership = synthetic;
+        if (real) {
+          req.membership = real;
+        } else {
+          const synthetic = new Membership({
+            userId: req.user._id,
+            communityId: community._id,
+            role: 'admin',
+            status: 'active',
+          });
+          req.membership = synthetic;
+        }
         next();
         return;
       }
@@ -84,7 +107,22 @@ export function requireCommunityRole(...roles: CommunityRole[]): RequestHandler 
       return;
     }
     if (req.user.globalRole === 'superadmin') {
-      next();
+      // Super-admin bypass is intentionally read-only. Mutations must go
+      // through /super/* (PRD 03 §5). Without this guard, the synthetic
+      // admin membership produced by loadMembership would silently satisfy
+      // role checks for writes against any community.
+      if (READ_METHODS.has(req.method)) {
+        next();
+        return;
+      }
+      // Allow the bypass only when the super-admin also holds the required
+      // community role through a real membership (e.g. demo seed makes Bob
+      // an admin in Acme Devs). Otherwise force them to use /super/*.
+      if (req.membership && !req.membership.isNew && roles.includes(req.membership.role)) {
+        next();
+        return;
+      }
+      next(AppError.unauthorized('Super admins must use /super/* for mutations'));
       return;
     }
     if (!req.membership) {

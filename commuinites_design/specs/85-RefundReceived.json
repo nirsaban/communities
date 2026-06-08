@@ -1,0 +1,45 @@
+{
+  "screen": "RefundReceived",
+  "route": "/pay/refund",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "RefundBlob",
+      "type": "icon",
+      "color": "accent"
+    },
+    {
+      "name": "Title",
+      "type": "text",
+      "style": "displayMedium"
+    },
+    {
+      "name": "RefundCard",
+      "type": "card"
+    },
+    {
+      "name": "DoneButton",
+      "type": "button",
+      "style": "secondary"
+    }
+  ],
+  "states": [
+    "populated"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "triggered when admin issues refund",
+    "confirms amount/card/arrival window + reference",
+    "also lands in inbox"
+  ]
+}

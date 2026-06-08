@@ -1,0 +1,45 @@
+{
+  "screen": "CommunitySwitcher",
+  "route": "/communities",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "Scrim",
+      "type": "scrim"
+    },
+    {
+      "name": "BottomSheet",
+      "type": "sheet",
+      "handle": true
+    },
+    {
+      "name": "CommunityCard",
+      "type": "card",
+      "repeat": true,
+      "trailing": "roleBadge"
+    },
+    {
+      "name": "DiscoverMoreButton",
+      "type": "button",
+      "style": "secondary"
+    }
+  ],
+  "states": [
+    "populated"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--surface)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 8
+  },
+  "interactions": [
+    "CommunityCard → switch context (reloads feed/nav/brand)",
+    "DiscoverMoreButton → discovery"
+  ]
+}

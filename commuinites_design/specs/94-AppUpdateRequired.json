@@ -1,0 +1,62 @@
+{
+  "screen": "AppUpdateRequired",
+  "route": "/force-update",
+  "roles": [
+    "member",
+    "admin",
+    "subadmin",
+    "event_manager",
+    "super_admin"
+  ],
+  "components": [
+    {
+      "name": "UpdateBlob",
+      "type": "icon"
+    },
+    {
+      "name": "Headline",
+      "type": "text",
+      "style": "titleLarge"
+    },
+    {
+      "name": "Body",
+      "type": "text",
+      "style": "bodyLarge",
+      "color": "muted"
+    },
+    {
+      "name": "UpdateButton",
+      "type": "button",
+      "style": "primary"
+    },
+    {
+      "name": "VersionLabel",
+      "type": "text",
+      "style": "labelSmall"
+    }
+  ],
+  "states": [
+    "blocking"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "DismissOrBack",
+      "hiddenFor": [
+        "all roles → blocking"
+      ]
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 24
+  },
+  "interactions": [
+    "blocking — no dismiss/back",
+    "triggered below min supported version",
+    "UpdateButton → App Store / Play Store"
+  ]
+}

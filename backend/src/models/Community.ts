@@ -19,6 +19,14 @@ export interface IOnboardingSteps {
   firstInvites: boolean;
 }
 
+export interface ISubscriptionPlans {
+  enabled: boolean;
+  monthlyPriceCents?: number;
+  annualPriceCents?: number;
+  currency?: string;
+  perks?: string[];
+}
+
 export interface ICommunitySettings {
   branding?: {
     primaryColor?: string;
@@ -42,6 +50,7 @@ export interface ICommunity extends Document {
   createdBy?: Types.ObjectId;
   initialAdminId?: Types.ObjectId;
   settings: ICommunitySettings;
+  subscriptionPlans?: ISubscriptionPlans;
   onboarding: {
     wizardCompletedAt?: Date;
     steps: IOnboardingSteps;
@@ -100,6 +109,13 @@ const communitySchema = new Schema<ICommunity>(
       rules: String,
       defaultMemberPermissions: { type: Schema.Types.Mixed, default: {} },
     },
+    subscriptionPlans: {
+      enabled: { type: Boolean, default: false },
+      monthlyPriceCents: Number,
+      annualPriceCents: Number,
+      currency: { type: String, default: 'ILS' },
+      perks: { type: [String], default: undefined },
+    },
     onboarding: {
       wizardCompletedAt: Date,
       steps: { type: onboardingSteps, default: () => ({}) },
@@ -126,6 +142,7 @@ communitySchema.methods.toClientJSON = function toClientJSON(this: ICommunity) {
     privacy: this.privacy,
     status: this.status,
     settings: this.settings,
+    subscriptionPlans: this.subscriptionPlans,
     onboarding: this.onboarding,
     metrics: this.metrics,
     createdAt: this.createdAt,

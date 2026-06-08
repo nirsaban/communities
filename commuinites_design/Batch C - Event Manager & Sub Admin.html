@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commons — Batch C · Event Manager & Sub Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&family=Material+Symbols+Rounded:FILL,GRAD,opsz,wght@0..1,-50..200,20..48,100..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="stylesheet" href="assets/gallery.css">
+<style>
+  /* admin helpers */
+  .kpi{ background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md); padding:14px; }
+  .kpi .k-lbl{ font-size:11.5px; font-weight:600; color:var(--muted); letter-spacing:.02em; display:flex; align-items:center; gap:6px; }
+  .kpi .k-num{ font-family:var(--fs-display); font-size:28px; line-height:1.1; margin-top:6px; }
+  .kpi .k-delta{ font-size:11.5px; font-weight:600; margin-top:2px; }
+  .kpi .up{ color:var(--success); } .kpi .down{ color:var(--error); }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:11px; }
+  .tile{ background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md); padding:15px; box-shadow:var(--shadow-low); position:relative; }
+  .tile .t-ic{ width:38px; height:38px; border-radius:11px; display:grid; place-items:center; margin-bottom:10px; }
+  .tile .t-h{ font-weight:700; font-size:14.5px; letter-spacing:-.01em; }
+  .tile .t-s{ font-size:12px; color:var(--muted); margin-top:1px; }
+  .bars{ display:flex; align-items:flex-end; gap:7px; height:120px; }
+  .bars .bar{ flex:1; align-self:stretch; background:var(--accent-wash); border-radius:6px 6px 0 0; position:relative; }
+  .bars .bar > i{ position:absolute; inset:auto 0 0; background:var(--accent); border-radius:6px 6px 0 0; }
+  .bars .bar.cur > i{ background:var(--accent); }
+  .barlbls{ display:flex; gap:7px; margin-top:7px; }
+  .barlbls span{ flex:1; text-align:center; font-size:10px; color:var(--muted); }
+  .fab{ position:absolute; right:18px; bottom:96px; height:52px; padding:0 20px; border-radius:var(--r-full);
+    background:var(--accent); color:var(--on-accent); display:flex; align-items:center; gap:8px; font-weight:600;
+    font-size:14.5px; box-shadow:var(--shadow-high); border:none; z-index:15; }
+  .bulkbar{ position:absolute; left:14px; right:14px; bottom:90px; background:var(--on-bg); color:var(--bg);
+    border-radius:var(--r-md); padding:11px 14px; display:flex; align-items:center; gap:12px; box-shadow:var(--shadow-high); z-index:16; }
+  .bulkbar .b-act{ display:flex; align-items:center; gap:5px; font-size:13px; font-weight:600; }
+  .lim-badge{ display:inline-flex; align-items:center; gap:5px; height:24px; padding:0 10px; border-radius:99px;
+    font-size:11px; font-weight:600; background:var(--warning-wash); color:var(--warning); }
+  .lim-badge .msr{ font-size:13px; }
+  .list-row{ display:flex; align-items:center; gap:13px; padding:13px 0; border-bottom:1px solid var(--border); }
+  .list-row:last-child{ border-bottom:none; }
+  .toggle{ width:46px; height:28px; border-radius:99px; position:relative; flex:0 0 46px; }
+  .toggle.on{ background:var(--accent); } .toggle.off{ background:var(--border-2); }
+  .toggle > span{ position:absolute; top:3px; width:22px; height:22px; border-radius:50%; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.2); }
+  .toggle.on > span{ right:3px; } .toggle.off > span{ left:3px; }
+  .ck{ width:24px; height:24px; border-radius:7px; border:2px solid var(--border-2); display:grid; place-items:center; flex:0 0 24px; }
+  .ck.on{ background:var(--accent); border-color:var(--accent); } .ck.on .msr{ color:#fff; font-size:17px; }
+  .seg{ display:flex; background:var(--surface-2); border-radius:var(--r-md); padding:3px; gap:2px; }
+  .seg .s{ flex:1; text-align:center; padding:8px 4px; border-radius:9px; font-size:12.5px; font-weight:600; color:var(--muted); white-space:nowrap; }
+  .seg .s.on{ background:var(--surface); color:var(--on-bg); box-shadow:var(--shadow-low); }
+  .lockfield .control{ background:var(--surface-2); border-style:dashed; color:var(--muted); }
+</style>
+</head>
+<body class="gallery">
+
+<header class="gx-head">
+  <div class="gx-mark">
+    <span class="gx-logo"><i></i><i></i></span>
+    <span class="gx-word">Commons</span>
+  </div>
+  <div class="gx-eyebrow">Batch C — Staff Roles</div>
+  <h1>The people who run the room.</h1>
+  <p class="lede">Two scoped staff roles. The <b>Event Manager</b> owns the day-of operations for events they're assigned to — attendees, materials, broadcasts, Q&amp;A, recap. The <b>Sub Admin</b> runs the community day-to-day with a deliberate boundary: full member &amp; content tooling, but <b>no financial access</b> — every money surface is replaced by a "Limited admin" guard.</p>
+  <div class="gx-meta">
+    <span class="pill">Roles <b>Event Manager · Sub Admin</b></span>
+    <span class="pill"><span class="sw" style="background:#C77A00"></span>Guarded <b>No financial access</b></span>
+    <span class="pill">Screens <b>40 – 58</b></span>
+  </div>
+</header>
+
+<!-- ============================================================
+     EVENT MANAGER
+     ============================================================ -->
+<section class="sect">
+  <div class="sect-head">
+    <span class="sect-num">40 – 46</span>
+    <h2>Event Manager</h2>
+    <span class="sub">Scoped to assigned events only — never sees the wider community admin surface. Everything orbits a single event's command center.</span>
+  </div>
+  <div class="deck">
+
+    <!-- 40 · My Events -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="feed-head topbar" style="padding:8px 16px 12px"><div class="grow"><div class="t-display-md" style="font-size:24px">My events</div><div class="t-body-md" style="margin:0">Assigned to you · 3 active</div></div><div class="avatar sm">DK<span class="role-dot" style="background:#9A6B12"><span class="msr">event</span></span></div></div>
+          <div class="screen-pad"><div class="seg" style="margin-bottom:14px"><span class="s on">Upcoming</span><span class="s">Past</span></div></div>
+          <div class="scroll screen-pad">
+            <div class="col" style="gap:11px">
+              <div class="card" style="padding:13px">
+                <div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="when" style="color:var(--accent-ink);font-weight:600;font-size:11.5px">TONIGHT · 19:00</span><span class="status-chip sc-pub">Published</span></div>
+                <div class="t-title-md" style="margin-bottom:10px">Hebrew Conversation Café</div>
+                <div class="row" style="gap:16px"><span class="t-body-md" style="margin:0"><b style="color:var(--on-bg)">23</b> going</span><span class="t-body-md" style="margin:0"><b style="color:var(--on-bg)">4</b> waitlist</span><span class="grow"></span><span class="t-label-sm" style="margin:0;color:var(--accent-ink)">Manage →</span></div>
+              </div>
+              <div class="card" style="padding:13px">
+                <div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="when" style="color:var(--accent-ink);font-weight:600;font-size:11.5px">SAT · MAR 8 · 10:00</span><span class="status-chip sc-pub">Published</span></div>
+                <div class="t-title-md" style="margin-bottom:10px">Torah Study Circle</div>
+                <div class="row" style="gap:16px"><span class="t-body-md" style="margin:0"><b style="color:var(--on-bg)">42</b> going</span><span class="grow"></span><span class="t-label-sm" style="margin:0;color:var(--accent-ink)">Manage →</span></div>
+              </div>
+              <div class="card" style="padding:13px">
+                <div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="when muted" style="font-weight:600;font-size:11.5px">FRI · MAR 14 · 18:30</span><span class="status-chip sc-draft">Draft</span></div>
+                <div class="t-title-md" style="margin-bottom:10px">Opening Shabbat Dinner</div>
+                <div class="row" style="gap:16px"><span class="t-body-md" style="margin:0">Not published yet</span><span class="grow"></span><span class="t-label-sm" style="margin:0;color:var(--accent-ink)">Manage →</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item"><span class="msr">home</span>Home</div>
+            <div class="nav-item active"><span class="msr fill">event</span>My Events</div>
+            <div class="nav-item"><span class="msr">lightbulb</span>Initiatives</div>
+            <div class="nav-item"><span class="nav-ico"><span class="msr">forum</span><span class="badge-dot">2</span></span>Inbox</div>
+            <div class="nav-item"><span class="msr">person</span>Profile</div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">40 · My Events</span><span class="a-route">/manage/events</span></div>
+        <div class="a-roles"><span>Event Manager</span></div>
+        <p class="a-notes">Only events the manager is assigned to. Each card surfaces RSVP/waitlist counts + status. Avatar carries the <b>Event Mgr</b> role dot. Tap → command center.</p>
+      </div>
+    </div>
+
+    <!-- 41 · Command center -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title grow">Command center</span><button class="ic-btn"><span class="msr">more_vert</span></button></div>
+          <div class="scroll screen-pad">
+            <div class="card" style="padding:0;overflow:hidden;margin-bottom:16px"><div class="imgph" style="height:96px"><span class="lbl">cover</span></div><div style="padding:13px"><span class="status-chip sc-pub" style="margin-bottom:6px">Live tonight</span><div class="t-title-lg" style="font-size:18px;margin:4px 0 2px">Hebrew Conversation Café</div><div class="t-body-md" style="margin:0">Tonight · 19:00 · Café Nava</div></div></div>
+            <div class="row" style="gap:11px;margin-bottom:16px"><div class="kpi grow"><div class="k-lbl"><span class="msr" style="font-size:15px">how_to_reg</span>Going</div><div class="k-num">23</div></div><div class="kpi grow"><div class="k-lbl"><span class="msr" style="font-size:15px">co_present</span>Checked in</div><div class="k-num">0<span style="font-size:15px;color:var(--muted)"> / 23</span></div></div></div>
+            <div class="grid2">
+              <div class="tile"><div class="t-ic" style="background:var(--accent-wash);color:var(--accent-ink)"><span class="msr">groups</span></div><div class="t-h">Attendees</div><div class="t-s">23 going · 4 waitlist</div></div>
+              <div class="tile"><div class="t-ic" style="background:#E1F1FA;color:#1F6F95"><span class="msr">folder</span></div><div class="t-h">Materials</div><div class="t-s">3 files</div></div>
+              <div class="tile"><div class="t-ic" style="background:#EFE7FF;color:#5B3D9E"><span class="msr">forum</span></div><div class="t-h">Q&amp;A</div><div class="t-s">2 unanswered</div><span class="badge-dot" style="top:12px;right:12px">2</span></div>
+              <div class="tile"><div class="t-ic" style="background:var(--success-wash);color:var(--success)"><span class="msr">summarize</span></div><div class="t-h">Publish recap</div><div class="t-s">After the event</div></div>
+            </div>
+            <button class="btn btn-primary" style="margin-top:16px"><span class="msr">campaign</span>Broadcast to attendees</button>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">41 · Event command center</span><span class="a-route">/manage/events/:id</span></div>
+        <div class="a-roles"><span>Event Manager</span></div>
+        <p class="a-notes">The hub. Live check-in counter, plus tiles routing to attendees (42), materials (43), Q&amp;A (46) and recap (45). Broadcast (44) is the primary action.</p>
+      </div>
+    </div>
+
+    <!-- 42 · Attendee list -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title grow">Attendees · 23</span><button class="ic-btn"><span class="msr">qr_code_scanner</span></button></div>
+          <div class="screen-pad"><div class="control" style="height:44px;display:flex;align-items:center;gap:10px;padding:0 14px;background:var(--surface-2);border:none;border-radius:var(--r-full);margin-bottom:10px"><span class="msr muted">search</span><span class="ph grow">Search attendees…</span></div><div class="seg" style="margin-bottom:8px"><span class="s on">All</span><span class="s">Going</span><span class="s">Checked in</span><span class="s">Waitlist</span></div></div>
+          <div class="scroll screen-pad">
+            <div class="list-row"><div class="avatar sm">NL</div><div class="grow"><div class="t-label-lg">Noa Levi</div><div class="t-body-md" style="margin:0;font-size:11px">RSVP'd 3 days ago</div></div><span class="ck on"><span class="msr">check</span></span></div>
+            <div class="list-row"><div class="avatar sm">DK</div><div class="grow"><div class="t-label-lg">David Katz</div><div class="t-body-md" style="margin:0;font-size:11px">RSVP'd 5 days ago</div></div><span class="ck on"><span class="msr">check</span></span></div>
+            <div class="list-row"><div class="avatar sm">YL</div><div class="grow"><div class="t-label-lg">Yael Levi</div><div class="t-body-md" style="margin:0;font-size:11px">RSVP'd yesterday</div></div><span class="ck"></span></div>
+            <div class="list-row"><div class="avatar sm">AM</div><div class="grow"><div class="t-label-lg">Avi Mizrahi</div><div class="t-body-md" style="margin:0;font-size:11px">RSVP'd today</div></div><span class="ck"></span></div>
+            <div class="list-row"><div class="avatar sm">SB</div><div class="grow"><div class="t-label-lg">Sarah Ben-David</div><div class="row" style="gap:5px;margin-top:2px"><span class="role-badge rb-em" style="height:18px;font-size:10px"><span class="msr" style="font-size:11px">hourglass_top</span>Waitlist #1</span></div></div><span class="ck"></span></div>
+          </div>
+          <button class="fab"><span class="msr">how_to_reg</span>Check in all</button>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">42 · Attendee list</span><span class="a-route">/manage/events/:id/attendees</span></div>
+        <div class="a-roles"><span>Event Manager</span></div>
+        <p class="a-notes">Tap the checkbox to mark attendance; <b>QR scan</b> (top-right) does it fast at the door. Filter tabs + search. Waitlist entries shown with position.</p>
+      </div>
+    </div>
+
+    <!-- 43 · Materials upload -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title">Add material</span></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <div class="imgph" style="height:150px;border-radius:14px;margin-bottom:8px;flex-direction:column;gap:8px"><span class="msr" style="font-size:34px;color:var(--muted)">upload_file</span><span class="lbl">tap to choose a file · pdf, mp4, ppt</span></div>
+            <div class="card" style="padding:12px;margin-bottom:16px"><div class="row" style="gap:11px;margin-bottom:8px"><span class="msr" style="color:var(--error)">picture_as_pdf</span><div class="grow"><div class="t-label-lg" style="font-size:13px">parsha-notes.pdf</div><div class="t-body-md" style="margin:0;font-size:11px">1.2 MB · uploading…</div></div><span class="t-label-sm" style="margin:0;color:var(--accent-ink)">68%</span></div><div class="progress-track" style="height:5px;background:var(--surface-2)"><span style="width:68%;display:block;height:100%;background:var(--accent);border-radius:9px"></span></div></div>
+            <div class="field"><label>Title</label><div class="control"><span class="val">Parsha notes — Vayikra</span></div></div>
+            <div class="field"><label>Description <span class="muted" style="font-weight:400">· optional</span></label><div class="control" style="height:auto;align-items:flex-start;padding:14px 16px"><span class="ph" style="line-height:1.5">Add context for attendees…</span></div></div>
+            <div class="list-row"><span class="msr muted">lock</span><span class="grow t-body-lg" style="font-size:14px">Attendees only</span><span class="toggle on"><span></span></span></div>
+            <div style="margin-top:auto;padding-bottom:24px"><button class="btn btn-primary">Add to event</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">43 · Materials upload</span><span class="a-route">/manage/events/:id/materials/new</span></div>
+        <div class="a-roles"><span>Event Manager</span></div>
+        <p class="a-notes">File picker with live upload progress, title/description, and an <b>attendees-only</b> visibility gate that feeds the member materials page (Batch B · 26).</p>
+      </div>
+    </div>
+
+    <!-- 44 · Broadcast composer -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">close</span></button><span class="tb-title">Broadcast</span></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <div class="list-row" style="border-color:var(--border)"><span class="msr" style="color:var(--accent)">group</span><span class="grow t-body-lg" style="font-size:14px">To: All attendees</span><span class="t-label-sm" style="margin:0">23 people</span></div>
+            <div class="field" style="margin-top:14px"><label>Message</label><div class="control" style="height:auto;align-items:flex-start;padding:14px 16px;min-height:120px"><span class="val" style="line-height:1.5">Reminder — we're meeting at Café Nava tonight at 19:00. Bring a friend! ☕</span></div></div>
+            <div class="list-row"><span class="msr muted">schedule</span><span class="grow t-body-lg" style="font-size:14px">Schedule for later</span><span class="toggle off"><span></span></span></div>
+            <div class="t-label-sm" style="margin:14px 0 8px">Deliver via</div>
+            <div class="wrap"><span class="chip active"><span class="msr">notifications</span>Push</span><span class="chip active"><span class="msr">inbox</span>In-app</span><span class="chip"><span class="msr">mail</span>Email</span></div>
+            <div style="margin-top:auto;padding-bottom:24px"><button class="btn btn-primary"><span class="msr">send</span>Send now · 23 recipients</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">44 · Broadcast composer</span><span class="a-route">/manage/events/:id/broadcast</span></div>
+        <div class="a-roles"><span>Event Manager</span></div>
+        <p class="a-notes">Message all attendees (or a filtered segment). Toggle <b>Schedule</b> to reveal a date/time picker; channel chips control delivery. Lands in members' inbox (34).</p>
+      </div>
+    </div>
+
+    <!-- 45 · Publish recap -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title">Publish recap</span></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <div class="row" style="gap:11px;margin-bottom:16px"><div class="kpi grow"><div class="k-lbl">Attended</div><div class="k-num">42</div></div><div class="kpi grow"><div class="k-lbl">Rating</div><div class="k-num">4.9</div></div></div>
+            <div class="field"><label>Recap note</label><div class="control" style="height:auto;align-items:flex-start;padding:14px 16px;min-height:100px"><span class="val" style="line-height:1.5">Thank you to everyone who joined our deep dive into Vayikra. Recording &amp; notes are now up.</span></div></div>
+            <label class="t-label-sm" style="display:block;margin-bottom:8px">Photos</label>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:16px"><div class="imgph" style="aspect-ratio:1;border-radius:9px"></div><div class="imgph" style="aspect-ratio:1;border-radius:9px"></div><div class="imgph" style="aspect-ratio:1;border-radius:9px"></div><div class="imgph" style="aspect-ratio:1;border-radius:9px;background-color:var(--surface-2)"><span class="msr" style="color:var(--muted)">add</span></div></div>
+            <div class="list-row"><span class="msr muted">notifications</span><span class="grow t-body-lg" style="font-size:14px">Notify attendees</span><span class="toggle on"><span></span></span></div>
+            <div style="margin-top:auto;padding-bottom:24px"><button class="btn btn-primary">Publish recap</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">45 · Publish recap</span><span class="a-route">/manage/events/:id/recap</span></div>
+        <div class="a-roles"><span>Event Manager</span></div>
+        <p class="a-notes">Attendance auto-fills; manager adds a note + photos. Publishing generates the member recap (Batch B · 28) and optionally notifies attendees.</p>
+      </div>
+    </div>
+
+    <!-- 46 · Q&A management -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title grow">Q&amp;A · 2 open</span><button class="ic-btn"><span class="msr">filter_list</span></button></div>
+          <div class="scroll screen-pad">
+            <div class="card" style="padding:14px;margin-bottom:12px;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-wash)">
+              <div class="row" style="gap:9px;margin-bottom:8px"><div class="avatar sm">YL</div><div class="grow"><div class="t-label-lg">Yael Levi</div></div><span class="status-chip sc-cancel" style="background:var(--error-wash);color:var(--error)">Unanswered</span></div>
+              <div class="t-body-lg" style="margin-bottom:12px">Is the hall wheelchair accessible?</div>
+              <div class="row" style="gap:8px"><button class="btn btn-primary btn-sm"><span class="msr">reply</span>Answer</button><button class="btn btn-secondary btn-sm"><span class="msr">push_pin</span>Pin</button></div>
+            </div>
+            <div class="card" style="padding:14px">
+              <div class="row" style="gap:9px;margin-bottom:8px"><div class="avatar sm">DK</div><div class="grow"><div class="t-label-lg">David Katz</div></div><span class="status-chip sc-pub">Resolved</span></div>
+              <div class="t-body-lg" style="margin-bottom:10px">Will texts be provided?</div>
+              <div class="qa" style="border-color:var(--accent)"><div class="row" style="gap:7px;margin-bottom:4px"><span class="status-chip sc-pub" style="height:19px;font-size:10px"><span class="msr" style="font-size:11px">push_pin</span>Pinned answer</span></div><div class="t-body-md" style="color:var(--on-bg)">Texts are provided — just bring yourself.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">46 · Q&amp;A management</span><span class="a-route">/manage/events/:id/qa</span></div>
+        <div class="a-roles"><span>Event Manager</span></div>
+        <p class="a-notes">Unanswered questions float to the top, highlighted. Manager can <b>answer, pin, and mark resolved</b>; pinned answers surface to members in screen 27.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     SUB ADMIN — community ops (no financial access)
+     ============================================================ -->
+<section class="sect">
+  <div class="sect-head">
+    <span class="sect-num">47 – 52</span>
+    <h2>Sub Admin · community</h2>
+    <span class="sub">Full member &amp; event management — with a hard wall at money. The "Limited admin" badge is always visible, and financial widgets are replaced by guards.</span>
+  </div>
+  <div class="deck">
+
+    <!-- 47 · Sub Admin dashboard -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="feed-head topbar" style="padding:8px 16px 10px"><div class="switch-pill"><span class="lg"><span class="msr">menu_book</span></span><b style="font-size:14px">Beit Tefilah</b></div><span class="grow"></span><button class="ic-btn"><span class="nav-ico"><span class="msr">notifications</span><span class="badge-dot">4</span></span></button></div>
+          <div class="scroll screen-pad">
+            <div class="row" style="gap:10px;margin:4px 0 14px"><div class="t-display-md" style="font-size:24px">Overview</div><span class="lim-badge"><span class="msr">shield</span>Limited admin</span></div>
+            <div class="grid2" style="margin-bottom:11px">
+              <div class="kpi"><div class="k-lbl"><span class="msr" style="font-size:15px">group</span>Members</div><div class="k-num">1,240</div><div class="k-delta up">▲ 38 this week</div></div>
+              <div class="kpi"><div class="k-lbl"><span class="msr" style="font-size:15px">event</span>Upcoming</div><div class="k-num">6</div><div class="k-delta" style="color:var(--muted)">events</div></div>
+              <div class="kpi"><div class="k-lbl"><span class="msr" style="font-size:15px">how_to_reg</span>Pending</div><div class="k-num">4</div><div class="k-delta" style="color:var(--accent-ink)">applications</div></div>
+              <div class="kpi"><div class="k-lbl"><span class="msr" style="font-size:15px">flag</span>Flagged</div><div class="k-num">5</div><div class="k-delta" style="color:var(--accent-ink)">to review</div></div>
+            </div>
+            <div class="card row" style="padding:13px;gap:11px;background:var(--surface-2);border:none;margin-bottom:18px"><span class="msr" style="color:var(--warning)">lock</span><div class="grow t-body-md" style="color:var(--on-bg);font-size:12.5px">Revenue &amp; financial reports are managed by the Community Admin.</div></div>
+            <div class="section-header"><span class="sh-title" style="font-size:16px">Recent activity</span></div>
+            <div class="list-row"><span class="msr muted">person_add</span><div class="grow t-body-lg" style="font-size:14px"><b>Avi Mizrahi</b> requested to join</div><span class="t-body-md" style="margin:0;font-size:11px">2h</span></div>
+            <div class="list-row"><span class="msr muted">flag</span><div class="grow t-body-lg" style="font-size:14px">A comment was flagged</div><span class="t-body-md" style="margin:0;font-size:11px">4h</span></div>
+            <div class="list-row" style="border:none"><span class="msr muted">lightbulb</span><div class="grow t-body-lg" style="font-size:14px">New initiative submitted</div><span class="t-body-md" style="margin:0;font-size:11px">1d</span></div>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item active"><span class="msr fill">grid_view</span>Home</div>
+            <div class="nav-item"><span class="msr">event</span>Events</div>
+            <div class="nav-item"><span class="msr">group</span>Members</div>
+            <div class="nav-item"><span class="msr">monitoring</span>Analytics</div>
+            <div class="nav-item"><span class="msr">more_horiz</span>More</div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">47 · Sub Admin dashboard</span><span class="a-route">/admin/overview</span></div>
+        <div class="a-roles"><span>Sub Admin</span></div>
+        <p class="a-notes">No revenue KPI anywhere — its slot holds a <b>guard banner</b>. Persistent <span class="tag-light">Limited admin</span> badge. Nav swaps Finances → Analytics vs the full admin.</p>
+      </div>
+    </div>
+
+    <!-- 48 · Member list -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><span class="tb-title grow">Members · 1,240</span><button class="ic-btn"><span class="msr">tune</span></button></div>
+          <div class="screen-pad"><div class="control" style="height:44px;display:flex;align-items:center;gap:10px;padding:0 14px;background:var(--surface-2);border:none;border-radius:var(--r-full);margin-bottom:10px"><span class="msr muted">search</span><span class="ph grow">Search members…</span></div><div class="hscroll" style="margin-bottom:6px"><span class="chip active">All</span><span class="chip">Admins</span><span class="chip">Event Mgrs</span><span class="chip">Members</span><span class="chip">New</span></div></div>
+          <div class="scroll screen-pad">
+            <div class="list-row"><span class="ck on"><span class="msr">check</span></span><div class="avatar sm">RM</div><div class="grow"><div class="t-label-lg">Rabbi Mizrahi</div><div class="t-body-md" style="margin:0;font-size:11px">Joined Jan 2023</div></div><span class="role-badge rb-admin" style="height:20px;font-size:10px">Admin</span></div>
+            <div class="list-row"><span class="ck on"><span class="msr">check</span></span><div class="avatar sm">DK</div><div class="grow"><div class="t-label-lg">David Katz</div><div class="t-body-md" style="margin:0;font-size:11px">Joined Mar 2024</div></div><span class="role-badge rb-em" style="height:20px;font-size:10px">Event Mgr</span></div>
+            <div class="list-row"><span class="ck"></span><div class="avatar sm">NL</div><div class="grow"><div class="t-label-lg">Noa Levi</div><div class="t-body-md" style="margin:0;font-size:11px">Joined Feb 2025</div></div><span class="role-badge rb-member" style="height:20px;font-size:10px">Member</span></div>
+            <div class="list-row"><span class="ck"></span><div class="avatar sm">YL</div><div class="grow"><div class="t-label-lg">Yael Levi</div><div class="t-body-md" style="margin:0;font-size:11px">Joined Feb 2025</div></div><span class="role-badge rb-member" style="height:20px;font-size:10px">Member</span></div>
+          </div>
+          <div class="bulkbar"><span class="t-label-lg" style="color:var(--bg)">2 selected</span><span class="grow"></span><span class="b-act"><span class="msr" style="font-size:18px">mail</span>Message</span><span class="b-act"><span class="msr" style="font-size:18px">download</span>Export</span><span class="b-act" style="color:#FF9A82"><span class="msr" style="font-size:18px">person_remove</span></span></div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">48 · Member list</span><span class="a-route">/admin/members</span></div>
+        <div class="a-roles"><span>Sub Admin</span></div>
+        <p class="a-notes">Search + role-filter chips. Multi-select reveals the <b>bulk action bar</b> (message / export / remove). Role badges inline. Tap a row → member detail.</p>
+      </div>
+    </div>
+
+    <!-- 49 · Member detail -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title grow">Member</span><button class="ic-btn"><span class="msr">more_vert</span></button></div>
+          <div class="scroll screen-pad">
+            <div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:18px">
+              <div class="avatar lg">NL</div>
+              <div class="t-title-lg" style="margin:12px 0 2px">Noa Levi</div>
+              <div class="t-body-md" style="margin:0 0 8px">@noalevi · joined Feb 2025</div>
+              <span class="role-badge rb-member">Member</span>
+            </div>
+            <div class="row" style="gap:10px;margin-bottom:8px"><div class="kpi grow center"><div class="k-num" style="font-size:24px">12</div><div class="k-lbl" style="justify-content:center">Events attended</div></div><div class="kpi grow center"><div class="k-num" style="font-size:24px">3</div><div class="k-lbl" style="justify-content:center">Initiatives</div></div></div>
+            <div class="card row" style="padding:12px;gap:10px;background:var(--surface-2);border:none;margin-bottom:16px"><span class="msr" style="color:var(--warning)">lock</span><div class="grow t-body-md" style="color:var(--on-bg);font-size:12px">Lifetime spend is visible to the Community Admin only.</div></div>
+            <div class="t-label-sm" style="margin-bottom:6px">Actions</div>
+            <div class="card" style="padding:4px 14px;margin-bottom:14px">
+              <div class="list-row"><span class="msr" style="color:var(--accent)">arrow_upward</span><span class="grow t-body-lg" style="font-size:14px">Promote to Event Manager</span><span class="msr muted">chevron_right</span></div>
+              <div class="list-row" style="border:none"><span class="msr muted">block</span><span class="grow t-body-lg" style="font-size:14px">Suspend from community</span><span class="msr muted">chevron_right</span></div>
+            </div>
+            <button class="btn btn-secondary" style="color:var(--error);border-color:var(--error)"><span class="msr">person_remove</span>Remove from community</button>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">49 · Member detail</span><span class="a-route">/admin/members/:id</span></div>
+        <div class="a-roles"><span>Sub Admin</span></div>
+        <p class="a-notes">Activity + role management (promote / suspend / remove). <b>Lifetime spend is hidden</b> behind a guard — only the Community Admin sees it (Batch D).</p>
+      </div>
+    </div>
+
+    <!-- 50 · Invite member -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">close</span></button><span class="tb-title">Invite members</span></div>
+          <div class="screen-pad"><div class="seg" style="margin-bottom:16px"><span class="s on">Single</span><span class="s">Bulk CSV</span></div></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <div class="field"><label>Email addresses</label><div class="control" style="height:auto;flex-wrap:wrap;padding:10px 12px;gap:7px"><span class="chip tonal" style="height:28px">david@…<span class="msr" style="font-size:15px">close</span></span><span class="chip tonal" style="height:28px">maya@…<span class="msr" style="font-size:15px">close</span></span><span class="ph">add email…</span></div></div>
+            <div class="field"><label>Invite as</label><div class="control"><span class="msr">badge</span><span class="val">Member</span><span class="grow"></span><span class="msr">expand_more</span></div></div>
+            <div class="field"><label>Personal note <span class="muted" style="font-weight:400">· optional</span></label><div class="control" style="height:auto;align-items:flex-start;padding:14px 16px"><span class="ph" style="line-height:1.5">We'd love to have you at Beit Tefilah…</span></div></div>
+            <div class="card row" style="padding:12px 14px;gap:10px;margin-top:4px"><span class="msr muted">link</span><span class="grow t-body-md" style="color:var(--on-bg);font-family:'DM Mono',monospace;font-size:12px">commons.app/j/BTF-9KQ</span><button class="btn btn-secondary btn-sm">Copy</button></div>
+            <div style="margin-top:auto;padding-bottom:24px"><button class="btn btn-primary">Send 2 invites</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">50 · Invite member</span><span class="a-route">/admin/members/invite</span></div>
+        <div class="a-roles"><span>Sub Admin</span></div>
+        <p class="a-notes">Single email chips with role pre-assignment, or <b>Bulk CSV</b> tab for mass import. Shareable join link as a fallback. Sub Admin can't invite as Admin.</p>
+      </div>
+    </div>
+
+    <!-- 51 · Approval queue -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title">Applications · 4</span></div>
+          <div class="scroll screen-pad">
+            <div class="card" style="padding:14px;margin-bottom:12px">
+              <div class="row" style="gap:11px;margin-bottom:10px"><div class="avatar sm">AM</div><div class="grow"><div class="t-label-lg">Avi Mizrahi</div><div class="t-body-md" style="margin:0;font-size:11px">Applied 2h ago</div></div></div>
+              <div style="background:var(--surface-2);border-radius:10px;padding:11px;margin-bottom:12px"><div class="t-label-sm" style="margin-bottom:4px">Why do you want to join?</div><div class="t-body-md" style="color:var(--on-bg)">A friend invited me — looking to join the weekly study circle.</div></div>
+              <div class="row" style="gap:8px"><button class="btn btn-primary btn-sm grow" style="width:auto;background:var(--success)"><span class="msr">check</span>Approve</button><button class="btn btn-secondary btn-sm grow" style="width:auto"><span class="msr">close</span>Reject</button></div>
+            </div>
+            <div class="card" style="padding:14px;opacity:.95">
+              <div class="row" style="gap:11px"><div class="avatar sm">TG</div><div class="grow"><div class="t-label-lg">Tamar Gold</div><div class="t-body-md" style="margin:0;font-size:11px">Applied 5h ago</div></div><button class="btn btn-primary btn-sm" style="background:var(--success)"><span class="msr">check</span></button><button class="ic-btn soft" style="width:34px;height:34px"><span class="msr" style="font-size:18px">close</span></button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">51 · Approval queue</span><span class="a-route">/admin/members/applications</span></div>
+        <div class="a-roles"><span>Sub Admin</span></div>
+        <p class="a-notes">For "Request to join" communities. Shows each applicant's answer; one-tap <b>Approve / Reject</b>, or swipe. Approving triggers the welcome flow for that member.</p>
+      </div>
+    </div>
+
+    <!-- 52 · Event list (admin) -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><span class="tb-title grow">Events</span><button class="ic-btn"><span class="msr">tune</span></button></div>
+          <div class="screen-pad"><div class="seg" style="margin-bottom:14px"><span class="s on">Published</span><span class="s">Drafts</span><span class="s">Past</span></div></div>
+          <div class="scroll screen-pad">
+            <div class="col" style="gap:11px">
+              <div class="card" style="padding:13px"><div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="when" style="color:var(--accent-ink);font-weight:600;font-size:11.5px">TONIGHT · 19:00</span><span class="status-chip sc-pub">Published</span></div><div class="t-title-md" style="margin-bottom:8px">Hebrew Conversation Café</div><div class="row" style="gap:14px"><span class="t-body-md" style="margin:0"><b style="color:var(--on-bg)">23</b> RSVPs</span><span class="t-body-md" style="margin:0"><b style="color:var(--on-bg)">4</b> waitlist</span><span class="price-tag pt-free" style="margin-left:auto"><span class="msr">check</span>Free</span></div></div>
+              <div class="card" style="padding:13px"><div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="when" style="color:var(--accent-ink);font-weight:600;font-size:11.5px">SAT · MAR 8 · 10:00</span><span class="status-chip sc-pub">Published</span></div><div class="t-title-md" style="margin-bottom:8px">Torah Study Circle</div><div class="row" style="gap:14px"><span class="t-body-md" style="margin:0"><b style="color:var(--on-bg)">42</b> RSVPs</span><span class="t-body-md" style="margin:0">DK managing</span><span class="price-tag pt-free" style="margin-left:auto"><span class="msr">check</span>Free</span></div></div>
+            </div>
+          </div>
+          <button class="fab"><span class="msr">add</span>New event</button>
+          <div class="bottom-nav">
+            <div class="nav-item"><span class="msr">grid_view</span>Home</div>
+            <div class="nav-item active"><span class="msr fill">event</span>Events</div>
+            <div class="nav-item"><span class="msr">group</span>Members</div>
+            <div class="nav-item"><span class="msr">monitoring</span>Analytics</div>
+            <div class="nav-item"><span class="msr">more_horiz</span>More</div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">52 · Event list (admin)</span><span class="a-route">/admin/events</span></div>
+        <div class="a-roles"><span>Sub Admin</span></div>
+        <p class="a-notes">Status tabs + attendance/RSVP counts and which manager owns each event. FAB opens the (free-only) event composer. All prices read "Free" — see screen 53.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="sect">
+  <div class="sect-head">
+    <span class="sect-num">53 – 58</span>
+    <h2>Sub Admin · events, moderation &amp; analytics</h2>
+    <span class="sub">Where the role boundary is most visible: the price field is disabled, and analytics show engagement — never revenue.</span>
+  </div>
+  <div class="deck">
+
+    <!-- 53 · Create event (free only) -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">close</span></button><span class="tb-title grow">New event</span><span style="color:var(--accent-ink);font-weight:600;font-size:14px">Draft</span></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <div class="imgph" style="height:96px;border-radius:12px;margin-bottom:16px"><span class="lbl">tap to add a cover · 16:9</span></div>
+            <div class="field"><label>Title</label><div class="control"><span class="val">Hebrew Conversation Café</span></div></div>
+            <div class="row" style="gap:10px"><div class="field grow"><label>Date</label><div class="control"><span class="msr">calendar_today</span><span class="val">Mar 11</span></div></div><div class="field grow"><label>Time</label><div class="control"><span class="val">19:00</span></div></div></div>
+            <div class="field"><label>Location</label><div class="control"><span class="msr">place</span><span class="val">Café Nava</span></div></div>
+            <div class="field lockfield"><label>Pricing <span class="lim-badge" style="height:18px;font-size:10px;vertical-align:middle"><span class="msr">lock</span>Admin only</span></label><div class="control"><span class="msr">payments</span><span class="ph grow">Free</span><span class="msr">lock</span></div><div class="hint">Paid events require the Community Admin. This event will be free.</div></div>
+            <div class="field"><label>Capacity</label><div class="control"><span class="msr">groups</span><span class="val">30</span></div></div>
+            <div class="list-row"><span class="msr muted">hourglass_empty</span><span class="grow t-body-lg" style="font-size:14px">Enable waitlist when full</span><span class="toggle on"><span></span></span></div>
+            <div style="margin-top:auto;padding-bottom:24px"><button class="btn btn-primary">Publish event</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">53 · Create event (free only)</span><span class="a-route">/admin/events/new</span></div>
+        <div class="a-roles"><span>Sub Admin</span></div>
+        <p class="a-notes">The <b>price field is disabled</b> with a lock + guard hint — Sub Admins can only create free events. Same composer for the Community Admin unlocks paid/subscription tiers (Batch D · 62).</p>
+      </div>
+    </div>
+
+    <!-- 54 · Edit event -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title grow">Edit event</span><span style="color:var(--accent-ink);font-weight:600;font-size:14px">Save</span></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <div class="row" style="justify-content:space-between;margin-bottom:14px"><span class="status-chip sc-pub">Published</span><span class="t-body-md" style="margin:0">23 RSVPs · can't reduce capacity below this</span></div>
+            <div class="field"><label>Title</label><div class="control"><span class="val">Hebrew Conversation Café</span></div></div>
+            <div class="row" style="gap:10px"><div class="field grow"><label>Date</label><div class="control"><span class="msr">calendar_today</span><span class="val">Mar 11</span></div></div><div class="field grow"><label>Time</label><div class="control"><span class="val">19:00</span></div></div></div>
+            <div class="field"><label>Location</label><div class="control"><span class="msr">place</span><span class="val">Café Nava</span></div></div>
+            <div class="field"><label>Assigned manager</label><div class="control"><div class="avatar sm" style="width:26px;height:26px;font-size:10px">DK</div><span class="val">David Katz</span><span class="grow"></span><span class="msr">expand_more</span></div></div>
+            <div style="margin-top:auto;padding-bottom:24px;display:flex;flex-direction:column;gap:10px"><button class="btn btn-primary">Save changes</button><button class="btn btn-secondary" style="color:var(--error);border-color:var(--error)"><span class="msr">cancel</span>Cancel event</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">54 · Edit event</span><span class="a-route">/admin/events/:id/edit</span></div>
+        <div class="a-roles"><span>Sub Admin</span></div>
+        <p class="a-notes">Populated composer with a guardrail (can't drop capacity below current RSVPs). <b>Cancel event</b> = destructive confirm + notifies attendees. Manager picker → screen 55.</p>
+      </div>
+    </div>
+
+    <!-- 55 · Assign Event Manager dialog -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="scrim"></div>
+          <div class="sheet">
+            <div class="handle"></div>
+            <div class="t-title-lg" style="margin-bottom:4px">Assign Event Manager</div>
+            <div class="t-body-md" style="margin:0 0 14px">For Hebrew Conversation Café</div>
+            <div class="control" style="height:44px;display:flex;align-items:center;gap:10px;padding:0 14px;background:var(--surface-2);border:none;border-radius:var(--r-full);margin-bottom:12px"><span class="msr muted">search</span><span class="ph grow">Search members…</span></div>
+            <div class="list-row"><div class="avatar sm">DK</div><div class="grow"><div class="t-label-lg">David Katz</div><div class="t-body-md" style="margin:0;font-size:11px">Already manages 2 events</div></div><span class="msr" style="color:var(--accent)">radio_button_checked</span></div>
+            <div class="list-row"><div class="avatar sm">SB</div><div class="grow"><div class="t-label-lg">Sarah Ben-David</div><div class="t-body-md" style="margin:0;font-size:11px">Member</div></div><span class="msr muted">radio_button_unchecked</span></div>
+            <div class="list-row" style="border:none"><div class="avatar sm">YL</div><div class="grow"><div class="t-label-lg">Yael Levi</div><div class="t-body-md" style="margin:0;font-size:11px">Member</div></div><span class="msr muted">radio_button_unchecked</span></div>
+            <button class="btn btn-primary" style="margin-top:14px">Assign as manager</button>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">55 · Assign Event Manager</span><span class="a-route">/admin/events/:id/assign</span></div>
+        <div class="a-roles"><span>Sub Admin</span></div>
+        <p class="a-notes">Bottom-sheet member picker. Assigning grants the <b>Event Manager</b> role scoped to this single event and surfaces it in their My Events (40).</p>
+      </div>
+    </div>
+
+    <!-- 56 · Content moderation queue -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title grow">Moderation · 5</span><button class="ic-btn"><span class="msr">filter_list</span></button></div>
+          <div class="scroll screen-pad">
+            <div class="card" style="padding:14px;margin-bottom:12px">
+              <div class="row" style="gap:8px;margin-bottom:10px"><span class="status-chip sc-cancel" style="background:var(--error-wash);color:var(--error)"><span class="msr" style="font-size:11px">flag</span>3 reports</span><span class="t-body-md" style="margin:0;font-size:11px">Comment · spam</span></div>
+              <div style="background:var(--surface-2);border-radius:10px;padding:12px;margin-bottom:12px"><div class="row" style="gap:8px;margin-bottom:6px"><div class="avatar sm" style="width:24px;height:24px;font-size:9px">??</div><span class="t-label-lg" style="font-size:12px">Anon User</span></div><div class="t-body-md" style="color:var(--on-bg)">Check out my shop — 50% off supplements!! link.biz/xyz</div></div>
+              <div class="row" style="gap:8px"><button class="btn btn-secondary btn-sm grow" style="width:auto"><span class="msr">check</span>Keep</button><button class="btn btn-secondary btn-sm grow" style="width:auto"><span class="msr">warning</span>Warn</button><button class="btn btn-danger btn-sm grow" style="width:auto"><span class="msr">delete</span>Remove</button></div>
+            </div>
+            <div class="card" style="padding:14px">
+              <div class="row" style="gap:8px;margin-bottom:10px"><span class="status-chip sc-cancel" style="background:var(--warning-wash);color:var(--warning)"><span class="msr" style="font-size:11px">flag</span>1 report</span><span class="t-body-md" style="margin:0;font-size:11px">Post · off-topic</span></div>
+              <div class="t-body-md" style="color:var(--on-bg)">"Anyone selling concert tickets for Saturday?"</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">56 · Content moderation</span><span class="a-route">/admin/moderation</span></div>
+        <div class="a-roles"><span>Sub Admin</span></div>
+        <p class="a-notes">Flagged posts &amp; comments with report counts + reason. Three actions: <b>Keep, Warn, Remove</b>. Removing notifies the author and logs the action.</p>
+      </div>
+    </div>
+
+    <!-- 57 · Analytics (non-financial) -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><span class="tb-title grow">Analytics</span><button class="ic-btn"><span class="msr">calendar_today</span></button></div>
+          <div class="scroll screen-pad">
+            <div class="card row" style="padding:11px;gap:9px;background:var(--surface-2);border:none;margin-bottom:14px"><span class="msr" style="color:var(--warning);font-size:18px">lock</span><div class="grow t-body-md" style="color:var(--on-bg);font-size:12px">Revenue analytics are Community Admin only.</div></div>
+            <div class="grid2" style="margin-bottom:16px">
+              <div class="kpi"><div class="k-lbl">Attendance rate</div><div class="k-num">78%</div><div class="k-delta up">▲ 6%</div></div>
+              <div class="kpi"><div class="k-lbl">Active members</div><div class="k-num">642</div><div class="k-delta up">▲ 4%</div></div>
+            </div>
+            <div class="card" style="padding:16px;margin-bottom:16px">
+              <div class="between" style="margin-bottom:14px"><span class="t-label-lg">Weekly attendance</span><span class="t-body-md" style="margin:0;font-size:11px">last 6 weeks</span></div>
+              <div class="bars"><div class="bar"><i style="height:48%"></i></div><div class="bar"><i style="height:62%"></i></div><div class="bar"><i style="height:55%"></i></div><div class="bar"><i style="height:74%"></i></div><div class="bar"><i style="height:68%"></i></div><div class="bar cur"><i style="height:88%"></i></div></div>
+              <div class="barlbls"><span>W1</span><span>W2</span><span>W3</span><span>W4</span><span>W5</span><span>W6</span></div>
+            </div>
+            <div class="section-header"><span class="sh-title" style="font-size:16px">Most active</span></div>
+            <div class="list-row"><span class="t-label-lg" style="color:var(--accent-ink);width:18px">1</span><div class="avatar sm">DK</div><div class="grow t-label-lg">David Katz</div><span class="t-body-md" style="margin:0">28 events</span></div>
+            <div class="list-row" style="border:none"><span class="t-label-lg" style="color:var(--muted);width:18px">2</span><div class="avatar sm">NL</div><div class="grow t-label-lg">Noa Levi</div><span class="t-body-md" style="margin:0">21 events</span></div>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item"><span class="msr">grid_view</span>Home</div>
+            <div class="nav-item"><span class="msr">event</span>Events</div>
+            <div class="nav-item"><span class="msr">group</span>Members</div>
+            <div class="nav-item active"><span class="msr fill">monitoring</span>Analytics</div>
+            <div class="nav-item"><span class="msr">more_horiz</span>More</div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">57 · Analytics (non-financial)</span><span class="a-route">/admin/analytics</span></div>
+        <div class="a-roles"><span>Sub Admin</span></div>
+        <p class="a-notes">Engagement only — attendance, active members, leaderboards. <b>No revenue/MRR</b>; that view is replaced by a guard. Same chart components reused in Batch D.</p>
+      </div>
+    </div>
+
+    <!-- 58 · Initiative moderation queue -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title">Initiatives · 2 pending</span></div>
+          <div class="scroll screen-pad">
+            <div class="card" style="padding:14px;margin-bottom:12px">
+              <div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="chip tonal" style="height:24px;font-size:11px">🌱 Community</span><span class="status-chip sc-draft">Pending</span></div>
+              <div class="t-title-md" style="margin-bottom:4px">Rooftop community garden</div>
+              <div class="speaker" style="margin-bottom:12px"><div class="avatar sm" style="width:26px;height:26px;font-size:10px">DK</div><span class="t-body-md" style="margin:0;font-size:12px">By David Katz · 1h ago</span></div>
+              <div class="row" style="gap:8px"><button class="btn btn-primary btn-sm grow" style="width:auto;background:var(--success)"><span class="msr">check</span>Approve</button><button class="btn btn-secondary btn-sm grow" style="width:auto"><span class="msr">close</span>Reject</button></div>
+            </div>
+            <div class="card" style="padding:14px;border-color:var(--error)">
+              <div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="chip tonal" style="height:24px;font-size:11px">📣 Other</span><span class="status-chip sc-cancel" style="background:var(--error-wash);color:var(--error)">Rejecting</span></div>
+              <div class="t-title-md" style="margin-bottom:10px">Sell raffle tickets in the feed</div>
+              <div class="field" style="margin:0"><label>Reason for rejection</label><div class="control" style="height:auto;align-items:flex-start;padding:12px 14px"><span class="val" style="line-height:1.4">Fundraising/sales aren't allowed under community guidelines.</span></div></div>
+              <button class="btn btn-danger btn-sm" style="margin-top:10px;width:100%">Send rejection</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">58 · Initiative moderation</span><span class="a-route">/admin/initiatives/pending</span></div>
+        <div class="a-roles"><span>Sub Admin</span></div>
+        <p class="a-notes">Member-submitted initiatives (Batch B · 33) wait here. Approve publishes them; <b>Reject requires a reason</b> that's sent back to the author.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer class="gx-foot">
+  <b>Commons</b> · Batch C of 6 — Event Manager &amp; Sub Admin (40–58). Next: Community Admin (59–71) — the financial surfaces the Sub Admin can't see. Shared components from <b>assets/app.css</b>.
+</footer>
+
+<script>
+  document.querySelectorAll('.phone').forEach(p=>{
+    const time = p.dataset.time || '9:41';
+    const sb = document.createElement('div');
+    sb.className = 'statusbar';
+    sb.innerHTML = '<span>'+time+'</span><span class="sb-right"><span class="msr" style="font-size:16px">signal_cellular_alt</span><span class="msr" style="font-size:16px">wifi</span><span class="msr" style="font-size:18px">battery_full</span></span>';
+    p.prepend(sb);
+    const hi = document.createElement('div');
+    hi.className = 'home-ind';
+    p.append(hi);
+  });
+</script>
+</body>
+</html>

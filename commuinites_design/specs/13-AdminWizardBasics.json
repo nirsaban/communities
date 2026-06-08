@@ -1,0 +1,56 @@
+{
+  "screen": "AdminWizardBasics",
+  "route": "/admin/setup/1",
+  "roles": [
+    "admin",
+    "super_admin"
+  ],
+  "components": [
+    {
+      "name": "ProgressBar",
+      "type": "progress",
+      "segments": 6
+    },
+    {
+      "name": "Title",
+      "type": "text",
+      "style": "displayMedium"
+    },
+    {
+      "name": "NameField",
+      "type": "textField"
+    },
+    {
+      "name": "CategorySelect",
+      "type": "select"
+    },
+    {
+      "name": "DescriptionField",
+      "type": "textArea",
+      "maxLength": 160
+    },
+    {
+      "name": "ContinueButton",
+      "type": "button",
+      "style": "primary",
+      "width": "full",
+      "height": 50
+    }
+  ],
+  "states": [
+    "default",
+    "focused"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "ContinueButton → step 2; name+category required"
+  ]
+}

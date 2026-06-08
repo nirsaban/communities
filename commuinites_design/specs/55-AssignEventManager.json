@@ -1,0 +1,50 @@
+{
+  "screen": "AssignEventManager",
+  "route": "/admin/events/:id/assign",
+  "roles": [
+    "subadmin",
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "Scrim",
+      "type": "scrim"
+    },
+    {
+      "name": "BottomSheet",
+      "type": "sheet",
+      "handle": true
+    },
+    {
+      "name": "SearchField",
+      "type": "search"
+    },
+    {
+      "name": "MemberRadioRow",
+      "type": "listRow",
+      "repeat": true,
+      "trailing": "radio"
+    },
+    {
+      "name": "AssignButton",
+      "type": "button",
+      "style": "primary",
+      "width": "full"
+    }
+  ],
+  "states": [
+    "populated"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--surface)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 0
+  },
+  "interactions": [
+    "AssignButton → grants Event Manager role scoped to this event → appears in their My Events"
+  ]
+}

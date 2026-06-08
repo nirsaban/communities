@@ -1,0 +1,68 @@
+{
+  "screen": "SubAdminAnalytics",
+  "route": "/admin/analytics",
+  "roles": [
+    "subadmin"
+  ],
+  "components": [
+    {
+      "name": "DateButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "RevenueGuardBanner",
+      "type": "card",
+      "variant": "surface2"
+    },
+    {
+      "name": "KPIGrid",
+      "type": "grid",
+      "kpis": [
+        "Attendance rate",
+        "Active members"
+      ]
+    },
+    {
+      "name": "AttendanceBarChart",
+      "type": "barChart"
+    },
+    {
+      "name": "MostActiveList",
+      "type": "list"
+    },
+    {
+      "name": "BottomNav",
+      "type": "nav",
+      "active": "Analytics"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "RevenueAnalytics",
+      "hiddenFor": [
+        "subadmin"
+      ]
+    },
+    {
+      "component": "MRRChart",
+      "hiddenFor": [
+        "subadmin"
+      ]
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "engagement only; revenue replaced by guard banner"
+  ]
+}

@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Communities — What's actually working</title>
+<style>
+  :root{
+    --bg:#FBF7F4;
+    --ink:#2A2238;
+    --ink-soft:#5E5470;
+    --muted:#8C8499;
+    --card:#FFFFFF;
+    --line:#EFE7DE;
+    --coral:#F26A5A;
+    --coral-wash:#FBE5DF;
+    --mint:#86C9A8;
+    --mint-wash:#E2F2EA;
+    --sand:#F7D8B0;
+    --sand-wash:#FCEEDA;
+    --lavender:#B4A7DD;
+    --lavender-wash:#EEE9F8;
+    --sky:#9CC7E8;
+    --sky-wash:#E5F0F8;
+    --code:#FFF8F1;
+    --shadow:0 1px 2px rgba(42,34,56,.04), 0 8px 32px rgba(42,34,56,.06);
+    --r:18px;
+    --r-sm:12px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font:15px/1.55 "DM Sans", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 600px at 90% -10%, var(--coral-wash) 0%, transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, var(--mint-wash) 0%, transparent 55%),
+      var(--bg);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{font-family:"DM Serif Display", "DM Serif Text", Georgia, serif; font-weight:400; letter-spacing:-.01em}
+  h1{font-size:44px; line-height:1.05; margin:0 0 12px}
+  h2{font-size:28px; margin:0 0 8px}
+  h3{font-size:19px; margin:0 0 6px}
+  p{margin:0 0 10px; color:var(--ink-soft)}
+  small{color:var(--muted)}
+  a{color:var(--coral); text-decoration:none}
+  code{font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12.5px; background:var(--code); color:#7a4426; padding:1px 6px; border-radius:6px; border:1px solid #f4e6d2}
+  .wrap{max-width:1180px; margin:0 auto; padding:48px 28px 96px}
+  /* nav */
+  nav.top{
+    position:sticky; top:0; z-index:30;
+    backdrop-filter:saturate(1.4) blur(14px);
+    background:rgba(251,247,244,.72);
+    border-bottom:1px solid var(--line);
+  }
+  nav.top .row{max-width:1180px; margin:0 auto; padding:14px 28px; display:flex; align-items:center; gap:18px; flex-wrap:wrap}
+  .brand{display:flex; align-items:center; gap:10px; font-weight:600}
+  .brand .dot{width:24px; height:24px; border-radius:8px; background:linear-gradient(135deg,var(--coral),#f8a08c); box-shadow:0 4px 12px rgba(242,106,90,.35)}
+  .pill{display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:5px 10px; border-radius:999px; background:var(--coral-wash); color:#b8341f; border:1px solid #f7c8bb}
+  nav.top a.nav{font-size:13px; color:var(--ink-soft); padding:7px 12px; border-radius:10px}
+  nav.top a.nav:hover{background:#fff; color:var(--ink)}
+  /* hero */
+  .hero{padding:56px 0 28px}
+  .hero .lede{font-size:18px; max-width:680px; color:var(--ink-soft)}
+  .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-top:30px}
+  .kpi{background:var(--card); border:1px solid var(--line); border-radius:var(--r); padding:18px; box-shadow:var(--shadow); transition:transform .25s ease, box-shadow .25s ease}
+  .kpi:hover{transform:translateY(-2px); box-shadow:0 4px 18px rgba(42,34,56,.08), 0 18px 40px rgba(42,34,56,.10)}
+  .kpi .n{font-family:"DM Serif Display", serif; font-size:34px; line-height:1}
+  .kpi .lbl{font-size:12px; color:var(--muted); margin-top:6px; text-transform:uppercase; letter-spacing:.06em}
+  .kpi.coral .n{color:var(--coral)} .kpi.mint .n{color:#3aa472} .kpi.lavender .n{color:#7259c0} .kpi.sand .n{color:#c08549}
+  /* tabs */
+  .tabs{display:flex; gap:8px; margin:36px 0 18px; flex-wrap:wrap}
+  .tab{cursor:pointer; user-select:none; padding:10px 16px; border-radius:14px; background:#fff; border:1px solid var(--line); font-size:13.5px; color:var(--ink-soft); transition:all .2s}
+  .tab:hover{color:var(--ink)}
+  .tab.active{background:var(--ink); color:#fff; border-color:var(--ink)}
+  .panel{display:none; animation:fade .35s ease}
+  .panel.active{display:block}
+  @keyframes fade{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none}}
+  /* cards */
+  .grid{display:grid; gap:18px}
+  .grid.cols-2{grid-template-columns:repeat(2,1fr)}
+  .grid.cols-3{grid-template-columns:repeat(3,1fr)}
+  .grid.cols-4{grid-template-columns:repeat(4,1fr)}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--r); padding:22px; box-shadow:var(--shadow)}
+  .card .tag{display:inline-block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; padding:3px 8px; border-radius:999px; margin-bottom:10px}
+  .tag.coral{background:var(--coral-wash); color:#b8341f}
+  .tag.mint{background:var(--mint-wash); color:#3aa472}
+  .tag.lavender{background:var(--lavender-wash); color:#7259c0}
+  .tag.sand{background:var(--sand-wash); color:#c08549}
+  .tag.sky{background:var(--sky-wash); color:#2e7eb8}
+  .check{display:flex; gap:10px; align-items:flex-start; padding:8px 0; border-bottom:1px dashed var(--line); font-size:14px}
+  .check:last-child{border-bottom:0}
+  .check .ic{width:22px; height:22px; flex:0 0 22px; border-radius:7px; display:grid; place-items:center; font-size:13px; line-height:1; font-weight:700}
+  .ic.ok{background:var(--mint-wash); color:#3aa472}
+  .ic.partial{background:var(--sand-wash); color:#c08549}
+  .ic.miss{background:#FFE2DD; color:#cc4226}
+  .ic.info{background:var(--sky-wash); color:#2e7eb8}
+  /* role flow */
+  .roles{display:grid; grid-template-columns:240px 1fr; gap:22px; align-items:start}
+  .roles .menu{position:sticky; top:84px; display:flex; flex-direction:column; gap:8px}
+  .roles .menu button{cursor:pointer; text-align:left; padding:14px 14px; border-radius:14px; border:1px solid var(--line); background:#fff; color:var(--ink-soft); font:inherit; transition:all .2s}
+  .roles .menu button .role-name{display:block; font-weight:600; color:var(--ink); font-size:14.5px}
+  .roles .menu button .role-sub{display:block; font-size:12px; color:var(--muted); margin-top:2px}
+  .roles .menu button.active{border-color:var(--coral); background:var(--coral-wash); box-shadow:0 4px 14px rgba(242,106,90,.18)}
+  .role-panel{display:none; animation:fade .3s ease}
+  .role-panel.active{display:block}
+  .flow{display:flex; gap:10px; flex-wrap:wrap; margin:8px 0 14px}
+  .step{background:#fff; border:1px solid var(--line); border-radius:12px; padding:10px 14px; font-size:13px; position:relative; transition:all .2s}
+  .step:hover{transform:translateY(-1px); border-color:var(--coral)}
+  .step .n{display:inline-block; width:18px; height:18px; border-radius:50%; background:var(--coral); color:#fff; font-size:11px; text-align:center; line-height:18px; margin-right:8px; font-family:"DM Sans", sans-serif; font-weight:700}
+  .step.arrow::after{content:"→"; position:absolute; right:-16px; top:50%; transform:translateY(-50%); color:var(--muted)}
+  /* architecture */
+  .arch-svg{width:100%; height:auto; display:block}
+  .legend{display:flex; gap:14px; flex-wrap:wrap; margin-top:14px}
+  .legend span{display:inline-flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-soft)}
+  .legend i{width:12px; height:12px; border-radius:4px}
+  /* creative ideas */
+  .ideas{display:grid; grid-template-columns:repeat(3,1fr); gap:18px}
+  .idea{background:#fff; border:1px solid var(--line); border-radius:var(--r); padding:22px; box-shadow:var(--shadow); position:relative; overflow:hidden; cursor:pointer; transition:transform .25s ease, box-shadow .25s ease}
+  .idea::before{content:""; position:absolute; inset:0 0 auto 0; height:5px; background:linear-gradient(90deg,var(--coral),var(--sand))}
+  .idea.mint::before{background:linear-gradient(90deg,var(--mint),var(--sky))}
+  .idea.lavender::before{background:linear-gradient(90deg,var(--lavender),var(--coral))}
+  .idea.sand::before{background:linear-gradient(90deg,var(--sand),var(--mint))}
+  .idea.sky::before{background:linear-gradient(90deg,var(--sky),var(--lavender))}
+  .idea.coral::before{background:linear-gradient(90deg,var(--coral),var(--lavender))}
+  .idea:hover{transform:translateY(-3px); box-shadow:0 4px 22px rgba(42,34,56,.10), 0 22px 50px rgba(42,34,56,.12)}
+  .idea h3{margin-top:6px}
+  .idea .why{font-size:12.5px; color:var(--muted); margin-top:12px; padding-top:12px; border-top:1px dashed var(--line)}
+  /* details */
+  details{background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px 18px; margin-bottom:10px}
+  details summary{cursor:pointer; font-weight:600; list-style:none; outline:none; color:var(--ink); display:flex; justify-content:space-between; align-items:center}
+  details summary::after{content:"+"; font-size:20px; color:var(--coral); transition:transform .2s}
+  details[open] summary::after{content:"–"}
+  details > div{margin-top:10px; color:var(--ink-soft); font-size:14px}
+  /* footer */
+  footer{margin-top:60px; padding-top:24px; border-top:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; font-size:12.5px; color:var(--muted)}
+
+  /* responsive */
+  @media (max-width: 980px){
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .grid.cols-2,.grid.cols-3,.grid.cols-4{grid-template-columns:1fr}
+    .ideas{grid-template-columns:1fr}
+    .roles{grid-template-columns:1fr}
+    .roles .menu{position:static; flex-direction:row; overflow-x:auto; padding-bottom:6px}
+    .roles .menu button{min-width:160px}
+    h1{font-size:34px}
+  }
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <div class="row">
+    <div class="brand"><div class="dot"></div> Communities</div>
+    <a class="nav" href="#what">What it is</a>
+    <a class="nav" href="#working">What's working</a>
+    <a class="nav" href="#roles">Role flows</a>
+    <a class="nav" href="#arch">Architecture</a>
+    <a class="nav" href="#ideas">Creative ideas</a>
+    <span class="pill" style="margin-left:auto">code-grounded · 2026-06-08</span>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <section class="hero" id="what">
+    <span class="pill" style="margin-bottom:14px">Multi-tenant community SaaS · Hebrew RTL · 5 roles</span>
+    <h1>A community OS — events, members,<br/>initiatives, and payments,<br/>all under one roof.</h1>
+    <p class="lede">
+      <strong>Communities</strong> is a multi-tenant SaaS for running real-world groups: a Flutter mobile app (Hebrew RTL) and a React PWA mirror, both talking to an Express + MongoDB backend with Stripe payments, JWT auth, and a hard tenant boundary at <code>communityId</code>. This page is built from the actual code in the repo — not the spec.
+    </p>
+
+    <div class="kpis">
+      <div class="kpi coral">
+        <div class="n">93</div>
+        <div class="lbl">Design-spec screens shipped</div>
+      </div>
+      <div class="kpi mint">
+        <div class="n">5</div>
+        <div class="lbl">Roles with end-to-end flows</div>
+      </div>
+      <div class="kpi lavender">
+        <div class="n">14</div>
+        <div class="lbl">API route modules under /api/v1</div>
+      </div>
+      <div class="kpi sand">
+        <div class="n">3</div>
+        <div class="lbl">Client surfaces: Mobile · Web PWA · Dashboard</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHAT'S WORKING -->
+  <section id="working" style="margin-top:18px">
+    <h2>What's actually working</h2>
+    <p>Green = wired end-to-end in code. Amber = present but stubbed or partial. Click a tab to drill in.</p>
+
+    <div class="tabs" role="tablist">
+      <div class="tab active" data-tab="auth">Auth &amp; identity</div>
+      <div class="tab" data-tab="comm">Community &amp; membership</div>
+      <div class="tab" data-tab="events">Events &amp; RSVPs</div>
+      <div class="tab" data-tab="pay">Payments</div>
+      <div class="tab" data-tab="init">Initiatives</div>
+      <div class="tab" data-tab="ops">Ops &amp; safety</div>
+    </div>
+
+    <!-- AUTH -->
+    <div class="panel active" data-panel="auth">
+      <div class="grid cols-2">
+        <div class="card">
+          <span class="tag coral">backend/src/services/auth.service.ts</span>
+          <h3>JWT with rotating refresh tokens</h3>
+          <div class="check"><span class="ic ok">✓</span><div><strong>Access token</strong> · 15 min, signed with <code>JWT_ACCESS_SECRET</code></div></div>
+          <div class="check"><span class="ic ok">✓</span><div><strong>Refresh token</strong> · 30 days, stored as SHA-256 hash in <code>RefreshToken</code> collection</div></div>
+          <div class="check"><span class="ic ok">✓</span><div><strong>Rotation</strong> · <code>replacedByTokenId</code> chain, old refresh dies on use</div></div>
+          <div class="check"><span class="ic ok">✓</span><div><strong>TTL auto-prune</strong> + manual revoke on logout / disable / account-delete</div></div>
+          <div class="check"><span class="ic ok">✓</span><div><strong>Mobile interceptor</strong> recovers from 401 with a single refresh attempt, then signs out</div></div>
+        </div>
+        <div class="card">
+          <span class="tag mint">flows</span>
+          <h3>Register → verify → onboard</h3>
+          <div class="check"><span class="ic ok">✓</span><div>Email-verification code (6-digit, 15-min TTL) via <code>mail.service</code> (console driver in dev, SendGrid pluggable)</div></div>
+          <div class="check"><span class="ic ok">✓</span><div>Forgot/reset password (30-min token), bcryptjs cost 12</div></div>
+          <div class="check"><span class="ic ok">✓</span><div>30-day soft-delete: <code>DELETE /auth/me</code> sets <code>scheduledDeletionAt</code> and revokes all refresh tokens</div></div>
+          <div class="check"><span class="ic partial">~</span><div>Onboarding screens (Profile · Interests) navigate via demo bypass; real <code>PATCH /auth/me</code> wiring is partial</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMMUNITY -->
+    <div class="panel" data-panel="comm">
+      <div class="grid cols-2">
+        <div class="card">
+          <span class="tag lavender">backend/src/middleware/role.ts</span>
+          <h3>Tenant isolation, enforced at the edge</h3>
+          <div class="check"><span class="ic ok">✓</span><div><code>loadMembership(:cid)</code> runs on every community-scoped route &mdash; verifies an active <code>Membership</code></div></div>
+          <div class="check"><span class="ic ok">✓</span><div><code>requireCommunityRole(...)</code> for admin/sub-admin/event-manager gates</div></div>
+          <div class="check"><span class="ic ok">✓</span><div><code>blockSubAdminFromFinancial</code> middleware &mdash; sub-admins can never hit finance routes</div></div>
+          <div class="check"><span class="ic ok">✓</span><div>JWT carries <code>userId</code> only &mdash; communityId is checked, never trusted from the client</div></div>
+          <div class="check"><span class="ic ok">✓</span><div>Super-admin gets a synthetic admin context (bypasses membership lookup)</div></div>
+        </div>
+        <div class="card">
+          <span class="tag coral">surface</span>
+          <h3>Member-facing community life</h3>
+          <div class="check"><span class="ic ok">✓</span><div>Discovery feed of public/application communities (<code>GET /discovery/communities</code>)</div></div>
+          <div class="check"><span class="ic ok">✓</span><div>Join (public) / request-to-join (application) flow</div></div>
+          <div class="check"><span class="ic ok">✓</span><div>Welcome &amp; Rules screens; rules-ack writes <code>membership.onboarding.rulesAcceptedAt</code></div></div>
+          <div class="check"><span class="ic ok">✓</span><div>Community switcher sheet, my-communities aggregator, my-RSVPs aggregator</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EVENTS -->
+    <div class="panel" data-panel="events">
+      <div class="grid cols-2">
+        <div class="card">
+          <span class="tag sky">backend/src/routes/event.routes.ts</span>
+          <h3>End-to-end event lifecycle</h3>
+          <div class="check"><span class="ic ok">✓</span><div>Create / edit / cancel / duplicate; status: draft · published · cancelled</div></div>
+          <div class="check"><span class="ic ok">✓</span><div>RSVP &amp; waitlist; capacity enforcement; <code>paidCount</code>/<code>rsvpCount</code> recompute on settle</div></div>
+          <div class="check"><span class="ic ok">✓</span><div>Event Q&amp;A: upvote, manager-only answer/pin/resolve</div></div>
+          <div class="check"><span class="ic ok">✓</span><div>Attendee check-in (per-RSVP + bulk)</div></div>
+          <div class="check"><span class="ic ok">✓</span><div>Materials upload (Multer + Cloudinary or local) &amp; post-event recap with photo URLs</div></div>
+          <div class="check"><span class="ic ok">✓</span><div>Recurring events via <code>node-cron</code> generator job</div></div>
+        </div>
+        <div class="card">
+          <span class="tag mint">mobile + web</span>
+          <h3>What the user sees</h3>
+          <div class="check"><span class="ic ok">✓</span><div>Events list with calendar toggle, full-capacity / waitlist branches</div></div>
+          <div class="check"><span class="ic ok">✓</span><div>Event Command Center for managers (RSVPs · materials · Q&amp;A · recap · broadcast)</div></div>
+          <div class="check"><span class="ic ok">✓</span><div>Broadcast composer fans out <code>Notification</code> rows to all RSVPs</div></div>
+          <div class="check"><span class="ic partial">~</span><div>QR check-in scan, file-pickers, member-search picker &mdash; deferred (URL fields used instead)</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAYMENTS -->
+    <div class="panel" data-panel="pay">
+      <div class="grid cols-3">
+        <div class="card">
+          <span class="tag sand">backend/src/services/stripe.service.ts</span>
+          <h3>Stripe — real &amp; stub</h3>
+          <div class="check"><span class="ic ok">✓</span><div>Event checkout sessions + subscription checkout</div></div>
+          <div class="check"><span class="ic ok">✓</span><div>Webhook handler mounted <em>before</em> JSON parser for raw-body signature verify</div></div>
+          <div class="check"><span class="ic ok">✓</span><div>Idempotency via <code>ProcessedWebhook</code> (30-day TTL)</div></div>
+          <div class="check"><span class="ic ok">✓</span><div>Auto-switches to <code>StubStripeService</code> when <code>STRIPE_SECRET_KEY</code> missing &amp; not prod &mdash; full happy-path demo without keys</div></div>
+        </div>
+        <div class="card">
+          <span class="tag coral">Payment lifecycle</span>
+          <h3>States &amp; recovery</h3>
+          <div class="check"><span class="ic ok">✓</span><div>pending → succeeded → refunded / partial_refund</div></div>
+          <div class="check"><span class="ic ok">✓</span><div>Refund endpoint guarded by community ownership + <code>blockSubAdminFromFinancial</code></div></div>
+          <div class="check"><span class="ic ok">✓</span><div>PaymentSuccess screen polls <code>/me/rsvps</code> every 2s while Stripe webhook lands</div></div>
+          <div class="check"><span class="ic ok">✓</span><div>Subscription state machine on <code>customer.subscription.updated</code> + <code>invoice.payment_succeeded</code></div></div>
+        </div>
+        <div class="card">
+          <span class="tag mint">Surface</span>
+          <h3>What members &amp; admins do</h3>
+          <div class="check"><span class="ic ok">✓</span><div>Subscribe (monthly · annual), manage, cancel</div></div>
+          <div class="check"><span class="ic ok">✓</span><div>Admin Financial Dashboard: revenue, MRR proxy, per-event breakdown</div></div>
+          <div class="check"><span class="ic ok">✓</span><div>Admin Issue-Refund flow targeting succeeded payments</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INITIATIVES -->
+    <div class="panel" data-panel="init">
+      <div class="grid cols-2">
+        <div class="card">
+          <span class="tag lavender">backend/src/services/initiative.service.ts</span>
+          <h3>Member-led projects with approval gate</h3>
+          <div class="check"><span class="ic ok">✓</span><div>States: draft · pending_review · approved · rejected · completed</div></div>
+          <div class="check"><span class="ic ok">✓</span><div>Sub-admin / admin moderation queue; reject with reason</div></div>
+          <div class="check"><span class="ic ok">✓</span><div>Contributors array (user + amount); mark-complete by creator</div></div>
+          <div class="check"><span class="ic ok">✓</span><div>Comments wired</div></div>
+        </div>
+        <div class="card">
+          <span class="tag sky">Posts (community feed)</span>
+          <h3>Lightweight posting &amp; moderation</h3>
+          <div class="check"><span class="ic ok">✓</span><div>CRUD + comments + likes + pin/unpin</div></div>
+          <div class="check"><span class="ic ok">✓</span><div><code>Post.hidden</code> + <code>moderatedByUserId</code> for content moderation</div></div>
+          <div class="check"><span class="ic partial">~</span><div>Real flagging model deferred — moderation queue currently hand-curated</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OPS -->
+    <div class="panel" data-panel="ops">
+      <div class="grid cols-3">
+        <div class="card">
+          <span class="tag mint">Audit</span>
+          <h3>Fire-and-forget audit log</h3>
+          <div class="check"><span class="ic ok">✓</span><div>Every privileged action emits <code>AuditLog</code> rows; 1-year TTL retention</div></div>
+          <div class="check"><span class="ic ok">✓</span><div>Indexes on <code>(communityId, createdAt)</code>, <code>(actorId, createdAt)</code>, <code>(action, createdAt)</code></div></div>
+          <div class="check"><span class="ic ok">✓</span><div>Write failure never blocks the user action</div></div>
+        </div>
+        <div class="card">
+          <span class="tag coral">Safety</span>
+          <h3>Hardening</h3>
+          <div class="check"><span class="ic ok">✓</span><div>helmet · CORS · express-mongo-sanitize · trust proxy</div></div>
+          <div class="check"><span class="ic ok">✓</span><div>Rate limits: auth 10/15m · read 200/min · write 60/min · upload 20/h</div></div>
+          <div class="check"><span class="ic ok">✓</span><div>Zod validators per route (body/query/params)</div></div>
+        </div>
+        <div class="card">
+          <span class="tag lavender">Observability</span>
+          <h3>Local dashboard devtool</h3>
+          <div class="check"><span class="ic ok">✓</span><div>Opt-in in-memory metrics (<code>DASHBOARD_METRICS=1</code>): p50/p95/p99, per-route counts</div></div>
+          <div class="check"><span class="ic ok">✓</span><div><code>dashboard/</code> is a local-only Mission Control: Express BFF + React/Recharts UI, e2e scenario poller</div></div>
+          <div class="check"><span class="ic miss">!</span><div>No Sentry, no log aggregation, no CI yet — planned in <code>infra/README.md</code></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROLE FLOWS -->
+  <section id="roles" style="margin-top:54px">
+    <h2>How each role moves through the app</h2>
+    <p>Pick a role on the left. Steps map to routes that actually exist in <code>app_router.dart</code> and <code>web/src/router/routes.tsx</code>.</p>
+
+    <div class="roles">
+      <div class="menu">
+        <button data-role="member" class="active">
+          <span class="role-name">Member</span>
+          <span class="role-sub">Joins · attends · pays</span>
+        </button>
+        <button data-role="em">
+          <span class="role-name">Event Manager</span>
+          <span class="role-sub">Runs the day-of</span>
+        </button>
+        <button data-role="sub">
+          <span class="role-name">Sub-Admin</span>
+          <span class="role-sub">People &amp; moderation</span>
+        </button>
+        <button data-role="admin">
+          <span class="role-name">Community Admin</span>
+          <span class="role-sub">Owns the community</span>
+        </button>
+        <button data-role="super">
+          <span class="role-name">Super Admin</span>
+          <span class="role-sub">Owns the platform</span>
+        </button>
+      </div>
+
+      <div>
+        <div class="role-panel active" data-rolepanel="member">
+          <div class="card">
+            <span class="tag mint">happy path · discovery → paid RSVP</span>
+            <h3>From "found a group" to "I'm going Saturday"</h3>
+            <div class="flow">
+              <div class="step arrow"><span class="n">1</span>/discover</div>
+              <div class="step arrow"><span class="n">2</span>Join · request</div>
+              <div class="step arrow"><span class="n">3</span>/c/:id/welcome</div>
+              <div class="step arrow"><span class="n">4</span>/c/:id/rules · ack</div>
+              <div class="step arrow"><span class="n">5</span>/home feed</div>
+              <div class="step arrow"><span class="n">6</span>/events/:id</div>
+              <div class="step arrow"><span class="n">7</span>/events/:id/checkout</div>
+              <div class="step arrow"><span class="n">8</span>Stripe (or stub)</div>
+              <div class="step"><span class="n">9</span>/pay/success polls /me/rsvps</div>
+            </div>
+            <p style="font-size:13px">Identity surface: <code>/me</code> · <code>/me/edit</code> · <code>/me/rsvps</code> · <code>/me/membership</code> · <code>/inbox</code> · <code>/settings/notifications</code> · <code>/settings/privacy</code> · <code>/settings/delete</code>.</p>
+          </div>
+        </div>
+
+        <div class="role-panel" data-rolepanel="em">
+          <div class="card">
+            <span class="tag sky">day-of operations</span>
+            <h3>Event Manager: command center for one event</h3>
+            <div class="flow">
+              <div class="step arrow"><span class="n">1</span>/manage/events</div>
+              <div class="step arrow"><span class="n">2</span>/manage/events/:id</div>
+              <div class="step arrow"><span class="n">3</span>Attendees · check-in</div>
+              <div class="step arrow"><span class="n">4</span>Materials upload</div>
+              <div class="step arrow"><span class="n">5</span>Q&amp;A: answer · pin · resolve</div>
+              <div class="step arrow"><span class="n">6</span>Broadcast → all RSVPs</div>
+              <div class="step"><span class="n">7</span>Publish Recap (photos + body)</div>
+            </div>
+            <p style="font-size:13px">Backed by <code>loadEventScope()</code> + <code>requireEventManager</code>. Aggregator: <code>GET /me/managed-events?bucket=upcoming|past</code>.</p>
+          </div>
+        </div>
+
+        <div class="role-panel" data-rolepanel="sub">
+          <div class="card">
+            <span class="tag lavender">people &amp; safety</span>
+            <h3>Sub-Admin: everyone except finance</h3>
+            <div class="flow">
+              <div class="step arrow"><span class="n">1</span>/admin/overview (KPIs)</div>
+              <div class="step arrow"><span class="n">2</span>/admin/analytics (Growth · Attendance · Members)</div>
+              <div class="step arrow"><span class="n">3</span>/admin/members/applications · approve</div>
+              <div class="step arrow"><span class="n">4</span>/admin/members &amp; /admin/members/:id</div>
+              <div class="step arrow"><span class="n">5</span>/admin/moderation (post · initiative)</div>
+              <div class="step"><span class="n">6</span>Broadcast composer</div>
+            </div>
+            <p style="font-size:13px">The Revenue tile is hidden by a RevenueGuardBanner; the backend enforces it via <code>blockSubAdminFromFinancial</code> — UI and API agree.</p>
+          </div>
+        </div>
+
+        <div class="role-panel" data-rolepanel="admin">
+          <div class="card">
+            <span class="tag coral">owns the community</span>
+            <h3>Community Admin: brand, money, roles</h3>
+            <div class="flow">
+              <div class="step arrow"><span class="n">1</span>/admin/setup wizard (6 steps)</div>
+              <div class="step arrow"><span class="n">2</span>/admin/settings · branding · roles</div>
+              <div class="step arrow"><span class="n">3</span>/admin/members/invite</div>
+              <div class="step arrow"><span class="n">4</span>/admin/events/new · edit · pricing</div>
+              <div class="step arrow"><span class="n">5</span>/admin/events/:id/assign-manager</div>
+              <div class="step arrow"><span class="n">6</span>/admin/finances (KPIs + per-event)</div>
+              <div class="step arrow"><span class="n">7</span>/admin/finances/subscriptions</div>
+              <div class="step"><span class="n">8</span>/admin/events/:id/refund</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="role-panel" data-rolepanel="super">
+          <div class="card">
+            <span class="tag sand">owns the platform</span>
+            <h3>Super Admin: platform &amp; tenants</h3>
+            <div class="flow">
+              <div class="step arrow"><span class="n">1</span>/super (KPIs · MAU chart)</div>
+              <div class="step arrow"><span class="n">2</span>/super/communities</div>
+              <div class="step arrow"><span class="n">3</span>/super/communities/:id (Suspend · Delete)</div>
+              <div class="step arrow"><span class="n">4</span>/super/users (search · filters)</div>
+              <div class="step arrow"><span class="n">5</span>Disable/Enable user</div>
+              <div class="step"><span class="n">6</span>/super/settings (Stripe key · maintenance)</div>
+            </div>
+            <p style="font-size:13px">Per spec, super-admin <em>cannot</em> see member passwords or payment cards — there's a guard card in <code>UserDetailSuper</code>.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARCHITECTURE -->
+  <section id="arch" style="margin-top:54px">
+    <h2>Architecture (from the code, not the spec)</h2>
+    <p>Three clients, one backend, one Mongo. The Stripe webhook lives <em>outside</em> the JSON-parser so it can verify a raw signed body.</p>
+
+    <div class="card" style="padding:28px">
+      <svg class="arch-svg" viewBox="0 0 1080 520" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="g1" x1="0" x2="1">
+            <stop offset="0%" stop-color="#FBE5DF"/>
+            <stop offset="100%" stop-color="#FCEEDA"/>
+          </linearGradient>
+          <linearGradient id="g2" x1="0" x2="1">
+            <stop offset="0%" stop-color="#E2F2EA"/>
+            <stop offset="100%" stop-color="#E5F0F8"/>
+          </linearGradient>
+          <linearGradient id="g3" x1="0" x2="1">
+            <stop offset="0%" stop-color="#EEE9F8"/>
+            <stop offset="100%" stop-color="#FBE5DF"/>
+          </linearGradient>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#8C8499"/>
+          </marker>
+        </defs>
+
+        <!-- Clients row -->
+        <g font-family="DM Sans, sans-serif">
+          <rect x="40" y="30" width="260" height="100" rx="16" fill="url(#g1)" stroke="#f4cfc3"/>
+          <text x="60" y="62" font-size="14" font-weight="700" fill="#2A2238">Mobile (Flutter, RTL)</text>
+          <text x="60" y="84" font-size="12" fill="#5E5470">Riverpod · Dio · go_router</text>
+          <text x="60" y="104" font-size="12" fill="#5E5470">SecureStorage tokens · 138 routes</text>
+
+          <rect x="320" y="30" width="260" height="100" rx="16" fill="url(#g2)" stroke="#cfe5d8"/>
+          <text x="340" y="62" font-size="14" font-weight="700" fill="#2A2238">Web PWA (React + Vite)</text>
+          <text x="340" y="84" font-size="12" fill="#5E5470">Zustand · React Query · Tailwind</text>
+          <text x="340" y="104" font-size="12" fill="#5E5470">vite-plugin-pwa · ~80 routes</text>
+
+          <rect x="600" y="30" width="260" height="100" rx="16" fill="url(#g3)" stroke="#dfd6f1"/>
+          <text x="620" y="62" font-size="14" font-weight="700" fill="#2A2238">Dashboard (local devtool)</text>
+          <text x="620" y="84" font-size="12" fill="#5E5470">Express BFF + React/Recharts</text>
+          <text x="620" y="104" font-size="12" fill="#5E5470">Polls metrics &amp; e2e scenarios</text>
+        </g>
+
+        <!-- API gateway -->
+        <rect x="170" y="180" width="740" height="120" rx="20" fill="#fff" stroke="#EFE7DE" stroke-width="2"/>
+        <text x="200" y="208" font-size="14" font-weight="700" fill="#2A2238" font-family="DM Sans, sans-serif">Express API · /api/v1</text>
+        <text x="200" y="230" font-size="11.5" fill="#5E5470" font-family="DM Sans, sans-serif">helmet · cors · mongoSanitize · rate-limiter · Zod validators · winston/morgan</text>
+        <g font-family="DM Sans, sans-serif" font-size="11" fill="#2A2238">
+          <rect x="200" y="246" width="78" height="36" rx="10" fill="#FBE5DF" stroke="#f4cfc3"/><text x="219" y="269">auth</text>
+          <rect x="288" y="246" width="100" height="36" rx="10" fill="#E2F2EA" stroke="#cfe5d8"/><text x="305" y="269">community</text>
+          <rect x="398" y="246" width="78" height="36" rx="10" fill="#E5F0F8" stroke="#cfe2f0"/><text x="418" y="269">events</text>
+          <rect x="486" y="246" width="92" height="36" rx="10" fill="#FCEEDA" stroke="#f3d7b5"/><text x="503" y="269">payments</text>
+          <rect x="588" y="246" width="98" height="36" rx="10" fill="#EEE9F8" stroke="#dfd6f1"/><text x="605" y="269">initiatives</text>
+          <rect x="696" y="246" width="68" height="36" rx="10" fill="#E2F2EA" stroke="#cfe5d8"/><text x="715" y="269">posts</text>
+          <rect x="774" y="246" width="116" height="36" rx="10" fill="#FBE5DF" stroke="#f4cfc3"/><text x="790" y="269">admin · super</text>
+        </g>
+
+        <!-- middleware ribbon -->
+        <rect x="170" y="320" width="740" height="50" rx="12" fill="#FFF8F1" stroke="#f4e6d2"/>
+        <text x="200" y="350" font-size="12" fill="#7a4426" font-family="DM Sans, sans-serif" font-weight="600">
+          middleware · verifyToken → loadMembership(:cid) → requireCommunityRole → blockSubAdminFromFinancial → eventScope → validate
+        </text>
+
+        <!-- bottom row -->
+        <g font-family="DM Sans, sans-serif">
+          <rect x="40" y="400" width="220" height="100" rx="16" fill="#EEE9F8" stroke="#dfd6f1"/>
+          <text x="60" y="432" font-size="14" font-weight="700" fill="#2A2238">MongoDB</text>
+          <text x="60" y="454" font-size="11.5" fill="#5E5470">17 models · communityId-led</text>
+          <text x="60" y="472" font-size="11.5" fill="#5E5470">compound indexes · TTL</text>
+
+          <rect x="280" y="400" width="220" height="100" rx="16" fill="#FCEEDA" stroke="#f3d7b5"/>
+          <text x="300" y="432" font-size="14" font-weight="700" fill="#2A2238">Stripe</text>
+          <text x="300" y="454" font-size="11.5" fill="#5E5470">checkout · webhook (raw body)</text>
+          <text x="300" y="472" font-size="11.5" fill="#5E5470">StubStripeService for dev</text>
+
+          <rect x="520" y="400" width="220" height="100" rx="16" fill="#E2F2EA" stroke="#cfe5d8"/>
+          <text x="540" y="432" font-size="14" font-weight="700" fill="#2A2238">Cloudinary / local</text>
+          <text x="540" y="454" font-size="11.5" fill="#5E5470">Multer uploads · materials · avatars</text>
+          <text x="540" y="472" font-size="11.5" fill="#5E5470">driver via STORAGE_DRIVER</text>
+
+          <rect x="760" y="400" width="280" height="100" rx="16" fill="#FBE5DF" stroke="#f4cfc3"/>
+          <text x="780" y="432" font-size="14" font-weight="700" fill="#2A2238">Cron + Mail</text>
+          <text x="780" y="454" font-size="11.5" fill="#5E5470">node-cron · recurring events</text>
+          <text x="780" y="472" font-size="11.5" fill="#5E5470">mail.service (console / SendGrid)</text>
+        </g>
+
+        <!-- arrows -->
+        <g stroke="#8C8499" stroke-width="1.5" fill="none">
+          <path d="M170 130 C 170 160, 300 160, 360 180" marker-end="url(#arrow)"/>
+          <path d="M450 130 L 510 180" marker-end="url(#arrow)"/>
+          <path d="M730 130 C 720 160, 600 160, 600 180" marker-end="url(#arrow)"/>
+          <path d="M340 370 L 200 400" marker-end="url(#arrow)"/>
+          <path d="M540 370 L 420 400" marker-end="url(#arrow)"/>
+          <path d="M620 370 L 660 400" marker-end="url(#arrow)"/>
+          <path d="M780 370 L 880 400" marker-end="url(#arrow)"/>
+        </g>
+      </svg>
+
+      <div class="legend">
+        <span><i style="background:#FBE5DF"></i> Mobile / coral surfaces</span>
+        <span><i style="background:#E2F2EA"></i> Web / data</span>
+        <span><i style="background:#EEE9F8"></i> Lavender / observability</span>
+        <span><i style="background:#FCEEDA"></i> Payments</span>
+      </div>
+    </div>
+
+    <h3 style="margin-top:30px">Deployment shape</h3>
+    <div class="grid cols-3" style="margin-top:10px">
+      <div class="card">
+        <span class="tag sky">infra/</span>
+        <h3>One VPS · Docker Compose</h3>
+        <p style="font-size:13.5px">Two services in <code>docker-compose.prod.yml</code>: <code>mongo</code> (private network) and <code>api</code> (port 3010 → 4242 inside). <code>infra/deploy.sh</code> rsyncs the repo, generates JWT secrets on first run, brings the stack up.</p>
+      </div>
+      <div class="card">
+        <span class="tag mint">/api/v1/health</span>
+        <h3>Liveness</h3>
+        <p style="font-size:13.5px">Returns <code>{ status:"ok", db, uptime, version }</code>. Read-loop driver in the local <code>dashboard/</code> uses it for the green-light tile.</p>
+      </div>
+      <div class="card">
+        <span class="tag coral">Demo seed</span>
+        <h3>One command resets the world</h3>
+        <p style="font-size:13.5px"><code>npm run demo:reset</code> idempotently restores 5 demo users (Bob superadmin, Alice admin, Sam sub-admin, Eve event-manager, Mike member) inside "Acme Devs" — with seeded events, initiative, and a free + paid event ready to walk.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CREATIVE IDEAS -->
+  <section id="ideas" style="margin-top:54px">
+    <h2>Creative ways to make this app special</h2>
+    <p>Six ideas that leverage what's <em>already in the code</em> (audit log, multi-tenant guards, Stripe webhook, RSVPs, Hebrew RTL) and would make this feel uniquely alive vs. yet-another-Meetup.</p>
+
+    <div class="ideas">
+      <div class="idea coral">
+        <span class="tag coral">delight</span>
+        <h3>Living room mode</h3>
+        <p style="font-size:14px">A community's home screen visibly "wakes up" around its next event: a soft glow background, the hero card swells, RSVPs trickle in as ambient micro-animations. Quiet weeks intentionally feel calm. Turns a feed into a heartbeat.</p>
+        <div class="why">Uses what's there: <code>Event.startAt</code>, <code>rsvpCount</code> deltas, existing notification fan-out.</div>
+      </div>
+
+      <div class="idea mint">
+        <span class="tag mint">memory</span>
+        <h3>Annual time-capsule</h3>
+        <p style="font-size:14px">Every December the app rolls up each member's year — events attended, initiatives backed, photos from recaps — into a shareable RTL "scroll" card. Audit log + Event.summary.photoUrls already exist; just need a renderer.</p>
+        <div class="why">Cheap to ship, screams "we care about your story", drives organic Hebrew social shares.</div>
+      </div>
+
+      <div class="idea lavender">
+        <span class="tag lavender">money</span>
+        <h3>Pay-it-forward seats</h3>
+        <p style="font-size:14px">On the Checkout screen, members can buy a "seat for someone else" — admin sees a pool of unclaimed paid spots they can grant. Generosity becomes a visible community signal. Payment model + refund partials already support it.</p>
+        <div class="why">Stripe partial-refund + an extra <code>Payment.giftedSeatFor</code> field; community admin grants via existing role/membership tools.</div>
+      </div>
+
+      <div class="idea sand">
+        <span class="tag sand">trust</span>
+        <h3>Glass-house mode</h3>
+        <p style="font-size:14px">Optional per-community: every admin action becomes a member-visible "transparency ledger" entry — "Alice updated event price · 2h ago". The audit log already runs; just expose a filtered, gentle-tone view to members.</p>
+        <div class="why">Differentiator vs. Meetup/Eventbrite. Especially powerful for religious, civic, or co-op communities in Israel.</div>
+      </div>
+
+      <div class="idea sky">
+        <span class="tag sky">depth</span>
+        <h3>Initiative graduation track</h3>
+        <p style="font-size:14px">Approved Initiatives don't just sit — they get a Kanban-style "life-cycle" view (Idea → In-progress → Wrapped) and an auto-published recap when marked complete. Borrow the EventRecap renderer; initiatives already have status states.</p>
+        <div class="why">Turns Initiatives from a buried tab into the most viral surface in the app.</div>
+      </div>
+
+      <div class="idea coral">
+        <span class="tag coral">presence</span>
+        <h3>Live-pulse during events</h3>
+        <p style="font-size:14px">During an event window, the Command Center streams a soft pulse to every RSVP: "12 people checked in · Q&amp;A just opened". No video, no chat — just <em>presence</em>. Use the existing check-in + Q&amp;A endpoints with SSE/poll.</p>
+        <div class="why">Fits the calmness palette. Doesn't need a chat moderation policy — perfect for v1.</div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:36px">Smaller polish wins, also high-leverage</h3>
+    <details>
+      <summary>Whisper notifications — soft, not buzzy</summary>
+      <div>Group push notifications per community and digest them. Most apps spam; this one whispers. Notification preferences already separate event/rsvp/initiative/post/system — extend with a "digest cadence" enum.</div>
+    </details>
+    <details>
+      <summary>QR-less check-in via name search + tap</summary>
+      <div>You already deferred the QR scanner. Lean in: a beautifully-fast member-search check-in screen often <em>beats</em> QR scanning for small groups. Backend has <code>POST /events/:eid/rsvps/:rid/check-in</code> + bulk variant; this is purely a polish on the existing screen.</div>
+    </details>
+    <details>
+      <summary>"Why am I here?" onboarding remembers</summary>
+      <div>The Interests selector already collects tags. Quietly use them to sort the Discovery feed and the first-RSVP suggestion. The data lives on User; the join logic is in <code>discovery.controller</code>.</div>
+    </details>
+    <details>
+      <summary>Community-branded subscription tier names</summary>
+      <div>Today plans are "monthly" / "annual". Let each community rename them ("חבר זהב" / "פטרון") in the Branding step of the AdminWizard. Stripe price IDs stay stable; only display strings change.</div>
+    </details>
+  </section>
+
+  <footer>
+    <span>Built from the code at <code>/Users/Nir.Saban/communities</code> · backend, mobile, web, dashboard, infra all surveyed.</span>
+    <span>Soft palette inspired by the app's own coral/mint/sand tokens in <code>commuinites_design/</code>.</span>
+  </footer>
+</div>
+
+<script>
+  // tabs
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.addEventListener('click',()=>{
+      const k=t.dataset.tab;
+      document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===t));
+      document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.dataset.panel===k));
+    });
+  });
+  // role flows
+  document.querySelectorAll('.menu button').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const k=b.dataset.role;
+      document.querySelectorAll('.menu button').forEach(x=>x.classList.toggle('active',x===b));
+      document.querySelectorAll('.role-panel').forEach(p=>p.classList.toggle('active',p.dataset.rolepanel===k));
+    });
+  });
+  // smooth anchor
+  document.querySelectorAll('a.nav').forEach(a=>{
+    a.addEventListener('click',e=>{
+      const id=a.getAttribute('href').slice(1);
+      const el=document.getElementById(id);
+      if(el){ e.preventDefault(); el.scrollIntoView({behavior:'smooth', block:'start'}); }
+    });
+  });
+</script>
+</body>
+</html>

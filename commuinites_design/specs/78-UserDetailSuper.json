@@ -1,0 +1,62 @@
+{
+  "screen": "UserDetailSuper",
+  "route": "/super/users/:id",
+  "roles": [
+    "super_admin"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "Avatar",
+      "type": "avatar",
+      "height": 72,
+      "width": 72
+    },
+    {
+      "name": "Name",
+      "type": "text",
+      "style": "titleLarge"
+    },
+    {
+      "name": "CommunitiesList",
+      "type": "list"
+    },
+    {
+      "name": "AccountActionsCard",
+      "type": "card"
+    }
+  ],
+  "states": [
+    "populated"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "Password",
+      "hiddenFor": [
+        "super_admin"
+      ]
+    },
+    {
+      "component": "PaymentCard",
+      "hiddenFor": [
+        "super_admin"
+      ]
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "theme": "dark",
+  "interactions": [
+    "AccountActions → force password reset / disable account",
+    "cross-tenant memberships + roles"
+  ]
+}

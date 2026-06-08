@@ -1,0 +1,54 @@
+{
+  "screen": "InitiativesList",
+  "route": "/initiatives",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "FilterButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "FilterChips",
+      "type": "chipGroup",
+      "scrollable": true
+    },
+    {
+      "name": "InitiativeCard",
+      "type": "card",
+      "repeat": true
+    },
+    {
+      "name": "SupporterStack",
+      "type": "avatarStack"
+    },
+    {
+      "name": "ProgressTrack",
+      "type": "progress"
+    },
+    {
+      "name": "BottomNav",
+      "type": "nav",
+      "active": "Initiatives"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated",
+    "empty"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 13
+  },
+  "interactions": [
+    "FilterChips → status/category",
+    "InitiativeCard → initiative detail"
+  ]
+}

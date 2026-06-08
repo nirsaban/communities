@@ -1,0 +1,52 @@
+{
+  "screen": "Splash",
+  "route": "/",
+  "roles": [
+    "member",
+    "admin",
+    "subadmin",
+    "event_manager",
+    "super_admin"
+  ],
+  "components": [
+    {
+      "name": "BrandMark",
+      "type": "logo",
+      "width": 62,
+      "height": 62
+    },
+    {
+      "name": "Wordmark",
+      "type": "text",
+      "style": "displayMedium",
+      "color": "onBackground"
+    },
+    {
+      "name": "LoadingDots",
+      "type": "shimmer",
+      "width": 32,
+      "height": 8
+    },
+    {
+      "name": "Tagline",
+      "type": "text",
+      "style": "labelSmall",
+      "color": "muted"
+    }
+  ],
+  "states": [
+    "loading"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 24
+  },
+  "interactions": [
+    "AutoRoute → onboarding, login, or role home once session+tenant resolve"
+  ]
+}

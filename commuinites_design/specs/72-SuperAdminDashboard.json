@@ -1,0 +1,63 @@
+{
+  "screen": "SuperAdminDashboard",
+  "route": "/super",
+  "roles": [
+    "super_admin"
+  ],
+  "components": [
+    {
+      "name": "PlatformBadge",
+      "type": "badge"
+    },
+    {
+      "name": "NotificationsButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "Title",
+      "type": "text",
+      "style": "displayMedium"
+    },
+    {
+      "name": "KPIGrid",
+      "type": "grid",
+      "kpis": [
+        "Communities",
+        "Users",
+        "Platform MRR",
+        "DAU/MAU"
+      ]
+    },
+    {
+      "name": "ActiveUsersAreaChart",
+      "type": "areaChart"
+    },
+    {
+      "name": "ActivityFeed",
+      "type": "list"
+    },
+    {
+      "name": "BottomNav",
+      "type": "nav",
+      "active": "Dashboard"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "theme": "dark",
+  "interactions": [
+    "cross-tenant metrics",
+    "dark operator skin"
+  ]
+}

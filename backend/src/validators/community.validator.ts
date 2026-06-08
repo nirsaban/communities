@@ -60,13 +60,20 @@ export const onboardCommunitySchema = z
   })
   .strict();
 
+// Wire-format role accepts both camelCase ('eventManager') and snake_case
+// ('event_manager') for backwards-compat with any existing clients, but
+// outputs the DB enum after transform.
+const wireRoleEnum = z
+  .enum(['member', 'eventManager', 'event_manager', 'subadmin', 'admin'])
+  .transform((v) => (v === 'eventManager' ? 'event_manager' : v));
+
 export const inviteMemberSchema = z.object({
   email: z.string().email(),
-  role: z.enum(['member', 'event_manager', 'subadmin', 'admin']).default('member'),
+  role: wireRoleEnum.default('member'),
 });
 
 export const changeMemberRoleSchema = z.object({
-  role: z.enum(['member', 'event_manager', 'subadmin', 'admin']),
+  role: wireRoleEnum,
 });
 
 export const listQuerySchema = z.object({
@@ -74,7 +81,7 @@ export const listQuerySchema = z.object({
   cursor: z.string().optional(),
   search: z.string().max(200).optional(),
   status: z.enum(['active', 'suspended', 'deleted']).optional(),
-  role: z.enum(['member', 'event_manager', 'subadmin', 'admin']).optional(),
+  role: wireRoleEnum.optional(),
 });
 
 export const acceptInvitationSchema = z.object({

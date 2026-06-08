@@ -1,0 +1,60 @@
+{
+  "screen": "EditProfile",
+  "route": "/me/edit",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "SaveButton",
+      "type": "link",
+      "color": "accent"
+    },
+    {
+      "name": "AvatarUpload",
+      "type": "avatar",
+      "height": 96,
+      "width": 96
+    },
+    {
+      "name": "DisplayNameField",
+      "type": "textField"
+    },
+    {
+      "name": "UsernameField",
+      "type": "textField"
+    },
+    {
+      "name": "BioField",
+      "type": "textArea",
+      "maxLength": 160
+    },
+    {
+      "name": "InterestChips",
+      "type": "chipGroup",
+      "editable": true
+    }
+  ],
+  "states": [
+    "default",
+    "focused"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "SaveButton → validate username uniqueness",
+    "back → unsaved-changes guard",
+    "AvatarUpload → photo picker"
+  ]
+}

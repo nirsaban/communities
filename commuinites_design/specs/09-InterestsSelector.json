@@ -1,0 +1,60 @@
+{
+  "screen": "InterestsSelector",
+  "route": "/onboard/interests",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "ProgressBar",
+      "type": "progress",
+      "segments": 2
+    },
+    {
+      "name": "Title",
+      "type": "text",
+      "style": "displayMedium",
+      "color": "onBackground"
+    },
+    {
+      "name": "Body",
+      "type": "text",
+      "style": "bodyMedium",
+      "color": "muted"
+    },
+    {
+      "name": "InterestChips",
+      "type": "chipGroup",
+      "selectable": "multi"
+    },
+    {
+      "name": "ContinueButton",
+      "type": "button",
+      "style": "primary",
+      "width": "full",
+      "height": 50
+    }
+  ],
+  "states": [
+    "default",
+    "populated"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "ContinueButton",
+      "disabledUntil": "3+ interests selected"
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "InterestChips → multi-select toggle",
+    "ContinueButton → label updates with live count"
+  ]
+}

@@ -27,6 +27,24 @@ export interface INotificationChannelPrefs {
 
 export type INotificationPreferences = Record<NotificationPrefKey, INotificationChannelPrefs>;
 
+export type ProfileVisibility = 'public' | 'members_only' | 'private';
+
+export interface IPrivacyPreferences {
+  profileVisibility: ProfileVisibility;
+  showAttendedEvents: boolean;
+  showInitiativesSupported: boolean;
+  allowMentions: boolean;
+}
+
+export function defaultPrivacyPreferences(): IPrivacyPreferences {
+  return {
+    profileVisibility: 'members_only',
+    showAttendedEvents: true,
+    showInitiativesSupported: true,
+    allowMentions: true,
+  };
+}
+
 export interface IUser extends Document {
   _id: Types.ObjectId;
   email: string;
@@ -36,6 +54,7 @@ export interface IUser extends Document {
   bio?: string;
   interests: string[];
   notificationPreferences?: INotificationPreferences;
+  privacy?: IPrivacyPreferences;
   globalRole: GlobalRole;
   status: UserStatus;
   emailVerifiedAt?: Date;
@@ -43,6 +62,8 @@ export interface IUser extends Document {
   onboarding: IUserOnboarding;
   passwordResetTokenHash?: string;
   passwordResetExpiresAt?: Date;
+  emailVerificationCodeHash?: string;
+  emailVerificationExpiresAt?: Date;
   // Set when the user requests soft-deletion. Background job purges after this date.
   scheduledDeletionAt?: Date | null;
   createdAt: Date;
@@ -90,6 +111,20 @@ const notificationPreferencesSchema = new Schema<INotificationPreferences>(
   { _id: false },
 );
 
+const privacySchema = new Schema<IPrivacyPreferences>(
+  {
+    profileVisibility: {
+      type: String,
+      enum: ['public', 'members_only', 'private'],
+      default: 'members_only',
+    },
+    showAttendedEvents: { type: Boolean, default: true },
+    showInitiativesSupported: { type: Boolean, default: true },
+    allowMentions: { type: Boolean, default: true },
+  },
+  { _id: false },
+);
+
 export function defaultNotificationPreferences(): INotificationPreferences {
   return Object.fromEntries(
     NOTIFICATION_PREF_KEYS.map((k) => [k, { push: true, email: true }]),
@@ -112,6 +147,7 @@ const userSchema = new Schema<IUser>(
     bio: String,
     interests: { type: [String], default: [] },
     notificationPreferences: { type: notificationPreferencesSchema, default: undefined },
+    privacy: { type: privacySchema, default: undefined },
     globalRole: { type: String, enum: ['user', 'superadmin'], default: 'user', index: true },
     status: { type: String, enum: ['active', 'disabled'], default: 'active', index: true },
     emailVerifiedAt: Date,
@@ -119,6 +155,8 @@ const userSchema = new Schema<IUser>(
     onboarding: { type: onboardingSchema, default: () => ({}) },
     passwordResetTokenHash: { type: String, select: false },
     passwordResetExpiresAt: { type: Date, select: false },
+    emailVerificationCodeHash: { type: String, select: false },
+    emailVerificationExpiresAt: { type: Date, select: false },
     scheduledDeletionAt: { type: Date, default: null, index: true },
   },
   { timestamps: true },

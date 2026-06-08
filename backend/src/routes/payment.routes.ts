@@ -69,6 +69,13 @@ meSubscriptionsRouter.post(
 // /api/v1/payments/:pid/refund — admin (in a community context) only.
 // Authorization is handled inside the controller via Payment.communityId lookup.
 export const paymentRouter = Router();
+paymentRouter.get(
+  '/:pid',
+  verifyToken,
+  blockSubAdminFromFinancial,
+  readLimiter,
+  paymentCtl.getPayment,
+);
 paymentRouter.post(
   '/:pid/refund',
   verifyToken,

@@ -1,0 +1,45 @@
+name: web-ci
+
+on:
+  push:
+    branches: ['**']
+    paths:
+      - 'web/**'
+      - '.github/workflows/web-ci.yml'
+  pull_request:
+    paths:
+      - 'web/**'
+      - '.github/workflows/web-ci.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # The committed package-lock.json pins resolved URLs at a private artifactory
+      # that public CI runners can't reach. Mirror the Dockerfile: force the public
+      # registry and install without a lockfile. Pin via package.json semvers.
+      - name: Install (public registry, no lockfile)
+        run: |
+          npm config set registry https://registry.npmjs.org/
+          npm install --no-audit --no-fund --no-package-lock
+
+      - name: Typecheck
+        run: npx tsc -b --noEmit
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload dist as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: web/dist
+          retention-days: 5

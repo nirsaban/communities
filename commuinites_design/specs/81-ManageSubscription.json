@@ -1,0 +1,46 @@
+{
+  "screen": "ManageSubscription",
+  "route": "/me/membership",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "PlanCard",
+      "type": "card"
+    },
+    {
+      "name": "BillingHistoryRow",
+      "type": "listRow"
+    },
+    {
+      "name": "UpdatePaymentRow",
+      "type": "listRow"
+    },
+    {
+      "name": "CancelButton",
+      "type": "button",
+      "style": "ghost",
+      "color": "error"
+    }
+  ],
+  "states": [
+    "populated"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "CancelButton → cancellation confirmation (low-emphasis, not a trap)"
+  ]
+}

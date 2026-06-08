@@ -1,0 +1,51 @@
+{
+  "screen": "Unauthorized403",
+  "route": "/403",
+  "roles": [
+    "member",
+    "subadmin",
+    "event_manager"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "LockBlob",
+      "type": "icon"
+    },
+    {
+      "name": "Headline",
+      "type": "text",
+      "style": "titleLarge"
+    },
+    {
+      "name": "Body",
+      "type": "text",
+      "style": "bodyLarge",
+      "color": "muted"
+    },
+    {
+      "name": "HomeButton",
+      "type": "button",
+      "style": "primary"
+    }
+  ],
+  "states": [
+    "error"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 24
+  },
+  "interactions": [
+    "wrong-role guard (e.g. financial route)",
+    "names required role; never leaks content"
+  ]
+}

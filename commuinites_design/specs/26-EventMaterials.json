@@ -1,0 +1,50 @@
+{
+  "screen": "EventMaterials",
+  "route": "/events/:id/materials",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "RecordingCard",
+      "type": "card",
+      "playable": true
+    },
+    {
+      "name": "DocumentRow",
+      "type": "listRow",
+      "repeat": true,
+      "trailing": "downloadButton"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated",
+    "empty",
+    "error"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "MaterialsList",
+      "hiddenFor": [
+        "non-attendees if organizer set private"
+      ]
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 18
+  },
+  "interactions": [
+    "RecordingCard → in-app player",
+    "DocumentRow → download or open viewer"
+  ]
+}

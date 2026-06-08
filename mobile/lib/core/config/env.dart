@@ -14,7 +14,7 @@ class AppEnv {
   static Future<void> load({String flavor = 'development'}) async {
     await dotenv.load(fileName: '.env.$flavor');
     current = AppEnv._(
-      apiBaseUrl: dotenv.get('API_BASE_URL', fallback: 'http://localhost:3000/api/v1'),
+      apiBaseUrl: dotenv.get('API_BASE_URL', fallback: 'http://localhost:4242/api/v1'),
       appName: dotenv.get('APP_NAME', fallback: 'Community'),
     );
   }

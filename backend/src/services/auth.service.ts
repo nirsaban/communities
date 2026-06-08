@@ -4,6 +4,7 @@ import { User, IUser, SafeUser } from '../models/User';
 import { Membership } from '../models/Membership';
 import { RefreshToken } from '../models/RefreshToken';
 import { AppError } from '../utils/AppError';
+import { toClientRole } from '../utils/role';
 import { getMailService } from './mail.service';
 import env from '../config/env';
 import {
@@ -49,8 +50,73 @@ export async function registerUser(input: RegisterInput): Promise<AuthSession> {
     passwordHash,
     name: input.name?.trim() || '',
   });
+  await issueEmailVerificationCode(user);
   await markLogin(user, input.ipAddress, input.userAgent);
   return buildSession(user, input.ipAddress, input.userAgent);
+}
+
+function generateVerificationCode(): string {
+  return String(crypto.randomInt(0, 1_000_000)).padStart(6, '0');
+}
+
+async function issueEmailVerificationCode(user: IUser): Promise<void> {
+  const code = generateVerificationCode();
+  const hash = crypto.createHash('sha256').update(code).digest('hex');
+  const expiresAt = new Date(Date.now() + env.EMAIL_VERIFICATION_TTL_MINUTES * 60 * 1000);
+  user.emailVerificationCodeHash = hash;
+  user.emailVerificationExpiresAt = expiresAt;
+  await user.save();
+
+  await getMailService().send({
+    to: user.email,
+    subject: 'Verify your email',
+    text:
+      `Your verification code is ${code}.\n` +
+      `It expires in ${env.EMAIL_VERIFICATION_TTL_MINUTES} minutes.`,
+    template: 'email-verification',
+    data: { code, expiresAt: expiresAt.toISOString() },
+  });
+}
+
+export interface VerifyEmailInput {
+  email: string;
+  code: string;
+}
+
+export async function verifyEmail(input: VerifyEmailInput): Promise<SafeUser> {
+  const email = input.email.toLowerCase().trim();
+  const user = await User.findOne({ email }).select(
+    '+emailVerificationCodeHash +emailVerificationExpiresAt',
+  );
+  if (!user) {
+    throw AppError.invalidInput('Invalid or expired verification code');
+  }
+  if (user.emailVerifiedAt) {
+    return user.toSafeJSON();
+  }
+  const hash = crypto.createHash('sha256').update(input.code).digest('hex');
+  const expired =
+    !user.emailVerificationExpiresAt || user.emailVerificationExpiresAt.getTime() < Date.now();
+  if (user.emailVerificationCodeHash !== hash || expired) {
+    throw AppError.invalidInput('Invalid or expired verification code');
+  }
+  user.emailVerifiedAt = new Date();
+  user.emailVerificationCodeHash = undefined;
+  user.emailVerificationExpiresAt = undefined;
+  await user.save();
+  return user.toSafeJSON();
+}
+
+export interface ResendVerificationInput {
+  email: string;
+}
+
+export async function resendEmailVerification(input: ResendVerificationInput): Promise<void> {
+  const email = input.email.toLowerCase().trim();
+  const user = await User.findOne({ email });
+  // Do not leak which emails exist or whether already verified.
+  if (!user || user.emailVerifiedAt) return;
+  await issueEmailVerificationCode(user);
 }
 
 export interface LoginInput {
@@ -184,7 +250,7 @@ export async function getMe(user: IUser): Promise<{
     memberships: memberships.map((m) => ({
       id: String(m._id),
       communityId: String(m.communityId),
-      role: m.role,
+      role: toClientRole(m.role),
       status: m.status,
       joinedAt: m.joinedAt,
     })),
@@ -209,7 +275,7 @@ export async function deleteMe(user: IUser): Promise<{ scheduledDeletionAt: Date
   return { scheduledDeletionAt: scheduledAt };
 }
 
-async function buildSession(
+export async function buildSession(
   user: IUser,
   ipAddress?: string,
   userAgent?: string,

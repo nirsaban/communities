@@ -1,0 +1,55 @@
+{
+  "screen": "ApprovalQueue",
+  "route": "/admin/members/applications",
+  "roles": [
+    "subadmin",
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "ApplicantCard",
+      "type": "card",
+      "repeat": true
+    },
+    {
+      "name": "AnswerBlock",
+      "type": "card",
+      "variant": "surface2"
+    },
+    {
+      "name": "ApproveButton",
+      "type": "button",
+      "style": "primary",
+      "color": "success"
+    },
+    {
+      "name": "RejectButton",
+      "type": "button",
+      "style": "secondary"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated",
+    "empty"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 12
+  },
+  "interactions": [
+    "ApproveButton → triggers welcome flow",
+    "RejectButton → declines",
+    "swipe actions",
+    "request-to-join only"
+  ]
+}

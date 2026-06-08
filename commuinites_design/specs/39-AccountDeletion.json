@@ -1,0 +1,66 @@
+{
+  "screen": "AccountDeletion",
+  "route": "/settings/delete",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "WarningBlob",
+      "type": "icon",
+      "color": "error"
+    },
+    {
+      "name": "Title",
+      "type": "text",
+      "style": "displayMedium"
+    },
+    {
+      "name": "ConsequencesList",
+      "type": "list"
+    },
+    {
+      "name": "TypedConfirmField",
+      "type": "textField",
+      "confirmWord": "DELETE"
+    },
+    {
+      "name": "DeleteButton",
+      "type": "button",
+      "style": "danger",
+      "width": "full"
+    },
+    {
+      "name": "KeepButton",
+      "type": "button",
+      "style": "ghost"
+    }
+  ],
+  "states": [
+    "default",
+    "focused"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "DeleteButton",
+      "disabledUntil": "field matches DELETE"
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)",
+    "danger": "var(--error)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "DeleteButton → 30-day soft-delete grace before purge",
+    "KeepButton → cancel"
+  ]
+}

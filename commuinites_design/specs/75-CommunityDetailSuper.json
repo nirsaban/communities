@@ -1,0 +1,60 @@
+{
+  "screen": "CommunityDetailSuper",
+  "route": "/super/communities/:id",
+  "roles": [
+    "super_admin"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "CommunityHeader",
+      "type": "row"
+    },
+    {
+      "name": "VitalsKPIGrid",
+      "type": "grid",
+      "kpis": [
+        "Members",
+        "MRR",
+        "Events",
+        "Plan"
+      ]
+    },
+    {
+      "name": "OwnerRow",
+      "type": "listRow"
+    },
+    {
+      "name": "SuspendButton",
+      "type": "button",
+      "style": "secondary"
+    },
+    {
+      "name": "DeleteButton",
+      "type": "button",
+      "style": "secondary",
+      "color": "error"
+    }
+  ],
+  "states": [
+    "populated"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "theme": "dark",
+  "interactions": [
+    "SuspendButton → typed-confirmation",
+    "DeleteButton → typed-confirmation (destructive)",
+    "Restore when suspended"
+  ]
+}

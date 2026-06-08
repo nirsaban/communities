@@ -1,0 +1,59 @@
+{
+  "screen": "RoleManagement",
+  "route": "/admin/settings/roles",
+  "roles": [
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "AdminsGroup",
+      "type": "list"
+    },
+    {
+      "name": "SubAdminsGroup",
+      "type": "list"
+    },
+    {
+      "name": "EventManagersGroup",
+      "type": "list"
+    },
+    {
+      "name": "RoleBadge",
+      "type": "badge",
+      "repeat": true
+    },
+    {
+      "name": "PromoteButton",
+      "type": "button",
+      "style": "primary",
+      "width": "full"
+    }
+  ],
+  "states": [
+    "populated"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "GrantAdminAction",
+      "hiddenFor": [
+        "non-owner"
+      ]
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "PromoteButton → promote to Sub Admin / assign Event Manager",
+    "overflow → demote/reassign"
+  ]
+}

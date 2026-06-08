@@ -6,6 +6,7 @@ import { Membership, CommunityRole, IMembership } from '../models/Membership';
 import { Invitation, IInvitation } from '../models/Invitation';
 import { User, IUser } from '../models/User';
 import { AppError } from '../utils/AppError';
+import { toClientRole } from '../utils/role';
 import { getMailService } from './mail.service';
 import {
   CreateCommunityInput,
@@ -172,7 +173,7 @@ export async function listMembers(
         email: user.email,
         name: user.name,
         photoUrl: user.photoUrl,
-        role: m.role,
+        role: toClientRole(m.role),
         status: m.status,
         joinedAt: m.joinedAt,
       };
@@ -216,13 +217,14 @@ export async function issueInvitation(opts: IssueInvitationOpts): Promise<IInvit
     subject: `You're invited to join ${opts.community.name}`,
     text:
       `You have been invited to join ${opts.community.name} as ${opts.role}.\n\n` +
-      `Accept the invitation: ${env.API_BASE_URL}/api/v1/invitations/${token}/accept\n` +
+      `Accept the invitation: ${env.WEB_BASE_URL}/invite/${token}\n` +
       `(Or use the token in the mobile app: ${token})`,
     template: 'community-invitation',
     data: {
       communityName: opts.community.name,
       role: opts.role,
       token,
+      acceptUrl: `${env.WEB_BASE_URL}/invite/${token}`,
       expiresAt: invitation.expiresAt.toISOString(),
     },
   });
@@ -370,6 +372,35 @@ export async function acceptInvitation(
   } finally {
     session.endSession();
   }
+}
+
+// Peek at an invitation without consuming it. Used by the web /invite/:token page
+// to display community name, role, and whether the recipient already has an account.
+export async function peekInvitation(token: string): Promise<{
+  email: string;
+  role: CommunityRole;
+  community: { id: string; name: string; logoUrl?: string };
+  expiresAt: Date;
+  acceptedAt: Date | null;
+  isNewUser: boolean;
+}> {
+  const invitation = await Invitation.findOne({ token });
+  if (!invitation) throw AppError.notFound('Invitation not found');
+  const community = await Community.findById(invitation.communityId);
+  if (!community) throw AppError.notFound('Community not found');
+  const existingUser = await User.findOne({ email: invitation.email });
+  return {
+    email: invitation.email,
+    role: invitation.role,
+    community: {
+      id: String(community._id),
+      name: community.name,
+      logoUrl: community.logoUrl,
+    },
+    expiresAt: invitation.expiresAt,
+    acceptedAt: invitation.acceptedAt ?? null,
+    isNewUser: !existingUser,
+  };
 }
 
 async function getActorRole(community: ICommunity, actor: IUser): Promise<CommunityRole | 'super'> {

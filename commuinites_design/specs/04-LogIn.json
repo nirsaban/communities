@@ -1,0 +1,69 @@
+{
+  "screen": "LogIn",
+  "route": "/login",
+  "roles": [
+    "member",
+    "admin",
+    "subadmin",
+    "event_manager",
+    "super_admin"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "Title",
+      "type": "text",
+      "style": "displayLarge",
+      "color": "onBackground"
+    },
+    {
+      "name": "EmailField",
+      "type": "textField"
+    },
+    {
+      "name": "PasswordField",
+      "type": "textField",
+      "trailing": "revealToggle"
+    },
+    {
+      "name": "ForgotLink",
+      "type": "link",
+      "color": "accent"
+    },
+    {
+      "name": "LogInButton",
+      "type": "button",
+      "style": "primary",
+      "width": "full",
+      "height": 50
+    },
+    {
+      "name": "SocialButtons",
+      "type": "button",
+      "style": "secondary"
+    }
+  ],
+  "states": [
+    "default",
+    "focused",
+    "error",
+    "loading"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "LogInButton → role home",
+    "ForgotLink → forgot password",
+    "invalidCreds → shake + error chip"
+  ]
+}

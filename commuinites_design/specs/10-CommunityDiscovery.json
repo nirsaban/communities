@@ -1,0 +1,66 @@
+{
+  "screen": "CommunityDiscovery",
+  "route": "/discover",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "Title",
+      "type": "text",
+      "style": "titleLarge",
+      "color": "onBackground"
+    },
+    {
+      "name": "InviteCodeInput",
+      "type": "otp",
+      "length": 6
+    },
+    {
+      "name": "SectionHeader",
+      "type": "text",
+      "style": "titleMedium"
+    },
+    {
+      "name": "CommunityCard",
+      "type": "card",
+      "repeat": true
+    },
+    {
+      "name": "JoinButton",
+      "type": "button",
+      "style": "primary"
+    },
+    {
+      "name": "RequestButton",
+      "type": "button",
+      "style": "secondary"
+    }
+  ],
+  "states": [
+    "default",
+    "populated",
+    "empty"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "JoinButton",
+      "hiddenFor": [
+        "private communities → show RequestButton"
+      ]
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 18
+  },
+  "interactions": [
+    "InviteCodeInput → join by code",
+    "JoinButton → instant join (public)",
+    "RequestButton → approval queue (private)"
+  ]
+}

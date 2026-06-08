@@ -1,0 +1,94 @@
+# Production compose for the VPS — port-only, coexists with the existing
+# yogev-nginx that already owns 80/443.
+#
+# Bring up with:
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+#
+# Required env file: .env.prod (copy from infra/.env.prod.example).
+# All secrets live in that file — never commit it.
+#
+# Ports exposed on the host:
+#   3010 → api (direct access, used by the deploy script's health check)
+#   3011 → web (nginx static + /api/v1 proxy back to the api container)
+# To attach a domain, add a server block to the existing nginx pointing at
+# 3011 (web) — that container handles both the SPA and the API proxy.
+
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    # Mongo is NOT exposed to the host — only the api container reaches it
+    # via the internal docker network.
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', 'db.adminCommand("ping")']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 4242
+      MONGO_URI: mongodb://mongo:27017/community
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?missing}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?missing}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-15m}
+      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-30d}
+      CORS_ORIGINS: ${CORS_ORIGINS:?missing}
+      API_BASE_URL: ${API_BASE_URL:?missing}
+      WEB_BASE_URL: ${WEB_BASE_URL:?missing}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      MAIL_DRIVER: ${MAIL_DRIVER:-console}
+      STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
+      UPLOAD_DIR: /app/uploads
+      # Stripe block kept for now; PayPlus branch will swap these.
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+    ports:
+      # Host:Container — host port 3010 is the public-facing one (free on this
+      # VPS as of 2026-06-03), container listens on 4242 internally to match
+      # the local dev port. Change here + in .env.prod.API_BASE_URL if you reuse.
+      - '3010:4242'
+    volumes:
+      - api_uploads:/app/uploads
+    networks:
+      - internal
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      args:
+        # Same-origin: the web container's nginx proxies /api/v1/* to the api
+        # service inside the internal network. Keep this relative so the same
+        # build works regardless of which domain the web ends up on.
+        VITE_API_BASE_URL: /api/v1
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      # Host:Container — 3011 is free as of 2026-06-09. The container listens
+      # on 80 (nginx default). Attach a domain via the external nginx that
+      # owns 80/443 → upstream http://localhost:3011.
+      - '3011:80'
+    networks:
+      - internal
+
+volumes:
+  mongo_data:
+  api_uploads:
+
+networks:
+  internal:
+    driver: bridge

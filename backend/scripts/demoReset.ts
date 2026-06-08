@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+import bcrypt from 'bcryptjs';
 import { connectDB, disconnectDB } from '../src/config/db';
 import { Community } from '../src/models/Community';
 import { EventModel } from '../src/models/Event';
@@ -6,8 +7,16 @@ import { EventRSVP } from '../src/models/EventRSVP';
 import { Payment } from '../src/models/Payment';
 import { Subscription } from '../src/models/Subscription';
 import { User } from '../src/models/User';
+import { Membership, type CommunityRole } from '../src/models/Membership';
 
 const DEMO_EMAIL = 'bob@example.com';
+const ROLE_USER_PASSWORD = 'RolePass123!';
+const ROLE_USERS: Array<{ email: string; name: string; role: CommunityRole }> = [
+  { email: 'alice-admin@example.com', name: 'Alice Admin', role: 'admin' },
+  { email: 'sam-subadmin@example.com', name: 'Sam Subadmin', role: 'subadmin' },
+  { email: 'eve-em@example.com', name: 'Eve Manager', role: 'event_manager' },
+  { email: 'mike-member@example.com', name: 'Mike Member', role: 'member' },
+];
 
 interface Args {
   email: string;
@@ -74,7 +83,40 @@ async function main(): Promise<void> {
           .modifiedCount;
     console.log(`✓ Community.status → active   (${communitiesRestored} fixed)`);
 
-    const Membership = (await import('../src/models/Membership')).Membership;
+    // Seed default subscription tiers on every community (₪40/month, ₪400/year)
+    // so SubscriptionPlansScreen has real data to render.
+    if (!args.dry) {
+      const subResult = await Community.updateMany(
+        { 'subscriptionPlans.enabled': { $ne: true } },
+        {
+          $set: {
+            'subscriptionPlans.enabled': true,
+            'subscriptionPlans.monthlyPriceCents': 4000,
+            'subscriptionPlans.annualPriceCents': 40000,
+            'subscriptionPlans.currency': 'ILS',
+            'subscriptionPlans.perks': [
+              'גישה לכל האירועים בתשלום',
+              'תוכן בלעדי לחברי מנוי',
+              'עדיפות בהרשמה',
+            ],
+          },
+        },
+      );
+      console.log(`✓ Community.subscriptionPlans seeded (${subResult.modifiedCount} fixed)`);
+
+      // Mark all communities as "wizard completed" — demo communities are
+      // already running. New communities created via /super/communities/new
+      // will start with onboarding.wizardCompletedAt = null and route the
+      // admin to /admin/wizard until they finish.
+      const wizResult = await Community.updateMany(
+        { 'onboarding.wizardCompletedAt': { $exists: false } },
+        { $set: { 'onboarding.wizardCompletedAt': new Date() } },
+      );
+      if (wizResult.modifiedCount > 0) {
+        console.log(`✓ Community.onboarding.wizardCompletedAt → now (${wizResult.modifiedCount} fixed)`);
+      }
+    }
+
     const membershipsFixed = args.dry
       ? await Membership.countDocuments({ status: { $ne: 'active' } })
       : (await Membership.updateMany({ status: { $ne: 'active' } }, { $set: { status: 'active' } }))
@@ -115,6 +157,112 @@ async function main(): Promise<void> {
       console.log(`✓ User ${args.email} → ${Object.keys(userUpdates).join(', ')}`);
     } else {
       console.log(`✓ User ${args.email}            (already clean)`);
+    }
+
+    // Seed one user per community-scoped role so the 5-role smoke walk has a
+    // login for each. Anchored to the demo user's first community.
+    const anchor = await Membership.findOne({ userId: user._id }).lean();
+    if (!anchor) {
+      console.warn(`! ${args.email} has no membership yet — skipping role-user seed.`);
+    } else {
+      const passwordHash = await bcrypt.hash(ROLE_USER_PASSWORD, 12);
+      for (const spec of ROLE_USERS) {
+        const email = spec.email.toLowerCase();
+        let u = await User.findOne({ email });
+        if (!u) {
+          if (!args.dry) {
+            u = await User.create({
+              email,
+              name: spec.name,
+              passwordHash,
+              emailVerifiedAt: new Date(),
+            });
+          }
+          console.log(`✓ user ${email} created`);
+        }
+        if (!u) continue; // dry-run path with no existing user
+        const existing = await Membership.findOne({ userId: u._id, communityId: anchor.communityId });
+        if (!existing) {
+          if (!args.dry) {
+            await Membership.create({
+              userId: u._id,
+              communityId: anchor.communityId,
+              role: spec.role,
+              status: 'active',
+            });
+          }
+          console.log(`✓ ${email} ← ${spec.role} in ${anchor.communityId}`);
+        } else if (existing.role !== spec.role || existing.status !== 'active') {
+          if (!args.dry) {
+            existing.role = spec.role;
+            existing.status = 'active';
+            await existing.save();
+          }
+          console.log(`✓ ${email} role reset → ${spec.role}`);
+        }
+      }
+      console.log(`  (role users login with password "${ROLE_USER_PASSWORD}")`);
+
+      // Assign Eve as event manager of the next upcoming event so the EM smoke
+      // walk shows real data. Per PRD 06 §4, manager powers come from
+      // Event.managers[] alone — we no longer flip Membership.role.
+      const eve = await User.findOne({ email: 'eve-em@example.com' });
+      if (eve) {
+        const upcoming = await EventModel.findOne({
+          communityId: anchor.communityId,
+          status: 'published',
+          endAt: { $gte: new Date() },
+        }).sort({ startAt: 1 });
+        if (upcoming) {
+          if (!upcoming.managers.some((m) => String(m) === String(eve._id))) {
+            if (!args.dry) {
+              upcoming.managers.push(eve._id);
+              await upcoming.save();
+            }
+            console.log(`✓ Eve assigned manager of "${upcoming.title}"`);
+          }
+        } else {
+          console.warn('! no upcoming event found to assign Eve to');
+        }
+      }
+
+      // Flip the first paid event to subscriptionIncluded so Mike (subscriber)
+      // can see the "כלול במנוי" perk in EventDetail.
+      const paid = await EventModel.findOne({
+        communityId: anchor.communityId,
+        'pricing.type': 'paid',
+      });
+      if (paid && !paid.pricing.subscriptionIncluded) {
+        if (!args.dry) {
+          paid.pricing.subscriptionIncluded = true;
+          await paid.save();
+        }
+        console.log(`✓ "${paid.title}" → subscriptionIncluded:true`);
+      }
+
+      // Auto-subscribe Mike so the subscriber-side walk has real state.
+      const mike = await User.findOne({ email: 'mike-member@example.com' });
+      if (mike) {
+        const existingSub = await Subscription.findOne({
+          userId: mike._id,
+          communityId: anchor.communityId,
+        });
+        if (!existingSub) {
+          if (!args.dry) {
+            await Subscription.create({
+              userId: mike._id,
+              communityId: anchor.communityId,
+              plan: 'monthly',
+              status: 'active',
+              cancelAtPeriodEnd: false,
+              currentPeriodStart: new Date(),
+              currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+              stripeSubscriptionId: `sub_demo_mike_${Date.now()}`,
+            });
+          }
+          console.log('✓ Mike auto-subscribed (monthly, active)');
+        }
+      }
     }
 
     if (args.rsvps) {

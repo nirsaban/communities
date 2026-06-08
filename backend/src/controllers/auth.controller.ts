@@ -9,6 +9,8 @@ import {
   getMe,
   updateMe,
   deleteMe,
+  verifyEmail,
+  resendEmailVerification,
 } from '../services/auth.service';
 import { auditFromReq } from '../services/audit.service';
 import { AppError } from '../utils/AppError';
@@ -21,7 +23,12 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
     ipAddress: req.ip,
     userAgent: req.get('user-agent') || undefined,
   });
-  await auditFromReq(req, { action: 'auth.register', targetType: 'user', targetId: session.user.id });
+  await auditFromReq(req, {
+    action: 'auth.register',
+    targetType: 'user',
+    targetId: session.user.id,
+    actorId: session.user.id,
+  });
   created(res, session);
 });
 
@@ -31,7 +38,12 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     ipAddress: req.ip,
     userAgent: req.get('user-agent') || undefined,
   });
-  await auditFromReq(req, { action: 'auth.login', targetType: 'user', targetId: session.user.id });
+  await auditFromReq(req, {
+    action: 'auth.login',
+    targetType: 'user',
+    targetId: session.user.id,
+    actorId: session.user.id,
+  });
   ok(res, session);
 });
 
@@ -60,6 +72,18 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response) =
 
 export const resetPassword = asyncHandler(async (req: Request, res: Response) => {
   await completePasswordReset({ token: req.body.token, newPassword: req.body.newPassword });
+  ok(res, { success: true });
+});
+
+export const verifyEmailHandler = asyncHandler(async (req: Request, res: Response) => {
+  const user = await verifyEmail({ email: req.body.email, code: req.body.code });
+  await auditFromReq(req, { action: 'auth.verifyEmail', targetType: 'user', targetId: user.id });
+  ok(res, { user });
+});
+
+export const resendVerificationHandler = asyncHandler(async (req: Request, res: Response) => {
+  await resendEmailVerification({ email: req.body.email });
+  // Always 200 so we don't leak existence/state.
   ok(res, { success: true });
 });
 

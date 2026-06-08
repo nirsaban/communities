@@ -1,0 +1,77 @@
+{
+  "screen": "CreateEventFull",
+  "route": "/admin/events/new",
+  "roles": [
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "CloseButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "DraftButton",
+      "type": "link"
+    },
+    {
+      "name": "TitleField",
+      "type": "textField"
+    },
+    {
+      "name": "PricingRadioCards",
+      "type": "radioGroup",
+      "options": [
+        "Free",
+        "Paid",
+        "Subscription",
+        "External"
+      ]
+    },
+    {
+      "name": "PriceField",
+      "type": "textField"
+    },
+    {
+      "name": "CapacityField",
+      "type": "textField"
+    },
+    {
+      "name": "FreeForSubscribersToggle",
+      "type": "toggle"
+    },
+    {
+      "name": "PublishButton",
+      "type": "button",
+      "style": "primary",
+      "width": "full"
+    }
+  ],
+  "states": [
+    "default",
+    "focused"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "PriceField",
+      "shownFor": [
+        "Paid selected"
+      ]
+    },
+    {
+      "component": "PricingRadioCards",
+      "note": "unlocked for admin (vs subadmin free-only)"
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "PricingRadioCards → free/paid/subscription/external",
+    "Paid → reveals price field"
+  ]
+}

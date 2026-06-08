@@ -1,0 +1,46 @@
+{
+  "screen": "MyRSVPs",
+  "route": "/me/rsvps",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "SegmentedControl",
+      "type": "segmented",
+      "options": [
+        "Upcoming",
+        "Past"
+      ]
+    },
+    {
+      "name": "EventCard",
+      "type": "card",
+      "repeat": true,
+      "trailing": "statusBadge"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated",
+    "empty"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "EventCard → event detail",
+    "swipe → cancel RSVP",
+    "status: Going / Waitlist#n / Paid"
+  ]
+}

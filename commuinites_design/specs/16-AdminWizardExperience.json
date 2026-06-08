@@ -1,0 +1,55 @@
+{
+  "screen": "AdminWizardExperience",
+  "route": "/admin/setup/4",
+  "roles": [
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "ProgressBar",
+      "type": "progress",
+      "segments": 6
+    },
+    {
+      "name": "Title",
+      "type": "text",
+      "style": "displayMedium"
+    },
+    {
+      "name": "WelcomeMessageField",
+      "type": "textArea"
+    },
+    {
+      "name": "RequireRulesToggle",
+      "type": "toggle"
+    },
+    {
+      "name": "GuidelinesEditor",
+      "type": "list",
+      "editable": true
+    },
+    {
+      "name": "ContinueButton",
+      "type": "button",
+      "style": "primary",
+      "width": "full",
+      "height": 50
+    }
+  ],
+  "states": [
+    "default"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "GuidelinesEditor → feeds member rules screen",
+    "RequireRulesToggle → enforces rules gate"
+  ]
+}

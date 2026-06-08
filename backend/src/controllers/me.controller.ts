@@ -6,6 +6,8 @@ import { EventRSVP } from '../models/EventRSVP';
 import { EventModel } from '../models/Event';
 import { Membership } from '../models/Membership';
 import { Community } from '../models/Community';
+import { defaultPrivacyPreferences, type IPrivacyPreferences } from '../models/User';
+import { toClientRole } from '../utils/role';
 
 // GET /api/v1/me/rsvps?bucket=upcoming|past&limit=
 // Lists the caller's RSVPs joined with the source event so the client can render
@@ -94,7 +96,7 @@ export const listMyCommunities = asyncHandler(async (req: Request, res: Response
       return {
         membership: {
           id: String(m._id),
-          role: m.role,
+          role: toClientRole(m.role),
           status: m.status,
           joinedAt: m.joinedAt,
         },
@@ -107,6 +109,9 @@ export const listMyCommunities = asyncHandler(async (req: Request, res: Response
               coverUrl: c.coverUrl,
               memberCount: c.metrics.memberCount,
               status: c.status,
+              onboarding: {
+                wizardCompletedAt: c.onboarding?.wizardCompletedAt ?? null,
+              },
             }
           : null,
       };
@@ -152,4 +157,58 @@ export const listMyManagedEvents = asyncHandler(async (req, res) => {
 
   ok(res, events.map((e) => e.toClientJSON()));
 });
+
+// Spread of a Mongoose subdocument leaks internals ($__, _doc, etc) — copy
+// each field explicitly to keep the response a plain object.
+function serializePrivacy(stored: IPrivacyPreferences | undefined): IPrivacyPreferences {
+  const d = defaultPrivacyPreferences();
+  if (!stored) return d;
+  return {
+    profileVisibility: stored.profileVisibility ?? d.profileVisibility,
+    showAttendedEvents:
+      typeof stored.showAttendedEvents === 'boolean' ? stored.showAttendedEvents : d.showAttendedEvents,
+    showInitiativesSupported:
+      typeof stored.showInitiativesSupported === 'boolean'
+        ? stored.showInitiativesSupported
+        : d.showInitiativesSupported,
+    allowMentions:
+      typeof stored.allowMentions === 'boolean' ? stored.allowMentions : d.allowMentions,
+  };
+}
+
+// GET /api/v1/me/privacy — read caller's privacy preferences.
+export const getPrivacy = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) throw AppError.unauthenticated();
+  ok(res, { privacy: serializePrivacy(req.user.privacy) });
+});
+
+// PATCH /api/v1/me/privacy — merge in any subset of allowed keys.
+export const updatePrivacy = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) throw AppError.unauthenticated();
+  const incoming = req.body as Partial<IPrivacyPreferences> | undefined;
+  if (!incoming || typeof incoming !== 'object') {
+    throw AppError.invalidInput('privacy object required');
+  }
+  const current = serializePrivacy(req.user.privacy);
+  if (
+    incoming.profileVisibility === 'public' ||
+    incoming.profileVisibility === 'members_only' ||
+    incoming.profileVisibility === 'private'
+  ) {
+    current.profileVisibility = incoming.profileVisibility;
+  }
+  if (typeof incoming.showAttendedEvents === 'boolean') {
+    current.showAttendedEvents = incoming.showAttendedEvents;
+  }
+  if (typeof incoming.showInitiativesSupported === 'boolean') {
+    current.showInitiativesSupported = incoming.showInitiativesSupported;
+  }
+  if (typeof incoming.allowMentions === 'boolean') {
+    current.allowMentions = incoming.allowMentions;
+  }
+  req.user.privacy = current;
+  await req.user.save();
+  ok(res, { privacy: current });
+});
 // (AppError import added next to existing imports.)
+

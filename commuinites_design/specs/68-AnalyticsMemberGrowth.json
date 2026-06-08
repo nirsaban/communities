@@ -1,0 +1,52 @@
+{
+  "screen": "AnalyticsMemberGrowth",
+  "route": "/admin/analytics/growth",
+  "roles": [
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "SegmentedControl",
+      "type": "segmented",
+      "options": [
+        "Growth",
+        "Attendance",
+        "Members"
+      ]
+    },
+    {
+      "name": "TotalMembersHeadline",
+      "type": "text",
+      "style": "displayLarge"
+    },
+    {
+      "name": "GrowthAreaChart",
+      "type": "areaChart"
+    },
+    {
+      "name": "JoinedLeftNetKPIs",
+      "type": "kpiRow"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "SegmentedControl → switch analytics view",
+    "GrowthAreaChart → cumulative membership"
+  ]
+}

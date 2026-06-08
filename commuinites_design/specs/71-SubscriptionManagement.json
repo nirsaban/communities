@@ -1,0 +1,53 @@
+{
+  "screen": "SubscriptionManagement",
+  "route": "/admin/finances/subscriptions",
+  "roles": [
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "FilterButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "KPIGrid",
+      "type": "grid",
+      "kpis": [
+        "Active",
+        "MRR"
+      ]
+    },
+    {
+      "name": "PlanFilterChips",
+      "type": "chipGroup"
+    },
+    {
+      "name": "SubscriptionRow",
+      "type": "listRow",
+      "repeat": true,
+      "trailing": "statusChip"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated",
+    "empty"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "SubscriptionRow → history/comp/cancel",
+    "past-due flags dunning"
+  ]
+}

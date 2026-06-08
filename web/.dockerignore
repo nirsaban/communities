@@ -1,0 +1,12 @@
+node_modules
+dist
+.vite
+.cache
+coverage
+.env
+.env.*
+.git
+.DS_Store
+*.log
+README.md
+AUDIT.md

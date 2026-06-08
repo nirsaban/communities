@@ -1,0 +1,61 @@
+{
+  "screen": "AdminWizardPrivacy",
+  "route": "/admin/setup/3",
+  "roles": [
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "ProgressBar",
+      "type": "progress",
+      "segments": 6
+    },
+    {
+      "name": "Title",
+      "type": "text",
+      "style": "displayMedium"
+    },
+    {
+      "name": "JoinModelRadioCards",
+      "type": "radioGroup",
+      "options": [
+        "Public",
+        "Request to join",
+        "Invite only"
+      ]
+    },
+    {
+      "name": "DirectoryToggle",
+      "type": "toggle"
+    },
+    {
+      "name": "ContinueButton",
+      "type": "button",
+      "style": "primary",
+      "width": "full",
+      "height": 50
+    }
+  ],
+  "states": [
+    "default"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "DirectoryToggle",
+      "hiddenFor": [
+        "Invite only selected"
+      ]
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 14
+  },
+  "interactions": [
+    "JoinModelRadioCards → single-select; defaults to Public"
+  ]
+}

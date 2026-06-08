@@ -1,0 +1,76 @@
+{
+  "screen": "AdminEventDetail",
+  "route": "/admin/events/:id",
+  "roles": [
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "EditButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "StatusChip",
+      "type": "chip"
+    },
+    {
+      "name": "PriceTag",
+      "type": "chip"
+    },
+    {
+      "name": "RSVPKPIs",
+      "type": "kpiRow"
+    },
+    {
+      "name": "RevenueBreakdownCard",
+      "type": "card"
+    },
+    {
+      "name": "AttendeeStack",
+      "type": "avatarStack"
+    },
+    {
+      "name": "RefundButton",
+      "type": "button",
+      "style": "secondary",
+      "color": "error"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated",
+    "error"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "RevenueBreakdown",
+      "hiddenFor": [
+        "subadmin"
+      ]
+    },
+    {
+      "component": "RefundButton",
+      "hiddenFor": [
+        "subadmin",
+        "event_manager"
+      ]
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "RefundButton → issue refund",
+    "EditButton → edit/pricing",
+    "revenue gross→fees→net"
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "screen": "PublishRecap",
+  "route": "/manage/events/:id/recap",
+  "roles": [
+    "event_manager",
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "AttendanceKPIs",
+      "type": "kpiRow"
+    },
+    {
+      "name": "RecapNoteField",
+      "type": "textArea"
+    },
+    {
+      "name": "PhotoGridUpload",
+      "type": "grid"
+    },
+    {
+      "name": "NotifyToggle",
+      "type": "toggle"
+    },
+    {
+      "name": "PublishButton",
+      "type": "button",
+      "style": "primary",
+      "width": "full"
+    }
+  ],
+  "states": [
+    "default",
+    "focused"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "PublishButton → generates member recap + optional notify",
+    "attendance auto-fills"
+  ]
+}

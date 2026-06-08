@@ -8,6 +8,8 @@ import env from './config/env';
 import logger from './config/logger';
 import apiV1 from './routes';
 import { webhookRouter } from './routes/payment.routes';
+import dashboardMetricsRouter from './routes/__dashboard.routes';
+import { metricsMiddleware } from './middleware/metrics';
 import { notFound, errorHandler } from './middleware/errorHandler';
 
 export function buildApp(): Express {
@@ -50,6 +52,13 @@ export function buildApp(): Express {
 
   // Static serve dev uploads.
   app.use('/uploads', express.static(path.resolve(env.UPLOAD_DIR)));
+
+  // Opt-in metrics for the local Mission Control dashboard. Off by default —
+  // only mounted when DASHBOARD_METRICS=1 is set in the environment.
+  if (process.env.DASHBOARD_METRICS === '1') {
+    app.use('/api/v1', metricsMiddleware);
+    app.use('/api/v1/__dashboard', dashboardMetricsRouter);
+  }
 
   app.use('/api/v1', apiV1);
 

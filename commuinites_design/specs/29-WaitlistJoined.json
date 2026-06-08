@@ -1,0 +1,53 @@
+{
+  "screen": "WaitlistJoined",
+  "route": "/events/:id/waitlist",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "CloseButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "WaitBlob",
+      "type": "icon",
+      "color": "warning"
+    },
+    {
+      "name": "Title",
+      "type": "text",
+      "style": "displayMedium"
+    },
+    {
+      "name": "PositionCard",
+      "type": "card"
+    },
+    {
+      "name": "NotifyNote",
+      "type": "card",
+      "variant": "surface2"
+    },
+    {
+      "name": "GotItButton",
+      "type": "button",
+      "style": "secondary"
+    }
+  ],
+  "states": [
+    "populated"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 18
+  },
+  "interactions": [
+    "auto-promotion → push with 2h claim window",
+    "reflected as Waitlist#n in My RSVPs"
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "screen": "AdminWizardFirstEvent",
+  "route": "/admin/setup/5",
+  "roles": [
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "ProgressBar",
+      "type": "progress",
+      "segments": 6
+    },
+    {
+      "name": "OptionalBadge",
+      "type": "badge",
+      "color": "accent"
+    },
+    {
+      "name": "Title",
+      "type": "text",
+      "style": "displayMedium"
+    },
+    {
+      "name": "EventTitleField",
+      "type": "textField"
+    },
+    {
+      "name": "DateField",
+      "type": "textField"
+    },
+    {
+      "name": "TimeField",
+      "type": "textField"
+    },
+    {
+      "name": "LocationField",
+      "type": "textField"
+    },
+    {
+      "name": "CreateButton",
+      "type": "button",
+      "style": "primary",
+      "width": "full",
+      "height": 50
+    },
+    {
+      "name": "SkipButton",
+      "type": "button",
+      "style": "ghost"
+    }
+  ],
+  "states": [
+    "default",
+    "focused"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "PriceField",
+      "hiddenFor": [
+        "setup wizard → free only"
+      ]
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "CreateButton → step 6",
+    "SkipButton → step 6 (optional step)"
+  ]
+}

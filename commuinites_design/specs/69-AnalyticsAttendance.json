@@ -1,0 +1,55 @@
+{
+  "screen": "AnalyticsAttendance",
+  "route": "/admin/analytics/attendance",
+  "roles": [
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "SegmentedControl",
+      "type": "segmented",
+      "options": [
+        "Growth",
+        "Attendance",
+        "Members"
+      ]
+    },
+    {
+      "name": "AttendanceRateHeadline",
+      "type": "text",
+      "style": "displayLarge"
+    },
+    {
+      "name": "AttendanceBarChart",
+      "type": "barChart"
+    },
+    {
+      "name": "BestTurnoutRow",
+      "type": "listRow"
+    },
+    {
+      "name": "NoShowRow",
+      "type": "listRow"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "AttendanceBarChart → RSVP vs attended per event"
+  ]
+}

@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commons — Batch A · Design System, Auth & Onboarding</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&family=Material+Symbols+Rounded:FILL,GRAD,opsz,wght@0..1,-50..200,20..48,100..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  :root{ --canvas:#161513; --canvas-2:#1f1d1a; --ink:#FAFAF7; --ink-2:#A8A399; --hair:#2e2b27; --coral:#FF5C35; }
+  *{ box-sizing:border-box; }
+  body.gallery{ margin:0; background:var(--canvas); color:var(--ink);
+    font-family:"DM Sans", system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--coral); color:#fff; }
+
+  /* ---- masthead ---- */
+  .gx-head{ padding:72px 56px 8px; max-width:1320px; }
+  .gx-mark{ display:flex; align-items:center; gap:13px; margin-bottom:34px; }
+  .gx-logo{ width:34px; height:34px; position:relative; }
+  .gx-logo i{ position:absolute; width:22px; height:22px; border-radius:50%; }
+  .gx-logo i:nth-child(1){ left:0; top:6px; background:var(--coral); }
+  .gx-logo i:nth-child(2){ right:0; top:6px; background:#fff; mix-blend-mode:difference; }
+  .gx-word{ font-family:"DM Serif Display", serif; font-size:23px; letter-spacing:-.01em; }
+  .gx-eyebrow{ font-size:12.5px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--coral); margin-bottom:18px; }
+  .gx-head h1{ font-family:"DM Serif Display", serif; font-weight:400; font-size:54px; line-height:1.02; letter-spacing:-.015em; margin:0 0 20px; max-width:15ch; }
+  .gx-head p.lede{ font-size:17px; line-height:1.55; color:var(--ink-2); max-width:62ch; margin:0; }
+  .gx-meta{ display:flex; flex-wrap:wrap; gap:10px; margin-top:28px; }
+  .gx-meta .pill{ display:inline-flex; align-items:center; gap:7px; height:32px; padding:0 13px; border-radius:99px;
+    border:1px solid var(--hair); font-size:12.5px; font-weight:500; color:var(--ink-2); }
+  .gx-meta .pill b{ color:var(--ink); font-weight:600; }
+  .gx-meta .pill .sw{ width:12px; height:12px; border-radius:3px; }
+
+  /* ---- section ---- */
+  .sect{ padding:56px 56px 24px; max-width:1320px; }
+  .sect-head{ display:flex; align-items:baseline; gap:18px; border-top:1px solid var(--hair); padding-top:30px; margin-bottom:8px; }
+  .sect-num{ font-family:"DM Mono", monospace; font-size:13px; color:var(--coral); font-weight:500; }
+  .sect-head h2{ font-family:"DM Serif Display", serif; font-weight:400; font-size:32px; letter-spacing:-.01em; margin:0; }
+  .sect-head .sub{ font-size:14px; color:var(--ink-2); margin-left:auto; max-width:40ch; text-align:right; }
+
+  /* deck of phones */
+  .deck{ display:flex; flex-wrap:wrap; gap:54px 44px; padding:40px 0 8px; align-items:flex-start; }
+
+  /* annotation block under each phone */
+  .unit{ width:375px; flex:0 0 auto; }
+  .anno{ padding:18px 4px 0; }
+  .anno .a-top{ display:flex; align-items:center; gap:10px; margin-bottom:7px; }
+  .anno .a-name{ font-weight:700; font-size:15px; letter-spacing:-.01em; }
+  .anno .a-route{ font-family:"DM Mono", monospace; font-size:11.5px; color:var(--coral); background:rgba(255,92,53,.1);
+    padding:2px 7px; border-radius:5px; }
+  .anno .a-roles{ display:flex; flex-wrap:wrap; gap:5px; margin-bottom:9px; }
+  .anno .a-roles span{ font-size:10.5px; font-weight:600; letter-spacing:.02em; padding:2px 8px; border-radius:99px;
+    background:var(--canvas-2); color:var(--ink-2); border:1px solid var(--hair); }
+  .anno .a-notes{ font-size:12.5px; line-height:1.5; color:var(--ink-2); }
+  .anno .a-notes b{ color:var(--ink); font-weight:600; }
+  .tag-dark{ font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#9bb6ff; }
+  .tag-light{ font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#ffd27a; }
+
+  /* ===== design system showcase blocks (on dark canvas) ===== */
+  .ds-grid{ display:grid; grid-template-columns:repeat(12,1fr); gap:18px; padding:36px 0 8px; }
+  .ds-card{ background:var(--canvas-2); border:1px solid var(--hair); border-radius:16px; padding:22px; }
+  .ds-card h4{ font-size:12px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-2); margin:0 0 16px; }
+  .col-4{ grid-column:span 4; } .col-5{ grid-column:span 5; } .col-6{ grid-column:span 6; }
+  .col-7{ grid-column:span 7; } .col-8{ grid-column:span 8; } .col-12{ grid-column:span 12; }
+
+  .sw-row{ display:flex; flex-wrap:wrap; gap:12px; }
+  .sw-item{ width:88px; }
+  .sw-chip{ height:56px; border-radius:10px; border:1px solid rgba(255,255,255,.08); margin-bottom:7px; }
+  .sw-name{ font-size:11.5px; font-weight:600; }
+  .sw-hex{ font-family:"DM Mono", monospace; font-size:10.5px; color:var(--ink-2); }
+
+  .type-row{ display:flex; align-items:baseline; gap:16px; padding:11px 0; border-bottom:1px solid var(--hair); }
+  .type-row:last-child{ border-bottom:none; }
+  .type-row .tr-meta{ width:118px; flex:0 0 118px; font-family:"DM Mono",monospace; font-size:10.5px; color:var(--ink-2); }
+  .type-row .tr-sample{ color:var(--ink); }
+
+  .scale-row{ display:flex; align-items:center; gap:14px; margin-bottom:11px; }
+  .scale-row .bar{ height:18px; background:var(--coral); border-radius:4px; }
+  .scale-row .lbl{ font-family:"DM Mono",monospace; font-size:11px; color:var(--ink-2); }
+
+  .radius-row{ display:flex; gap:18px; align-items:flex-end; }
+  .radius-row .rad{ width:60px; height:60px; background:rgba(255,92,53,.16); border:1.5px solid var(--coral); }
+  .radius-row figcaption{ font-family:"DM Mono",monospace; font-size:10px; color:var(--ink-2); margin-top:7px; text-align:center; }
+
+  .elev-row{ display:flex; gap:18px; }
+  .elev-row .el{ flex:1; height:72px; border-radius:12px; background:#f6f4ef; display:grid; place-items:center;
+    font-family:"DM Mono",monospace; font-size:10px; color:#8A857B; }
+
+  /* component swatch board uses a light + dark mini surface */
+  .surf{ border-radius:16px; padding:22px; }
+  .surf.theme-light{ background:#FAFAF7; } .surf.theme-dark{ background:#0F0F0F; }
+  .surf h5{ font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; margin:0 0 16px; color:var(--muted); }
+  .surf .stack{ display:flex; flex-direction:column; gap:14px; }
+  .surf .stack-row{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+
+  .gx-foot{ padding:48px 56px 80px; max-width:1320px; color:var(--ink-2); font-size:13px; border-top:1px solid var(--hair); margin-top:40px; }
+  .gx-foot b{ color:var(--ink); }
+
+  @media(max-width:900px){ .ds-grid{ grid-template-columns:repeat(6,1fr);} .col-4,.col-5,.col-6,.col-7,.col-8{ grid-column:span 6; } }
+</style>
+</head>
+<body class="gallery">
+
+<header class="gx-head">
+  <div class="gx-mark">
+    <span class="gx-logo"><i></i><i></i></span>
+    <span class="gx-word">Commons</span>
+  </div>
+  <div class="gx-eyebrow">Batch A — Design System · Auth · Onboarding</div>
+  <h1>A community OS with an editorial soul.</h1>
+  <p class="lede">A multi-tenant platform for running real communities — events, members, initiatives, money. Five roles, one coherent system. This batch establishes the tokens and components, then applies them across every authentication and onboarding screen.</p>
+  <div class="gx-meta">
+    <span class="pill"><span class="sw" style="background:#FF5C35"></span>Accent <b>Coral #FF5C35</b></span>
+    <span class="pill"><span class="sw" style="background:#0F0F0F;border:1px solid #444"></span>Ink <b>#0F0F0F</b></span>
+    <span class="pill"><span class="sw" style="background:#FAFAF7"></span>Paper <b>#FAFAF7</b></span>
+    <span class="pill">Type <b>DM Serif Display · DM Sans</b></span>
+    <span class="pill">Frame <b>375 × 812</b></span>
+    <span class="pill">Light + Dark · RTL-ready</span>
+  </div>
+</header>
+
+<!-- ============================================================
+     DESIGN SYSTEM
+     ============================================================ -->
+<section class="sect">
+  <div class="sect-head">
+    <span class="sect-num">DS</span>
+    <h2>Design system</h2>
+    <span class="sub">Every token below is a CSS variable, themed per-surface so light and dark coexist — and each community can override <code>--brand</code>.</span>
+  </div>
+
+  <div class="ds-grid">
+    <!-- color -->
+    <div class="ds-card col-8">
+      <h4>Color tokens · light</h4>
+      <div class="sw-row">
+        <div class="sw-item"><div class="sw-chip" style="background:#FF5C35"></div><div class="sw-name">accent</div><div class="sw-hex">#FF5C35</div></div>
+        <div class="sw-item"><div class="sw-chip" style="background:#FAFAF7"></div><div class="sw-name">background</div><div class="sw-hex">#FAFAF7</div></div>
+        <div class="sw-item"><div class="sw-chip" style="background:#FFFFFF"></div><div class="sw-name">surface</div><div class="sw-hex">#FFFFFF</div></div>
+        <div class="sw-item"><div class="sw-chip" style="background:#F3F1EA"></div><div class="sw-name">surface-2</div><div class="sw-hex">#F3F1EA</div></div>
+        <div class="sw-item"><div class="sw-chip" style="background:#14130F"></div><div class="sw-name">onBackground</div><div class="sw-hex">#14130F</div></div>
+        <div class="sw-item"><div class="sw-chip" style="background:#8A857B"></div><div class="sw-name">muted</div><div class="sw-hex">#8A857B</div></div>
+        <div class="sw-item"><div class="sw-chip" style="background:#E7E3D9"></div><div class="sw-name">border</div><div class="sw-hex">#E7E3D9</div></div>
+        <div class="sw-item"><div class="sw-chip" style="background:#D83A3F"></div><div class="sw-name">error</div><div class="sw-hex">#D83A3F</div></div>
+        <div class="sw-item"><div class="sw-chip" style="background:#1E8E50"></div><div class="sw-name">success</div><div class="sw-hex">#1E8E50</div></div>
+        <div class="sw-item"><div class="sw-chip" style="background:#C77A00"></div><div class="sw-name">warning</div><div class="sw-hex">#C77A00</div></div>
+      </div>
+    </div>
+    <!-- elevation -->
+    <div class="ds-card col-4">
+      <h4>Elevation</h4>
+      <div class="elev-row">
+        <div class="el" style="box-shadow:none;border:1px solid #E7E3D9">none</div>
+        <div class="el" style="box-shadow:0 1px 3px rgba(20,19,15,.08)">low</div>
+        <div class="el" style="box-shadow:0 4px 10px rgba(20,19,15,.12)">mid</div>
+        <div class="el" style="box-shadow:0 16px 40px rgba(20,19,15,.22)">high</div>
+      </div>
+      <h4 style="margin-top:22px">Color tokens · dark</h4>
+      <div class="sw-row">
+        <div class="sw-item"><div class="sw-chip" style="background:#FF6B47"></div><div class="sw-name">accent</div><div class="sw-hex">#FF6B47</div></div>
+        <div class="sw-item"><div class="sw-chip" style="background:#0F0F0F;border-color:#333"></div><div class="sw-name">background</div><div class="sw-hex">#0F0F0F</div></div>
+        <div class="sw-item"><div class="sw-chip" style="background:#1A1917"></div><div class="sw-name">surface</div><div class="sw-hex">#1A1917</div></div>
+      </div>
+    </div>
+
+    <!-- typography -->
+    <div class="ds-card col-7">
+      <h4>Typographic scale</h4>
+      <div class="type-row"><div class="tr-meta">displayLarge<br>Serif · 34</div><div class="tr-sample" style="font-family:'DM Serif Display';font-size:31px;line-height:1">Gather your people</div></div>
+      <div class="type-row"><div class="tr-meta">displayMedium<br>Serif · 27</div><div class="tr-sample" style="font-family:'DM Serif Display';font-size:25px;line-height:1">Weekly rhythm</div></div>
+      <div class="type-row"><div class="tr-meta">titleLarge<br>Sans 700 · 22</div><div class="tr-sample" style="font-weight:700;font-size:21px;letter-spacing:-.015em">Upcoming events</div></div>
+      <div class="type-row"><div class="tr-meta">titleMedium<br>Sans 600 · 17</div><div class="tr-sample" style="font-weight:600;font-size:16px">Torah Study Circle</div></div>
+      <div class="type-row"><div class="tr-meta">bodyLarge<br>Sans 400 · 15.5</div><div class="tr-sample" style="font-size:15px;color:var(--ink-2)">A quiet weekly gathering for close reading.</div></div>
+      <div class="type-row"><div class="tr-meta">labelSmall<br>Sans 600 · 11</div><div class="tr-sample" style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)">Members only</div></div>
+    </div>
+
+    <!-- spacing + radius -->
+    <div class="ds-card col-5">
+      <h4>Spacing · 4-point base</h4>
+      <div>
+        <div class="scale-row"><div class="bar" style="width:4px"></div><span class="lbl">4</span></div>
+        <div class="scale-row"><div class="bar" style="width:8px"></div><span class="lbl">8</span></div>
+        <div class="scale-row"><div class="bar" style="width:12px"></div><span class="lbl">12</span></div>
+        <div class="scale-row"><div class="bar" style="width:16px"></div><span class="lbl">16</span></div>
+        <div class="scale-row"><div class="bar" style="width:24px"></div><span class="lbl">24</span></div>
+        <div class="scale-row"><div class="bar" style="width:32px"></div><span class="lbl">32</span></div>
+        <div class="scale-row"><div class="bar" style="width:48px"></div><span class="lbl">48</span></div>
+        <div class="scale-row"><div class="bar" style="width:64px"></div><span class="lbl">64</span></div>
+      </div>
+      <h4 style="margin-top:20px">Radius</h4>
+      <div class="radius-row">
+        <figure style="margin:0"><div class="rad" style="border-radius:6px"></div><figcaption>sm·6</figcaption></figure>
+        <figure style="margin:0"><div class="rad" style="border-radius:12px"></div><figcaption>md·12</figcaption></figure>
+        <figure style="margin:0"><div class="rad" style="border-radius:20px"></div><figcaption>lg·20</figcaption></figure>
+        <figure style="margin:0"><div class="rad" style="border-radius:28px"></div><figcaption>xl·28</figcaption></figure>
+        <figure style="margin:0"><div class="rad" style="border-radius:99px"></div><figcaption>full</figcaption></figure>
+      </div>
+    </div>
+
+    <!-- components: light -->
+    <div class="ds-card col-6" style="padding:0;overflow:hidden">
+      <div class="surf theme-light">
+        <h5>Components · Light</h5>
+        <div class="stack">
+          <div class="stack-row">
+            <button class="btn btn-primary" style="width:auto">Primary</button>
+            <button class="btn btn-secondary" style="width:auto">Secondary</button>
+            <button class="btn btn-ghost" style="width:auto">Ghost</button>
+            <button class="btn btn-danger btn-sm">Delete</button>
+            <button class="btn btn-primary btn-loading" style="width:90px">Save</button>
+          </div>
+          <div class="field" style="margin:0"><label>Email</label><div class="control"><span class="msr">mail</span><span class="val">noa@example.com</span><span class="grow"></span></div></div>
+          <div class="event-card">
+            <div class="cover imgph"><span class="lbl">cover</span></div>
+            <div class="body">
+              <span class="when">SAT · MAR 8 · 10:00</span>
+              <span class="ttl">Torah Study Circle</span>
+              <span class="meta"><span class="msr">place</span>Beit Tefilah</span>
+              <div class="foot"><span class="price-tag pt-free"><span class="msr">check</span>Free</span><span class="role-badge rb-member">Going</span></div>
+            </div>
+          </div>
+          <div class="stack-row">
+            <span class="role-badge rb-admin"><span class="msr">shield_person</span>Admin</span>
+            <span class="role-badge rb-sub"><span class="msr">badge</span>Sub Admin</span>
+            <span class="role-badge rb-em"><span class="msr">event</span>Event Mgr</span>
+            <span class="role-badge rb-member">Member</span>
+          </div>
+          <div class="stack-row">
+            <span class="status-chip sc-draft">Draft</span>
+            <span class="status-chip sc-pub">Published</span>
+            <span class="status-chip sc-cancel">Cancelled</span>
+            <span class="status-chip sc-done">Completed</span>
+            <span class="price-tag pt-paid">₪45</span>
+            <span class="price-tag pt-sub">Subscription</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- components: dark -->
+    <div class="ds-card col-6" style="padding:0;overflow:hidden">
+      <div class="surf theme-dark">
+        <h5>Components · Dark</h5>
+        <div class="stack">
+          <div class="stack-row">
+            <button class="btn btn-primary" style="width:auto">Primary</button>
+            <button class="btn btn-secondary" style="width:auto">Secondary</button>
+            <button class="btn btn-ghost" style="width:auto">Ghost</button>
+            <button class="btn btn-danger btn-sm">Delete</button>
+          </div>
+          <div class="field focused" style="margin:0"><label>Password</label><div class="control"><span class="msr">lock</span><span class="val">••••••••</span><span class="caret"></span><span class="grow"></span><span class="msr">visibility</span></div></div>
+          <div class="state" style="padding:14px 0 4px;min-height:0">
+            <div class="blob" style="width:64px;height:64px;border-radius:20px"><span class="msr">celebration</span></div>
+            <h3 style="font-size:18px">No events yet</h3>
+            <p>When your community schedules something, it lands here first.</p>
+          </div>
+          <div class="stack-row">
+            <div class="avatar">NL<span class="role-dot" style="background:#5B3D9E"><span class="msr">shield_person</span></span></div>
+            <div class="avatar sm">RM</div>
+            <div class="sk" style="width:120px;height:14px"></div>
+            <div class="sk" style="width:60px;height:14px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     AUTH
+     ============================================================ -->
+<section class="sect">
+  <div class="sect-head">
+    <span class="sect-num">01–07</span>
+    <h2>Authentication</h2>
+    <span class="sub">Quiet, confident, low-friction. Serif headlines do the talking; the coral only appears on the one action that matters.</span>
+  </div>
+  <div class="deck">
+
+    <!-- 1 · Splash -->
+    <div class="unit">
+      <div class="phone theme-dark">
+        <div class="screen" style="align-items:center;justify-content:center">
+          <div style="margin:auto;display:flex;flex-direction:column;align-items:center;gap:20px">
+            <div style="width:62px;height:62px;position:relative">
+              <i style="position:absolute;left:0;top:11px;width:40px;height:40px;border-radius:50%;background:var(--accent)"></i>
+              <i style="position:absolute;right:0;top:11px;width:40px;height:40px;border-radius:50%;background:#FAFAF7;mix-blend-mode:difference"></i>
+            </div>
+            <div style="font-family:var(--fs-display);font-size:33px;letter-spacing:-.01em">Commons</div>
+          </div>
+          <div style="position:absolute;bottom:58px;left:0;right:0;text-align:center">
+            <div style="display:flex;gap:6px;justify-content:center;margin-bottom:16px">
+              <span class="sk" style="width:8px;height:8px;border-radius:50%"></span>
+              <span class="sk" style="width:8px;height:8px;border-radius:50%;animation-delay:.2s"></span>
+              <span class="sk" style="width:8px;height:8px;border-radius:50%;animation-delay:.4s"></span>
+            </div>
+            <div class="muted" style="font-size:12px;letter-spacing:.04em">Where your community lives</div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">01 · Splash</span><span class="a-route">/</span></div>
+        <div class="a-roles"><span>All roles</span></div>
+        <p class="a-notes">Boots the app while session + tenant resolve. <b>Branded per-build</b>; pulses a skeleton, then routes to onboarding, login, or the role's home.</p>
+      </div>
+    </div>
+
+    <!-- 2 · Onboarding carousel -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar" style="justify-content:flex-end"><span class="btn-ghost" style="font-weight:600;font-size:14px;color:var(--muted)">Skip</span></div>
+          <div class="imgph" style="height:336px;margin:4px 20px 0;border-radius:20px"><span class="lbl">illustration · find your people</span></div>
+          <div class="scroll screen-pad" style="padding-top:26px;display:flex;flex-direction:column">
+            <h1 class="t-display-lg" style="margin:0 0 10px">Find the rooms<br>you belong in.</h1>
+            <p class="t-body-lg muted" style="margin:0">Discover communities near you, RSVP to what moves you, and never miss the gatherings that matter.</p>
+            <div style="margin-top:auto;padding-bottom:24px">
+              <div style="display:flex;gap:7px;margin-bottom:20px">
+                <span style="height:7px;width:26px;border-radius:9px;background:var(--accent)"></span>
+                <span style="height:7px;width:7px;border-radius:9px;background:var(--border-2)"></span>
+                <span style="height:7px;width:7px;border-radius:9px;background:var(--border-2)"></span>
+              </div>
+              <button class="btn btn-primary">Continue<span class="msr">arrow_forward</span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">02 · Onboarding carousel</span><span class="a-route">/welcome</span></div>
+        <div class="a-roles"><span>New users</span></div>
+        <p class="a-notes">Three swipeable slides — <b>discover · participate · belong</b>. Swipe or tap Continue; dots track progress. Skip jumps straight to sign-up.</p>
+      </div>
+    </div>
+
+    <!-- 3 · Sign up -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <h1 class="t-display-lg" style="margin:2px 0 6px">Create your<br>account</h1>
+            <p class="t-body-md" style="margin:0 0 22px">Already a member? <span style="color:var(--accent-ink);font-weight:600">Log in</span></p>
+            <div class="field"><label>Full name</label><div class="control"><span class="msr">person</span><span class="val">Noa Levi</span></div></div>
+            <div class="field"><label>Email</label><div class="control"><span class="msr">mail</span><span class="val">noa.levi@gmail.com</span></div></div>
+            <div class="field" style="margin-bottom:10px"><label>Password</label><div class="control"><span class="msr">lock</span><span class="val">••••••••••</span><span class="grow"></span><span class="msr">visibility_off</span></div>
+              <div style="display:flex;gap:4px;margin-top:9px"><span style="height:4px;flex:1;border-radius:9px;background:var(--success)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--success)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--success)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--border-2)"></span></div>
+              <div class="hint" style="color:var(--success)">Strong password</div>
+            </div>
+            <label class="row" style="gap:10px;margin:6px 0 18px;align-items:flex-start">
+              <span style="width:22px;height:22px;border-radius:6px;background:var(--accent);display:grid;place-items:center;flex:0 0 22px;margin-top:1px"><span class="msr" style="font-size:16px;color:#fff">check</span></span>
+              <span class="t-body-md">I agree to the <b style="color:var(--on-bg)">Terms</b> and <b style="color:var(--on-bg)">Privacy Policy</b>.</span>
+            </label>
+            <button class="btn btn-primary">Create account</button>
+            <div class="row" style="margin:18px 0"><div class="divider grow" style="margin:0"></div><span class="t-label-sm" style="margin:0 4px">or</span><div class="divider grow" style="margin:0"></div></div>
+            <button class="btn btn-secondary" style="margin-bottom:10px"><span class="msr">apple</span>Continue with Apple</button>
+            <button class="btn btn-secondary">Continue with Google</button>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">03 · Sign Up</span><span class="a-route">/signup</span></div>
+        <div class="a-roles"><span>New users</span></div>
+        <p class="a-notes">Live password strength meter; <b>terms gate the primary CTA</b>. SSO via Apple / Google. Inline validation on blur.</p>
+      </div>
+    </div>
+
+    <!-- 4 · Log in -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <h1 class="t-display-lg" style="margin:2px 0 6px">Welcome<br>back.</h1>
+            <p class="t-body-md" style="margin:0 0 22px">New here? <span style="color:var(--accent-ink);font-weight:600">Create an account</span></p>
+            <div class="field"><label>Email</label><div class="control"><span class="msr">mail</span><span class="val">noa.levi@gmail.com</span></div></div>
+            <div class="field focused" style="margin-bottom:8px"><label>Password</label><div class="control"><span class="msr">lock</span><span class="val">secret</span><span class="caret"></span><span class="grow"></span><span class="msr">visibility</span></div></div>
+            <div style="text-align:right;margin-bottom:22px"><span style="font-size:13px;font-weight:600;color:var(--accent-ink)">Forgot password?</span></div>
+            <button class="btn btn-primary">Log in</button>
+            <div class="row" style="margin:18px 0"><div class="divider grow" style="margin:0"></div><span class="t-label-sm" style="margin:0 4px">or</span><div class="divider grow" style="margin:0"></div></div>
+            <button class="btn btn-secondary" style="margin-bottom:10px"><span class="msr">apple</span>Continue with Apple</button>
+            <button class="btn btn-secondary">Continue with Google</button>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">04 · Log In</span><span class="a-route">/login</span></div>
+        <div class="a-roles"><span>All roles</span></div>
+        <p class="a-notes">Shown in <span class="tag-light">focused field</span> state — accent ring + blinking caret + reveal toggle. Wrong creds shake the card and surface an error chip.</p>
+      </div>
+    </div>
+
+    <!-- 5 · Forgot password -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <div class="state" style="flex:0 0 auto;align-items:flex-start;text-align:left;padding:8px 0 18px">
+              <div class="blob"><span class="msr">lock_reset</span></div>
+            </div>
+            <h1 class="t-display-md" style="margin:0 0 8px">Reset your password</h1>
+            <p class="t-body-lg muted" style="margin:0 0 24px">Enter the email tied to your account and we'll send a secure link to reset it.</p>
+            <div class="field"><label>Email</label><div class="control"><span class="msr">mail</span><span class="val">noa.levi@gmail.com</span></div></div>
+            <button class="btn btn-primary" style="margin-top:6px">Send reset link</button>
+            <button class="btn btn-ghost" style="margin-top:10px">Back to log in</button>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">05 · Forgot Password</span><span class="a-route">/forgot</span></div>
+        <div class="a-roles"><span>All roles</span></div>
+        <p class="a-notes">Always reports success (no account enumeration). On submit, swaps to a "check your inbox" confirmation with a 60s resend cooldown.</p>
+      </div>
+    </div>
+
+    <!-- 6 · Reset password -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <h1 class="t-display-md" style="margin:2px 0 8px">Choose a new password</h1>
+            <p class="t-body-lg muted" style="margin:0 0 24px">For Noa Levi — make it at least 8 characters with a number.</p>
+            <div class="field"><label>New password</label><div class="control"><span class="msr">lock</span><span class="val">••••••••••</span><span class="grow"></span><span class="msr">visibility_off</span></div>
+              <div style="display:flex;gap:4px;margin-top:9px"><span style="height:4px;flex:1;border-radius:9px;background:var(--warning)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--warning)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--border-2)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--border-2)"></span></div>
+              <div class="hint" style="color:var(--warning)">Medium — add a symbol</div>
+            </div>
+            <div class="field error"><label>Confirm password</label><div class="control"><span class="msr">lock</span><span class="val">••••••••</span></div><div class="hint">Passwords don't match yet</div></div>
+            <button class="btn btn-primary" style="margin-top:6px">Update password</button>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">06 · Reset Password</span><span class="a-route">/reset?token</span></div>
+        <div class="a-roles"><span>All roles</span></div>
+        <p class="a-notes">Reached via emailed token. Shows live strength + match validation in <span class="tag-light">error</span> state. Success signs the user in and routes home.</p>
+      </div>
+    </div>
+
+    <!-- 7 · Email verification -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column;align-items:center;text-align:center">
+            <div class="blob" style="margin-top:18px"><span class="msr">mark_email_unread</span></div>
+            <h1 class="t-display-md" style="margin:18px 0 8px">Check your inbox</h1>
+            <p class="t-body-lg muted" style="margin:0 0 28px">We sent a 6-digit code to<br><b style="color:var(--on-bg)">noa.levi@gmail.com</b></p>
+            <div style="display:flex;gap:9px;margin-bottom:26px">
+              <span style="width:46px;height:56px;border-radius:12px;border:1.5px solid var(--border-2);display:grid;place-items:center;font-size:22px;font-weight:700">4</span>
+              <span style="width:46px;height:56px;border-radius:12px;border:1.5px solid var(--border-2);display:grid;place-items:center;font-size:22px;font-weight:700">9</span>
+              <span style="width:46px;height:56px;border-radius:12px;border:1.5px solid var(--border-2);display:grid;place-items:center;font-size:22px;font-weight:700">1</span>
+              <span style="width:46px;height:56px;border-radius:12px;border:1.5px solid var(--accent);box-shadow:0 0 0 4px var(--accent-wash);display:grid;place-items:center"><span class="caret"></span></span>
+              <span style="width:46px;height:56px;border-radius:12px;border:1.5px solid var(--border-2)"></span>
+              <span style="width:46px;height:56px;border-radius:12px;border:1.5px solid var(--border-2)"></span>
+            </div>
+            <button class="btn btn-primary">Verify email</button>
+            <p class="t-body-md" style="margin-top:18px">Didn't get it? <b style="color:var(--accent-ink)">Resend in 0:42</b></p>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">07 · Email Verification</span><span class="a-route">/verify</span></div>
+        <div class="a-roles"><span>New users</span></div>
+        <p class="a-notes">Auto-advancing OTP inputs with paste support; auto-submits on the 6th digit. Resend disabled behind a countdown.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     ONBOARDING — member setup
+     ============================================================ -->
+<section class="sect">
+  <div class="sect-head">
+    <span class="sect-num">08–12</span>
+    <h2>Member onboarding</h2>
+    <span class="sub">From a blank account to a place in a real community in five steps. Progress is always visible; nothing mandatory hides behind a wall.</span>
+  </div>
+  <div class="deck">
+
+    <!-- 8 · Profile setup -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div style="display:flex;gap:5px;padding:14px 20px 0"><span style="height:4px;flex:1;border-radius:9px;background:var(--accent)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--border-2)"></span></div>
+          <div class="topbar"><span class="t-label-sm">Step 1 of 2 · Your profile</span></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <h1 class="t-display-md" style="margin:2px 0 22px">Put a face<br>to your name</h1>
+            <div style="display:flex;justify-content:center;margin-bottom:26px">
+              <div class="avatar lg" style="width:104px;height:104px">NL
+                <span style="position:absolute;right:-2px;bottom:-2px;width:36px;height:36px;border-radius:50%;background:var(--accent);border:3px solid var(--surface);display:grid;place-items:center"><span class="msr" style="font-size:20px;color:#fff">photo_camera</span></span>
+              </div>
+            </div>
+            <div class="field"><label>Display name</label><div class="control"><span class="msr">badge</span><span class="val">Noa Levi</span></div></div>
+            <div class="field"><label>Username <span class="muted" style="font-weight:400">· optional</span></label><div class="control"><span class="muted">@</span><span class="val">noalevi</span><span class="grow"></span><span class="msr" style="color:var(--success)">check_circle</span></div></div>
+            <div style="margin-top:auto;padding-bottom:24px"><button class="btn btn-primary">Continue</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">08 · Profile setup</span><span class="a-route">/onboard/profile</span></div>
+        <div class="a-roles"><span>New users</span></div>
+        <p class="a-notes">Tap avatar to upload / take a photo; falls back to <b>initials</b>. Username checked for availability live (green tick / red on collision).</p>
+      </div>
+    </div>
+
+    <!-- 9 · Interests selector (dark) -->
+    <div class="unit">
+      <div class="phone theme-dark">
+        <div class="screen">
+          <div style="display:flex;gap:5px;padding:14px 20px 0"><span style="height:4px;flex:1;border-radius:9px;background:var(--accent)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--accent)"></span></div>
+          <div class="topbar"><span class="t-label-sm">Step 2 of 2 · Interests</span></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <h1 class="t-display-md" style="margin:2px 0 6px">What are you into?</h1>
+            <p class="t-body-md" style="margin:0 0 20px">Pick at least 3 — we'll surface the right communities and events.</p>
+            <div class="wrap" style="gap:10px">
+              <span class="chip active">Faith &amp; study</span>
+              <span class="chip">Wellness</span>
+              <span class="chip active">Tech &amp; startups</span>
+              <span class="chip">Parenting</span>
+              <span class="chip active">Music</span>
+              <span class="chip">Food &amp; cooking</span>
+              <span class="chip">Volunteering</span>
+              <span class="chip">Arts &amp; design</span>
+              <span class="chip">Sports</span>
+              <span class="chip">Books</span>
+              <span class="chip">Outdoors</span>
+              <span class="chip">Language</span>
+            </div>
+            <div style="margin-top:auto;padding-bottom:24px"><button class="btn btn-primary">Continue · 3 selected</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">09 · Interests selector</span><span class="a-route">/onboard/interests</span></div>
+        <div class="a-roles"><span>New users</span></div>
+        <p class="a-notes">Shown in <span class="tag-dark">dark</span>. Multi-select chips; CTA stays disabled until 3 are chosen and updates its count live.</p>
+      </div>
+    </div>
+
+    <!-- 10 · Community discovery -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><span class="tb-title">Join a community</span></div>
+          <div class="scroll screen-pad">
+            <div class="field"><label>Have an invite code?</label>
+              <div style="display:flex;gap:8px">
+                <span style="width:42px;height:50px;border-radius:10px;border:1.5px solid var(--border-2);display:grid;place-items:center;font-size:19px;font-weight:700">B</span>
+                <span style="width:42px;height:50px;border-radius:10px;border:1.5px solid var(--border-2);display:grid;place-items:center;font-size:19px;font-weight:700">T</span>
+                <span style="width:42px;height:50px;border-radius:10px;border:1.5px solid var(--accent);box-shadow:0 0 0 4px var(--accent-wash);display:grid;place-items:center"><span class="caret"></span></span>
+                <span style="width:42px;height:50px;border-radius:10px;border:1.5px solid var(--border-2)"></span>
+                <span style="width:42px;height:50px;border-radius:10px;border:1.5px solid var(--border-2)"></span>
+                <span style="width:42px;height:50px;border-radius:10px;border:1.5px solid var(--border-2)"></span>
+              </div>
+            </div>
+            <div class="row" style="margin:18px 0"><div class="divider grow" style="margin:0"></div><span class="t-label-sm" style="margin:0 4px">or browse</span><div class="divider grow" style="margin:0"></div></div>
+            <div class="section-header"><span class="sh-title" style="font-size:15px">Communities near you</span></div>
+            <div class="col" style="gap:10px">
+              <div class="card row" style="padding:11px;gap:12px"><div class="avatar" style="border-radius:12px;background:var(--accent-wash);color:var(--accent-ink)"><span class="msr">menu_book</span></div><div class="grow"><div class="t-title-md">Beit Tefilah</div><div class="t-body-md" style="margin:0">Tel Aviv · 1,240 members</div></div><button class="btn btn-primary btn-sm">Join</button></div>
+              <div class="card row" style="padding:11px;gap:12px"><div class="avatar" style="border-radius:12px;background:var(--surface-2)"><span class="msr">rocket_launch</span></div><div class="grow"><div class="t-title-md">TLV Founders</div><div class="t-body-md" style="margin:0">Tel Aviv · 860 members</div></div><button class="btn btn-secondary btn-sm">Request</button></div>
+              <div class="card row" style="padding:11px;gap:12px"><div class="avatar" style="border-radius:12px;background:var(--surface-2)"><span class="msr">self_improvement</span></div><div class="grow"><div class="t-title-md">Sunrise Yoga</div><div class="t-body-md" style="margin:0">Jaffa · 312 members</div></div><button class="btn btn-primary btn-sm">Join</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">10 · Community discovery</span><span class="a-route">/discover</span></div>
+        <div class="a-roles"><span>Members</span></div>
+        <p class="a-notes">Three entry paths: <b>invite code</b>, deep-link, or directory. Public communities show <b>Join</b>; private ones show <b>Request</b> → enters the approval queue.</p>
+      </div>
+    </div>
+
+    <!-- 11 · Community welcome -->
+    <div class="unit">
+      <div class="phone theme-light on-cover">
+        <div class="screen">
+          <div class="imgph" style="position:absolute;inset:0 0 auto;height:300px;border-radius:0;background-color:#2a2620">
+            <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,19,15,.15),rgba(20,19,15,.78))"></div>
+          </div>
+          <div class="scroll screen-pad" style="position:relative;display:flex;flex-direction:column;justify-content:flex-end">
+            <div style="height:182px"></div>
+            <div class="avatar lg" style="border-radius:20px;background:var(--accent);color:#fff;box-shadow:var(--shadow-mid);margin-bottom:14px"><span class="msr" style="font-size:34px">menu_book</span></div>
+            <h1 class="t-display-lg" style="margin:0 0 8px">Welcome to<br>Beit Tefilah</h1>
+            <p class="t-body-lg muted" style="margin:0 0 16px">A warm community for weekly study, prayer and shared meals in the heart of Tel Aviv. 1,240 members and growing.</p>
+            <div class="wrap" style="margin-bottom:24px"><span class="chip tonal"><span class="msr">groups</span>1,240 members</span><span class="chip tonal"><span class="msr">event</span>6 events / week</span></div>
+            <div style="padding-bottom:24px"><button class="btn btn-primary">Continue</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">11 · Community welcome</span><span class="a-route">/c/:slug/welcome</span></div>
+        <div class="a-roles"><span>Members</span></div>
+        <p class="a-notes"><b>Fully community-configurable</b> — cover, logo, copy and brand color all set by the admin in the onboarding wizard. Status bar inverts to white over the cover.</p>
+      </div>
+    </div>
+
+    <!-- 12 · Rules acknowledgment -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><span class="tb-title">Community guidelines</span></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <p class="t-body-lg muted" style="margin:0 0 18px">A few things keep Beit Tefilah a good place to be. Please read before you join in.</p>
+            <div class="col" style="gap:14px">
+              <div class="row" style="align-items:flex-start;gap:12px"><span style="width:26px;height:26px;border-radius:8px;background:var(--accent-wash);color:var(--accent-ink);display:grid;place-items:center;font-weight:700;flex:0 0 26px">1</span><div><div class="t-title-md" style="font-size:15px">Be kind &amp; respectful</div><div class="t-body-md" style="margin:2px 0 0">Disagree generously. No harassment.</div></div></div>
+              <div class="row" style="align-items:flex-start;gap:12px"><span style="width:26px;height:26px;border-radius:8px;background:var(--accent-wash);color:var(--accent-ink);display:grid;place-items:center;font-weight:700;flex:0 0 26px">2</span><div><div class="t-title-md" style="font-size:15px">Keep it relevant</div><div class="t-body-md" style="margin:2px 0 0">No spam, ads, or off-topic selling.</div></div></div>
+              <div class="row" style="align-items:flex-start;gap:12px"><span style="width:26px;height:26px;border-radius:8px;background:var(--accent-wash);color:var(--accent-ink);display:grid;place-items:center;font-weight:700;flex:0 0 26px">3</span><div><div class="t-title-md" style="font-size:15px">Show up for RSVPs</div><div class="t-body-md" style="margin:2px 0 0">If plans change, release your spot.</div></div></div>
+            </div>
+            <label class="row" style="gap:10px;margin:22px 0 16px;align-items:flex-start">
+              <span style="width:22px;height:22px;border-radius:6px;background:var(--accent);display:grid;place-items:center;flex:0 0 22px;margin-top:1px"><span class="msr" style="font-size:16px;color:#fff">check</span></span>
+              <span class="t-body-md">I've read and agree to follow these guidelines.</span>
+            </label>
+            <div style="margin-top:auto;padding-bottom:24px"><button class="btn btn-primary">Agree &amp; continue</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">12 · Rules acknowledgment</span><span class="a-route">/c/:slug/rules</span></div>
+        <div class="a-roles"><span>Members</span></div>
+        <p class="a-notes">Optional per community (admin toggle). CTA disabled until the box is checked; acknowledgment is timestamped on the membership record.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     ONBOARDING — admin wizard
+     ============================================================ -->
+<section class="sect">
+  <div class="sect-head">
+    <span class="sect-num">13–18</span>
+    <h2>Admin onboarding wizard</h2>
+    <span class="sub">A community is born in six steps — basics, brand, privacy, member experience, and two optional jump-starts. Steps 5 &amp; 6 are skippable.</span>
+  </div>
+  <div class="deck">
+
+    <!-- 13 · Step 1 basics -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div style="display:flex;gap:4px;padding:14px 20px 0"><span style="height:4px;flex:1;border-radius:9px;background:var(--accent)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--border-2)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--border-2)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--border-2)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--border-2)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--border-2)"></span></div>
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="t-label-sm grow">Step 1 of 6 · Basics</span></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <h1 class="t-display-md" style="margin:2px 0 20px">Name your<br>community</h1>
+            <div class="field"><label>Community name</label><div class="control"><span class="msr">groups</span><span class="val">Beit Tefilah</span></div></div>
+            <div class="field"><label>Category</label><div class="control"><span class="msr">category</span><span class="val">Faith &amp; study</span><span class="grow"></span><span class="msr">expand_more</span></div></div>
+            <div class="field"><label>Short description</label><div class="control" style="height:auto;align-items:flex-start;padding:14px 16px"><span class="val" style="line-height:1.5">A warm community for weekly study, prayer and shared meals in Tel Aviv.</span></div><div class="hint">68 / 160</div></div>
+            <div style="margin-top:auto;padding-bottom:24px"><button class="btn btn-primary">Continue<span class="msr">arrow_forward</span></button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">13 · Wizard · Basics</span><span class="a-route">/admin/setup/1</span></div>
+        <div class="a-roles"><span>Community Admin</span><span>Super Admin</span></div>
+        <p class="a-notes">Step one of six. Name + category are required; description feeds the directory listing. Progress bar persists across all steps.</p>
+      </div>
+    </div>
+
+    <!-- 14 · Step 2 branding -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div style="display:flex;gap:4px;padding:14px 20px 0"><span style="height:4px;flex:1;border-radius:9px;background:var(--accent)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--accent)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--border-2)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--border-2)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--border-2)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--border-2)"></span></div>
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="t-label-sm grow">Step 2 of 6 · Branding</span></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <h1 class="t-display-md" style="margin:2px 0 18px">Make it<br>yours</h1>
+            <label class="t-label-sm" style="display:block;margin-bottom:8px">Cover image</label>
+            <div class="imgph" style="height:104px;border-radius:12px;margin-bottom:16px"><span class="lbl">tap to upload cover · 16:9</span></div>
+            <div class="row" style="gap:14px;margin-bottom:18px">
+              <div class="imgph" style="width:72px;height:72px;border-radius:16px;flex:0 0 72px"><span class="msr" style="color:var(--muted)">add_photo_alternate</span></div>
+              <div><div class="t-title-md" style="font-size:15px">Logo</div><div class="t-body-md" style="margin:2px 0 0">PNG or SVG · square, ≥ 512px</div></div>
+            </div>
+            <label class="t-label-sm" style="display:block;margin-bottom:10px">Brand color</label>
+            <div class="wrap" style="gap:10px;margin-bottom:18px">
+              <span style="width:38px;height:38px;border-radius:50%;background:#FF5C35;box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--accent)"></span>
+              <span style="width:38px;height:38px;border-radius:50%;background:#0057FF"></span>
+              <span style="width:38px;height:38px;border-radius:50%;background:#1E8E50"></span>
+              <span style="width:38px;height:38px;border-radius:50%;background:#5B3D9E"></span>
+              <span style="width:38px;height:38px;border-radius:50%;background:#C77A00"></span>
+              <span style="width:38px;height:38px;border-radius:50%;border:1.5px dashed var(--border-2);display:grid;place-items:center"><span class="msr" style="font-size:18px;color:var(--muted)">colorize</span></span>
+            </div>
+            <div style="margin-top:auto;padding-bottom:24px"><button class="btn btn-primary">Continue</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">14 · Wizard · Branding</span><span class="a-route">/admin/setup/2</span></div>
+        <div class="a-roles"><span>Community Admin</span></div>
+        <p class="a-notes">The chosen color writes the community's <b>--brand</b> token — re-skinning every member-facing surface instantly. Everything here is optional with sensible defaults.</p>
+      </div>
+    </div>
+
+    <!-- 15 · Step 3 privacy -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div style="display:flex;gap:4px;padding:14px 20px 0"><span style="height:4px;flex:1;border-radius:9px;background:var(--accent)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--accent)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--accent)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--border-2)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--border-2)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--border-2)"></span></div>
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="t-label-sm grow">Step 3 of 6 · Privacy</span></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <h1 class="t-display-md" style="margin:2px 0 18px">Who can join?</h1>
+            <div class="col" style="gap:12px">
+              <div class="card row" style="padding:15px;gap:12px;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-wash)"><span class="msr" style="color:var(--accent)">public</span><div class="grow"><div class="t-title-md" style="font-size:15px">Public</div><div class="t-body-md" style="margin:2px 0 0">Anyone can find &amp; join instantly.</div></div><span class="msr" style="color:var(--accent)">radio_button_checked</span></div>
+              <div class="card row" style="padding:15px;gap:12px"><span class="msr muted">how_to_reg</span><div class="grow"><div class="t-title-md" style="font-size:15px">Request to join</div><div class="t-body-md" style="margin:2px 0 0">Admins approve each new member.</div></div><span class="msr muted">radio_button_unchecked</span></div>
+              <div class="card row" style="padding:15px;gap:12px"><span class="msr muted">lock</span><div class="grow"><div class="t-title-md" style="font-size:15px">Invite only</div><div class="t-body-md" style="margin:2px 0 0">Hidden from directory; link &amp; code only.</div></div><span class="msr muted">radio_button_unchecked</span></div>
+            </div>
+            <div class="divider"></div>
+            <div class="between"><div><div class="t-title-md" style="font-size:15px">List in directory</div><div class="t-body-md" style="margin:2px 0 0">Show up in nearby search.</div></div><span style="width:46px;height:28px;border-radius:99px;background:var(--accent);position:relative;flex:0 0 46px"><span style="position:absolute;right:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#fff"></span></span></div>
+            <div style="margin-top:auto;padding-bottom:24px"><button class="btn btn-primary">Continue</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">15 · Wizard · Privacy</span><span class="a-route">/admin/setup/3</span></div>
+        <div class="a-roles"><span>Community Admin</span></div>
+        <p class="a-notes">Single-select cards drive the join model; <b>Invite only</b> auto-hides the directory toggle. Defaults to Public.</p>
+      </div>
+    </div>
+
+    <!-- 16 · Step 4 member experience -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div style="display:flex;gap:4px;padding:14px 20px 0"><span style="height:4px;flex:1;border-radius:9px;background:var(--accent)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--accent)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--accent)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--accent)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--border-2)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--border-2)"></span></div>
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="t-label-sm grow">Step 4 of 6 · Experience</span></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <h1 class="t-display-md" style="margin:2px 0 18px">First<br>impressions</h1>
+            <div class="field"><label>Welcome message</label><div class="control" style="height:auto;align-items:flex-start;padding:14px 16px"><span class="val" style="line-height:1.5">Shalom, and welcome! We're so glad you're here. Start by saying hi in the feed. 🕯️</span></div></div>
+            <div class="between" style="margin:6px 0 16px"><div><div class="t-title-md" style="font-size:15px">Require rules acknowledgment</div><div class="t-body-md" style="margin:2px 0 0">New members must agree before posting.</div></div><span style="width:46px;height:28px;border-radius:99px;background:var(--accent);position:relative;flex:0 0 46px"><span style="position:absolute;right:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#fff"></span></span></div>
+            <div class="card" style="padding:14px"><div class="t-label-sm" style="margin-bottom:8px">Guidelines · 3</div><div class="t-body-md" style="color:var(--on-bg)">1. Be kind &amp; respectful<br>2. Keep it relevant<br>3. Show up for RSVPs</div><div style="margin-top:10px;color:var(--accent-ink);font-weight:600;font-size:13px">+ Add guideline</div></div>
+            <div style="margin-top:auto;padding-bottom:24px"><button class="btn btn-primary">Continue</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">16 · Wizard · Member experience</span><span class="a-route">/admin/setup/4</span></div>
+        <div class="a-roles"><span>Community Admin</span></div>
+        <p class="a-notes">Welcome message + editable guideline list feed screens 11 &amp; 12. Toggle here controls whether the rules gate is enforced.</p>
+      </div>
+    </div>
+
+    <!-- 17 · Step 5 first event (optional) -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div style="display:flex;gap:4px;padding:14px 20px 0"><span style="height:4px;flex:1;border-radius:9px;background:var(--accent)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--accent)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--accent)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--accent)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--accent)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--border-2)"></span></div>
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="t-label-sm grow">Step 5 of 6 · First event</span><span class="t-label-sm" style="color:var(--accent-ink)">Optional</span></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <h1 class="t-display-md" style="margin:2px 0 6px">Give them a<br>reason to show</h1>
+            <p class="t-body-md" style="margin:0 0 20px">Communities with an event in week one keep 3× more members.</p>
+            <div class="field"><label>Event title</label><div class="control"><span class="msr">event</span><span class="val">Opening Shabbat Dinner</span></div></div>
+            <div class="row" style="gap:10px">
+              <div class="field grow"><label>Date</label><div class="control"><span class="msr">calendar_today</span><span class="val">Fri, Mar 14</span></div></div>
+              <div class="field grow"><label>Time</label><div class="control"><span class="val">18:30</span></div></div>
+            </div>
+            <div class="field"><label>Location</label><div class="control"><span class="msr">place</span><span class="val">Beit Tefilah · Main Hall</span></div></div>
+            <div style="margin-top:auto;padding-bottom:24px;display:flex;flex-direction:column;gap:10px"><button class="btn btn-primary">Create event &amp; continue</button><button class="btn btn-ghost">Skip for now</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">17 · Wizard · First event</span><span class="a-route">/admin/setup/5</span></div>
+        <div class="a-roles"><span>Community Admin</span></div>
+        <p class="a-notes"><b>Optional</b> — Skip is always available. A lightweight version of the full event composer; only free events are offered during setup.</p>
+      </div>
+    </div>
+
+    <!-- 18 · Step 6 invite members (optional) -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div style="display:flex;gap:4px;padding:14px 20px 0"><span style="height:4px;flex:1;border-radius:9px;background:var(--accent)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--accent)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--accent)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--accent)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--accent)"></span><span style="height:4px;flex:1;border-radius:9px;background:var(--accent)"></span></div>
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="t-label-sm grow">Step 6 of 6 · Invite</span><span class="t-label-sm" style="color:var(--accent-ink)">Optional</span></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <h1 class="t-display-md" style="margin:2px 0 18px">Bring your<br>people in</h1>
+            <div class="field"><label>Invite by email</label><div class="control" style="height:auto;flex-wrap:wrap;padding:10px 12px;gap:7px"><span class="chip tonal" style="height:28px">david@… <span class="msr" style="font-size:15px">close</span></span><span class="chip tonal" style="height:28px">maya@… <span class="msr" style="font-size:15px">close</span></span><span class="ph">add email…</span></div></div>
+            <label class="t-label-sm" style="display:block;margin:8px 0 8px">Or share an invite link</label>
+            <div class="card row" style="padding:12px 14px;gap:10px;margin-bottom:6px"><span class="msr muted">link</span><span class="grow t-body-md" style="color:var(--on-bg);font-family:'DM Mono',monospace;font-size:12.5px">commons.app/j/BTF-9KQ</span><button class="btn btn-primary btn-sm">Copy</button></div>
+            <div class="wrap"><span class="chip"><span class="msr">ios_share</span>Share</span><span class="chip"><span class="msr">qr_code_2</span>QR code</span></div>
+            <div style="margin-top:auto;padding-bottom:24px;display:flex;flex-direction:column;gap:10px"><button class="btn btn-primary">Finish setup<span class="msr">celebration</span></button><button class="btn btn-ghost">I'll do this later</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">18 · Wizard · Invite members</span><span class="a-route">/admin/setup/6</span></div>
+        <div class="a-roles"><span>Community Admin</span></div>
+        <p class="a-notes">Email chips with remove, copyable link, native share + QR. <b>Finish</b> drops the admin into their dashboard with a confetti moment.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer class="gx-foot">
+  <b>Commons</b> · Batch A of 6. Next: Member screens (Home feed → Account deletion). Tokens & components shown here are reused verbatim across every batch. Each phone is a true 375 × 812 frame; swap any community's <b>--brand</b> variable to re-skin the entire app.
+</footer>
+
+<script>
+  // Inject status bar + home indicator into every phone frame
+  document.querySelectorAll('.phone').forEach(p=>{
+    const time = p.dataset.time || '9:41';
+    const sb = document.createElement('div');
+    sb.className = 'statusbar';
+    sb.innerHTML = '<span>'+time+'</span><span class="sb-right"><span class="msr" style="font-size:16px">signal_cellular_alt</span><span class="msr" style="font-size:16px">wifi</span><span class="msr" style="font-size:18px">battery_full</span></span>';
+    p.prepend(sb);
+    const hi = document.createElement('div');
+    hi.className = 'home-ind';
+    p.append(hi);
+  });
+</script>
+</body>
+</html>

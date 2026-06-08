@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commons — Batch D · Community Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&family=Material+Symbols+Rounded:FILL,GRAD,opsz,wght@0..1,-50..200,20..48,100..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="stylesheet" href="assets/gallery.css">
+<style>
+  .area{ width:100%; height:112px; display:block; }
+  .revcard{ background:var(--on-bg); color:var(--bg); border-radius:var(--r-lg); padding:18px; position:relative; overflow:hidden; }
+  .revcard .r-lbl{ font-size:12px; font-weight:600; opacity:.7; display:flex; align-items:center; gap:6px; }
+  .revcard .r-num{ font-family:var(--fs-display); font-size:38px; line-height:1.05; margin-top:6px; }
+  .revcard .r-delta{ font-size:12.5px; font-weight:600; color:#7BE0A6; margin-top:4px; }
+  .donut{ width:84px; height:84px; border-radius:50%; flex:0 0 84px; position:relative; }
+  .donut::after{ content:""; position:absolute; inset:14px; border-radius:50%; background:var(--surface); }
+  .leg{ display:flex; align-items:center; gap:7px; font-size:12.5px; }
+  .leg .sw{ width:10px; height:10px; border-radius:3px; }
+  .dz{ border:1px solid var(--error); border-radius:var(--r-md); overflow:hidden; }
+  .dz .dz-row{ display:flex; align-items:center; gap:12px; padding:14px; border-bottom:1px solid var(--error-wash); }
+  .dz .dz-row:last-child{ border-bottom:none; }
+  .dz .dz-row .msr{ color:var(--error); }
+  .price-opt{ border:1.5px solid var(--border-2); border-radius:var(--r-md); padding:13px; display:flex; align-items:center; gap:11px; cursor:pointer; }
+  .price-opt.on{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-wash); }
+  .preview-skin{ --brand:#FF5C35; }
+</style>
+</head>
+<body class="gallery">
+
+<header class="gx-head">
+  <div class="gx-mark"><span class="gx-logo"><i></i><i></i></span><span class="gx-word">Commons</span></div>
+  <div class="gx-eyebrow">Batch D — Community Admin</div>
+  <h1>The owner's full command.</h1>
+  <p class="lede">The Community Admin owns everything — including the money. This batch is the financial &amp; governance suite the Sub Admin is walled off from: revenue and MRR dashboards, full event pricing (paid / subscription / external), refunds, branding, role management, deep analytics, and the danger zone. Same components, unlocked.</p>
+  <div class="gx-meta">
+    <span class="pill">Role <b>Community Admin</b></span>
+    <span class="pill"><span class="sw" style="background:#1E8E50"></span>Full financial access</span>
+    <span class="pill">Nav <b>Home · Events · Members · Finances · More</b></span>
+    <span class="pill">Screens <b>59 – 71</b></span>
+  </div>
+</header>
+
+<!-- ============================================================
+     DASHBOARD & FINANCE
+     ============================================================ -->
+<section class="sect">
+  <div class="sect-head">
+    <span class="sect-num">59 – 64</span>
+    <h2>Dashboard &amp; finance</h2>
+    <span class="sub">Revenue is a first-class citizen here — the same dashboard slot the Sub Admin sees guarded shows live numbers, MRR, and per-event breakdowns.</span>
+  </div>
+  <div class="deck">
+
+    <!-- 59 · Admin dashboard -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="feed-head" style="padding:8px 16px 10px"><div class="switch-pill"><span class="lg"><span class="msr">menu_book</span></span><b style="font-size:14px">Beit Tefilah</b></div><span class="grow"></span><button class="ic-btn"><span class="nav-ico"><span class="msr">notifications</span><span class="badge-dot">6</span></span></button></div>
+          <div class="scroll screen-pad">
+            <div class="row" style="gap:10px;margin:4px 0 14px"><div class="t-display-md" style="font-size:24px">Overview</div><span class="role-badge rb-admin"><span class="msr">shield_person</span>Admin</span></div>
+            <div class="revcard" style="margin-bottom:11px">
+              <div class="between"><div><div class="r-lbl"><span class="msr" style="font-size:15px">payments</span>Revenue · March</div><div class="r-num">₪12,480</div><div class="r-delta">▲ 18% vs February</div></div>
+              <svg class="area" style="width:96px;height:60px" viewBox="0 0 96 60" preserveAspectRatio="none"><polyline fill="none" stroke="#7BE0A6" stroke-width="2.5" points="0,48 16,40 32,42 48,28 64,30 80,16 96,8"/></svg></div>
+            </div>
+            <div class="grid2" style="margin-bottom:16px">
+              <div class="kpi"><div class="k-lbl"><span class="msr" style="font-size:15px">savings</span>MRR</div><div class="k-num">₪3,200</div><div class="k-delta up">▲ 6%</div></div>
+              <div class="kpi"><div class="k-lbl"><span class="msr" style="font-size:15px">group</span>Members</div><div class="k-num">1,240</div><div class="k-delta up">▲ 38</div></div>
+            </div>
+            <div class="section-header"><span class="sh-title" style="font-size:16px">Upcoming events</span><span class="sh-link">All</span></div>
+            <div class="event-card" style="margin-bottom:10px"><div class="cover imgph"><span class="lbl">cover</span></div><div class="body"><span class="when">TONIGHT · 19:00</span><span class="ttl">Hebrew Conversation Café</span><div class="foot"><span class="price-tag pt-free"><span class="msr">check</span>Free</span><span class="t-body-md" style="margin:0;font-size:11px">23 going</span></div></div></div>
+            <div class="event-card"><div class="cover imgph"><span class="lbl">cover</span></div><div class="body"><span class="when">SUN · MAR 9 · 18:30</span><span class="ttl">Weekly Yoga Class</span><div class="foot"><span class="price-tag pt-paid">₪45</span><span class="t-body-md" style="margin:0;font-size:11px">₪1,890 earned</span></div></div></div>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item active"><span class="msr fill">grid_view</span>Home</div>
+            <div class="nav-item"><span class="msr">event</span>Events</div>
+            <div class="nav-item"><span class="msr">group</span>Members</div>
+            <div class="nav-item"><span class="msr">payments</span>Finances</div>
+            <div class="nav-item"><span class="msr">more_horiz</span>More</div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">59 · Admin dashboard</span><span class="a-route">/admin/overview</span></div>
+        <div class="a-roles"><span>Community Admin</span></div>
+        <p class="a-notes">Featured <b>revenue card</b> with sparkline (the Sub Admin's guard slot, unlocked), MRR + member KPIs, and per-event earnings inline. Nav includes <b>Finances</b>.</p>
+      </div>
+    </div>
+
+    <!-- 60 · Financial dashboard -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><span class="tb-title grow">Finances</span><button class="ic-btn"><span class="msr">ios_share</span></button></div>
+          <div class="screen-pad"><div class="seg" style="margin-bottom:14px"><span class="s on">Month</span><span class="s">Quarter</span><span class="s">Year</span></div></div>
+          <div class="scroll screen-pad">
+            <div class="grid2" style="margin-bottom:14px">
+              <div class="kpi"><div class="k-lbl">Gross revenue</div><div class="k-num">₪12,480</div><div class="k-delta up">▲ 18%</div></div>
+              <div class="kpi"><div class="k-lbl">MRR</div><div class="k-num">₪3,200</div><div class="k-delta up">▲ 6%</div></div>
+            </div>
+            <div class="card" style="padding:16px;margin-bottom:16px">
+              <div class="between" style="margin-bottom:14px"><span class="t-label-lg">Revenue · 6 months</span><span class="t-body-md" style="margin:0;font-size:11px">net of fees</span></div>
+              <div class="bars"><div class="bar"><i style="height:42%"></i></div><div class="bar"><i style="height:50%"></i></div><div class="bar"><i style="height:46%"></i></div><div class="bar"><i style="height:64%"></i></div><div class="bar"><i style="height:58%"></i></div><div class="bar cur"><i style="height:82%"></i></div></div>
+              <div class="barlbls"><span>Oct</span><span>Nov</span><span>Dec</span><span>Jan</span><span>Feb</span><span>Mar</span></div>
+            </div>
+            <div class="section-header"><span class="sh-title" style="font-size:16px">Revenue by event</span></div>
+            <div class="list-row"><div class="avatar sm" style="border-radius:9px;background:var(--accent-wash);color:var(--accent-ink)"><span class="msr">self_improvement</span></div><div class="grow"><div class="t-label-lg">Weekly Yoga Class</div><div class="t-body-md" style="margin:0;font-size:11px">42 tickets · ₪45</div></div><span class="t-label-lg">₪1,890</span></div>
+            <div class="list-row"><div class="avatar sm" style="border-radius:9px;background:var(--surface-2)"><span class="msr">restaurant</span></div><div class="grow"><div class="t-label-lg">Shabbat Dinner</div><div class="t-body-md" style="margin:0;font-size:11px">58 tickets · ₪47.50</div></div><span class="t-label-lg">₪2,755</span></div>
+            <div class="list-row" style="border:none"><div class="avatar sm" style="border-radius:9px;background:#EFE7FF;color:#5B3D9E"><span class="msr">workspace_premium</span></div><div class="grow"><div class="t-label-lg">Membership subs</div><div class="t-body-md" style="margin:0;font-size:11px">110 active</div></div><span class="t-label-lg">₪3,200</span></div>
+            <button class="btn btn-secondary" style="margin-top:14px"><span class="msr">download</span>Export CSV</button>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item"><span class="msr">grid_view</span>Home</div>
+            <div class="nav-item"><span class="msr">event</span>Events</div>
+            <div class="nav-item"><span class="msr">group</span>Members</div>
+            <div class="nav-item active"><span class="msr fill">payments</span>Finances</div>
+            <div class="nav-item"><span class="msr">more_horiz</span>More</div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">60 · Financial dashboard</span><span class="a-route">/admin/finances</span></div>
+        <div class="a-roles"><span>Community Admin</span></div>
+        <p class="a-notes">Gross + MRR, a net-revenue trend, and a per-source breakdown (events + subscriptions). <b>Export CSV</b> for accounting. Entirely hidden from Sub Admins.</p>
+      </div>
+    </div>
+
+    <!-- 61 · Event detail (admin) -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title grow">Weekly Yoga Class</span><button class="ic-btn"><span class="msr">edit</span></button></div>
+          <div class="scroll screen-pad">
+            <div class="row" style="gap:8px;margin-bottom:14px"><span class="status-chip sc-pub">Published</span><span class="price-tag pt-paid">₪45</span></div>
+            <div class="grid2" style="margin-bottom:11px">
+              <div class="kpi"><div class="k-lbl">RSVPs</div><div class="k-num">42<span style="font-size:14px;color:var(--muted)"> / 50</span></div></div>
+              <div class="kpi"><div class="k-lbl">Waitlist</div><div class="k-num">6</div></div>
+            </div>
+            <div class="card" style="padding:16px;margin-bottom:16px">
+              <div class="t-label-sm" style="margin-bottom:12px">Revenue</div>
+              <div class="between" style="margin-bottom:8px"><span class="t-body-lg" style="font-size:14px">Gross (42 × ₪45)</span><span class="t-label-lg">₪1,890</span></div>
+              <div class="between" style="margin-bottom:8px"><span class="t-body-md" style="margin:0;color:var(--on-bg)">Stripe fees</span><span class="t-body-md" style="margin:0;color:var(--error)">– ₪67</span></div>
+              <div class="divider" style="margin:8px 0"></div>
+              <div class="between"><span class="t-title-md" style="font-size:15px">Net</span><span class="t-title-lg" style="font-family:var(--fs-display);color:var(--success)">₪1,823</span></div>
+            </div>
+            <div class="section-header"><span class="sh-title" style="font-size:16px">Attendees</span><span class="sh-link">View all 42</span></div>
+            <div class="row" style="gap:0;margin-bottom:16px"><div class="avatar sm" style="border:2px solid var(--surface)">NL</div><div class="avatar sm" style="border:2px solid var(--surface);margin-left:-8px">DK</div><div class="avatar sm" style="border:2px solid var(--surface);margin-left:-8px">YL</div><div class="avatar sm" style="border:2px solid var(--surface);margin-left:-8px;background:var(--surface-2);font-size:11px">+39</div></div>
+            <button class="btn btn-secondary" style="color:var(--error);border-color:var(--error)"><span class="msr">undo</span>Issue a refund</button>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">61 · Event detail (admin)</span><span class="a-route">/admin/events/:id</span></div>
+        <div class="a-roles"><span>Community Admin</span></div>
+        <p class="a-notes">Adds <b>revenue breakdown</b> (gross → fees → net) and a <b>refund</b> entry point on top of the manager view. RSVP/waitlist counts, attendee roster.</p>
+      </div>
+    </div>
+
+    <!-- 62 · Create event (full pricing) -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">close</span></button><span class="tb-title grow">New event</span><span style="color:var(--accent-ink);font-weight:600;font-size:14px">Draft</span></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <div class="field"><label>Title</label><div class="control"><span class="val">Weekly Yoga Class</span></div></div>
+            <label class="t-label-sm" style="display:block;margin:4px 0 10px">Pricing</label>
+            <div class="col" style="gap:9px;margin-bottom:14px">
+              <div class="price-opt"><span class="msr muted">check_circle</span><div class="grow"><div class="t-label-lg" style="font-size:13.5px">Free</div></div><span class="msr muted">radio_button_unchecked</span></div>
+              <div class="price-opt on"><span class="msr" style="color:var(--accent)">sell</span><div class="grow"><div class="t-label-lg" style="font-size:13.5px">Paid · one-time</div></div><span class="msr" style="color:var(--accent)">radio_button_checked</span></div>
+              <div class="price-opt"><span class="msr muted">workspace_premium</span><div class="grow"><div class="t-label-lg" style="font-size:13.5px">Subscription only</div></div><span class="msr muted">radio_button_unchecked</span></div>
+              <div class="price-opt"><span class="msr muted">open_in_new</span><div class="grow"><div class="t-label-lg" style="font-size:13.5px">External ticket link</div></div><span class="msr muted">radio_button_unchecked</span></div>
+            </div>
+            <div class="row" style="gap:10px"><div class="field grow"><label>Price</label><div class="control"><span style="color:var(--muted);font-weight:600">₪</span><span class="val">45.00</span></div></div><div class="field grow"><label>Capacity</label><div class="control"><span class="val">50</span></div></div></div>
+            <div class="list-row"><span class="msr muted">workspace_premium</span><span class="grow t-body-lg" style="font-size:14px">Free for subscribers</span><span class="toggle on"><span></span></span></div>
+            <div style="margin-top:auto;padding-bottom:24px"><button class="btn btn-primary">Publish event</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">62 · Create event (full)</span><span class="a-route">/admin/events/new</span></div>
+        <div class="a-roles"><span>Community Admin</span></div>
+        <p class="a-notes">The <b>unlocked</b> composer — four pricing models (free / paid / subscription / external). Selecting Paid reveals the price field. Compare to the Sub Admin's locked version (Batch C · 53).</p>
+      </div>
+    </div>
+
+    <!-- 63 · Edit pricing -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title grow">Pricing</span><span style="color:var(--accent-ink);font-weight:600;font-size:14px">Save</span></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <div class="card row" style="padding:12px;gap:10px;background:var(--warning-wash);border:none;margin-bottom:16px"><span class="msr" style="color:var(--warning)">info</span><div class="grow t-body-md" style="color:var(--on-bg);font-size:12px">42 people already paid — pricing changes apply to <b>new RSVPs only</b>.</div></div>
+            <div class="field"><label>Base price</label><div class="control"><span style="color:var(--muted);font-weight:600">₪</span><span class="val">45.00</span></div></div>
+            <div class="t-label-sm" style="margin:6px 0 10px">Price tiers</div>
+            <div class="card" style="padding:4px 14px;margin-bottom:14px">
+              <div class="list-row"><div class="grow"><div class="t-label-lg" style="font-size:13.5px">Early bird</div><div class="t-body-md" style="margin:0;font-size:11px">until Mar 5 · 20 left</div></div><span class="t-label-lg">₪35</span><span class="msr muted">edit</span></div>
+              <div class="list-row" style="border:none"><div class="grow"><div class="t-label-lg" style="font-size:13.5px">Member rate</div><div class="t-body-md" style="margin:0;font-size:11px">subscribers</div></div><span class="t-label-lg" style="color:var(--success)">Free</span><span class="msr muted">edit</span></div>
+            </div>
+            <button class="btn btn-secondary"><span class="msr">add</span>Add a tier</button>
+            <div style="margin-top:auto;padding-bottom:24px"><button class="btn btn-primary">Save pricing</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">63 · Edit pricing</span><span class="a-route">/admin/events/:id/pricing</span></div>
+        <div class="a-roles"><span>Community Admin</span></div>
+        <p class="a-notes">Multi-tier pricing (early-bird, member rate) with an <b>integrity warning</b> when changing the price of an event that already has paid RSVPs.</p>
+      </div>
+    </div>
+
+    <!-- 64 · Issue refund -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title">Issue refund</span></div>
+          <div class="scroll screen-pad">
+            <div class="card row" style="padding:12px;gap:11px;margin-bottom:16px"><div class="avatar sm">NL</div><div class="grow"><div class="t-label-lg">Noa Levi</div><div class="t-body-md" style="margin:0;font-size:11px">Weekly Yoga · paid Mar 2</div></div><span class="t-label-lg">₪47.50</span></div>
+            <div class="seg" style="margin-bottom:14px"><span class="s on">Full refund</span><span class="s">Partial</span></div>
+            <div class="field"><label>Reason</label><div class="control"><span class="msr">help</span><span class="val">Event cancelled</span><span class="grow"></span><span class="msr">expand_more</span></div></div>
+          </div>
+          <div class="scrim"></div>
+          <div class="dialog">
+            <div class="blob" style="width:56px;height:56px;border-radius:18px;background:var(--error-wash);color:var(--error);margin:0 auto 14px"><span class="msr" style="font-size:28px">undo</span></div>
+            <div class="t-title-lg center" style="margin-bottom:6px">Refund ₪47.50?</div>
+            <p class="t-body-md center" style="margin:0 0 18px">This refunds Noa Levi in full via Stripe and releases her spot. This can't be undone.</p>
+            <div class="row" style="gap:10px"><button class="btn btn-secondary grow" style="width:auto">Cancel</button><button class="btn btn-danger grow" style="width:auto">Refund</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">64 · Issue refund</span><span class="a-route">/admin/events/:id/refund</span></div>
+        <div class="a-roles"><span>Community Admin</span></div>
+        <p class="a-notes">Full or partial (amount input on Partial) + reason. Final step is the <b>ConfirmDialog</b> — explicit amount &amp; recipient. Pushes a Stripe refund; member sees Batch E · 85.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     GOVERNANCE
+     ============================================================ -->
+<section class="sect">
+  <div class="sect-head">
+    <span class="sect-num">65 – 67</span>
+    <h2>Settings, branding &amp; roles</h2>
+    <span class="sub">Owner-only controls: community metadata, the brand color that re-skins every member surface, who holds which role, and the irreversible danger zone.</span>
+  </div>
+  <div class="deck">
+
+    <!-- 65 · Community settings -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title">Community settings</span></div>
+          <div class="scroll screen-pad">
+            <div class="t-label-sm" style="margin-bottom:8px">General</div>
+            <div class="card" style="padding:4px 14px;margin-bottom:18px">
+              <div class="list-row"><span class="msr muted">badge</span><span class="grow t-body-lg" style="font-size:14px">Name</span><span class="t-body-md" style="margin:0">Beit Tefilah</span><span class="msr muted">chevron_right</span></div>
+              <div class="list-row"><span class="msr muted">category</span><span class="grow t-body-lg" style="font-size:14px">Category</span><span class="t-body-md" style="margin:0">Faith &amp; study</span><span class="msr muted">chevron_right</span></div>
+              <div class="list-row" style="border:none"><span class="msr muted">notes</span><span class="grow t-body-lg" style="font-size:14px">Description</span><span class="msr muted">chevron_right</span></div>
+            </div>
+            <div class="t-label-sm" style="margin-bottom:8px">Customization</div>
+            <div class="card" style="padding:4px 14px;margin-bottom:18px">
+              <div class="list-row"><span class="msr muted">palette</span><span class="grow t-body-lg" style="font-size:14px">Branding</span><span style="width:18px;height:18px;border-radius:5px;background:var(--accent)"></span><span class="msr muted">chevron_right</span></div>
+              <div class="list-row"><span class="msr muted">lock</span><span class="grow t-body-lg" style="font-size:14px">Privacy &amp; joining</span><span class="t-body-md" style="margin:0">Public</span><span class="msr muted">chevron_right</span></div>
+              <div class="list-row" style="border:none"><span class="msr muted">admin_panel_settings</span><span class="grow t-body-lg" style="font-size:14px">Roles &amp; permissions</span><span class="msr muted">chevron_right</span></div>
+            </div>
+            <div class="t-label-sm" style="margin-bottom:8px;color:var(--error)">Danger zone</div>
+            <div class="dz">
+              <div class="dz-row"><span class="msr">swap_horiz</span><div class="grow"><div class="t-label-lg" style="font-size:13.5px">Transfer ownership</div></div><span class="msr muted">chevron_right</span></div>
+              <div class="dz-row"><span class="msr">archive</span><div class="grow"><div class="t-label-lg" style="font-size:13.5px">Archive community</div><div class="t-body-md" style="margin:0;font-size:11px">Hide &amp; freeze; reversible</div></div><span class="msr muted">chevron_right</span></div>
+              <div class="dz-row"><span class="msr">delete_forever</span><div class="grow"><div class="t-label-lg" style="font-size:13.5px;color:var(--error)">Delete community</div></div><span class="msr muted">chevron_right</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">65 · Community settings</span><span class="a-route">/admin/settings</span></div>
+        <div class="a-roles"><span>Community Admin</span></div>
+        <p class="a-notes">Grouped settings hub. The <b>danger zone</b> is visually quarantined; each destructive action uses the typed-confirmation ConfirmDialog pattern.</p>
+      </div>
+    </div>
+
+    <!-- 66 · Branding customizer -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title grow">Branding</span><span style="color:var(--accent-ink);font-weight:600;font-size:14px">Save</span></div>
+          <div class="scroll screen-pad">
+            <div class="row" style="gap:14px;margin-bottom:18px"><div class="imgph" style="width:64px;height:64px;border-radius:16px;flex:0 0 64px"><span class="msr" style="color:var(--muted)">add_photo_alternate</span></div><div><div class="t-title-md" style="font-size:15px">Logo</div><div class="t-body-md" style="margin:2px 0 0">Square · ≥ 512px</div></div></div>
+            <label class="t-label-sm" style="display:block;margin-bottom:10px">Brand color</label>
+            <div class="wrap" style="gap:10px;margin-bottom:18px">
+              <span style="width:40px;height:40px;border-radius:50%;background:#FF5C35;box-shadow:0 0 0 2px var(--surface),0 0 0 4px #FF5C35"></span>
+              <span style="width:40px;height:40px;border-radius:50%;background:#0057FF"></span>
+              <span style="width:40px;height:40px;border-radius:50%;background:#1E8E50"></span>
+              <span style="width:40px;height:40px;border-radius:50%;background:#5B3D9E"></span>
+              <span style="width:40px;height:40px;border-radius:50%;background:#C77A00"></span>
+              <span style="width:40px;height:40px;border-radius:50%;border:1.5px dashed var(--border-2);display:grid;place-items:center"><span class="msr" style="font-size:18px;color:var(--muted)">colorize</span></span>
+            </div>
+            <label class="t-label-sm" style="display:block;margin-bottom:10px">Live preview</label>
+            <div class="card preview-skin" style="padding:14px;background:var(--surface-2);border:none">
+              <div class="row" style="gap:9px;margin-bottom:12px"><span style="width:30px;height:30px;border-radius:8px;background:var(--brand);display:grid;place-items:center"><span class="msr" style="font-size:16px;color:#fff">menu_book</span></span><b style="font-size:14px">Beit Tefilah</b></div>
+              <div class="announce" style="background:color-mix(in srgb, var(--brand) 12%, white);margin-bottom:10px"><div class="t-label-lg" style="font-size:13px">Passover schedule is live</div></div>
+              <button class="btn btn-sm" style="background:var(--brand);color:#fff;width:100%">RSVP — I'm going</button>
+            </div>
+            <p class="t-body-md center" style="margin-top:12px">Your color re-skins every member screen.</p>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">66 · Branding customizer</span><span class="a-route">/admin/settings/branding</span></div>
+        <div class="a-roles"><span>Community Admin</span></div>
+        <p class="a-notes">Logo + brand-color picker with a <b>live preview</b> that re-renders using the community's <code>--brand</code> token — the exact mechanism that themes the whole app.</p>
+      </div>
+    </div>
+
+    <!-- 67 · Role management -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title">Roles &amp; permissions</span></div>
+          <div class="scroll screen-pad">
+            <div class="row" style="justify-content:space-between;margin:2px 0 10px"><span class="t-label-sm" style="margin:0">Admins · 1</span></div>
+            <div class="list-row"><div class="avatar sm">RM</div><div class="grow"><div class="t-label-lg">Rabbi Mizrahi</div><div class="t-body-md" style="margin:0;font-size:11px">You · owner</div></div><span class="role-badge rb-admin">Admin</span></div>
+            <div class="row" style="justify-content:space-between;margin:16px 0 10px"><span class="t-label-sm" style="margin:0">Sub Admins · 1</span></div>
+            <div class="list-row"><div class="avatar sm">SB</div><div class="grow"><div class="t-label-lg">Sarah Ben-David</div><div class="t-body-md" style="margin:0;font-size:11px">No financial access</div></div><span class="role-badge rb-sub">Sub Admin</span><span class="msr muted">more_vert</span></div>
+            <div class="row" style="justify-content:space-between;margin:16px 0 10px"><span class="t-label-sm" style="margin:0">Event Managers · 2</span></div>
+            <div class="list-row"><div class="avatar sm">DK</div><div class="grow"><div class="t-label-lg">David Katz</div><div class="t-body-md" style="margin:0;font-size:11px">2 events assigned</div></div><span class="role-badge rb-em"><span class="msr">event</span>Mgr</span><span class="msr muted">more_vert</span></div>
+            <div class="list-row" style="border:none"><div class="avatar sm">AM</div><div class="grow"><div class="t-label-lg">Avi Mizrahi</div><div class="t-body-md" style="margin:0;font-size:11px">1 event assigned</div></div><span class="role-badge rb-em"><span class="msr">event</span>Mgr</span><span class="msr muted">more_vert</span></div>
+            <button class="btn btn-primary" style="margin-top:16px"><span class="msr">person_add</span>Promote a member</button>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">67 · Role management</span><span class="a-route">/admin/settings/roles</span></div>
+        <div class="a-roles"><span>Community Admin</span></div>
+        <p class="a-notes">Grouped by role with scope reminders. Promote a member to <b>Sub Admin</b> or assign <b>Event Manager</b>; the overflow menu demotes/reassigns. Only the owner can grant Admin.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     ANALYTICS & SUBSCRIPTIONS
+     ============================================================ -->
+<section class="sect">
+  <div class="sect-head">
+    <span class="sect-num">68 – 71</span>
+    <h2>Analytics &amp; subscriptions</h2>
+    <span class="sub">The full reporting picture — member growth, attendance, the most engaged people, and the recurring revenue that powers MRR.</span>
+  </div>
+  <div class="deck">
+
+    <!-- 68 · Member growth -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title">Analytics</span></div>
+          <div class="screen-pad"><div class="seg" style="margin-bottom:16px"><span class="s on">Growth</span><span class="s">Attendance</span><span class="s">Members</span></div></div>
+          <div class="scroll screen-pad">
+            <div class="t-body-md" style="margin:0 0 2px">Total members</div>
+            <div class="t-display-lg" style="margin-bottom:2px">1,240</div>
+            <div class="t-label-lg" style="color:var(--success);margin-bottom:18px">▲ 38 this month</div>
+            <div class="card" style="padding:16px 12px 12px;margin-bottom:16px">
+              <svg class="area" viewBox="0 0 300 112" preserveAspectRatio="none">
+                <defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity=".22"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>
+                <polygon fill="url(#ag)" points="0,92 0,82 43,78 86,70 129,58 172,52 215,38 258,28 300,16 300,92"/>
+                <polyline fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round" points="0,82 43,78 86,70 129,58 172,52 215,38 258,28 300,16"/>
+              </svg>
+              <div class="barlbls" style="margin-top:10px"><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span><span>Jan</span><span>Feb</span><span>Mar</span></div>
+            </div>
+            <div class="row" style="gap:10px"><div class="kpi grow center"><div class="k-num" style="font-size:22px;color:var(--success)">+52</div><div class="k-lbl" style="justify-content:center">Joined</div></div><div class="kpi grow center"><div class="k-num" style="font-size:22px;color:var(--error)">−14</div><div class="k-lbl" style="justify-content:center">Left</div></div><div class="kpi grow center"><div class="k-num" style="font-size:22px">+38</div><div class="k-lbl" style="justify-content:center">Net</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">68 · Member growth</span><span class="a-route">/admin/analytics/growth</span></div>
+        <div class="a-roles"><span>Community Admin</span></div>
+        <p class="a-notes">Area chart of cumulative membership with a joined / left / net breakdown. The seg tabs switch between the three analytics views (68–70).</p>
+      </div>
+    </div>
+
+    <!-- 69 · Attendance trend -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title">Analytics</span></div>
+          <div class="screen-pad"><div class="seg" style="margin-bottom:16px"><span class="s">Growth</span><span class="s on">Attendance</span><span class="s">Members</span></div></div>
+          <div class="scroll screen-pad">
+            <div class="t-body-md" style="margin:0 0 2px">Avg attendance rate</div>
+            <div class="t-display-lg" style="margin-bottom:2px">78%</div>
+            <div class="t-label-lg" style="color:var(--success);margin-bottom:18px">▲ 6% vs last month</div>
+            <div class="card" style="padding:16px;margin-bottom:16px">
+              <div class="t-label-lg" style="margin-bottom:14px">RSVPs vs attended · last 6 events</div>
+              <div class="bars"><div class="bar"><i style="height:64%"></i></div><div class="bar"><i style="height:72%"></i></div><div class="bar"><i style="height:58%"></i></div><div class="bar"><i style="height:80%"></i></div><div class="bar"><i style="height:70%"></i></div><div class="bar cur"><i style="height:88%"></i></div></div>
+              <div class="barlbls"><span>Café</span><span>Study</span><span>Yoga</span><span>Sing</span><span>Talk</span><span>Dinner</span></div>
+            </div>
+            <div class="list-row"><span class="grow t-body-lg" style="font-size:14px">Best turnout</span><span class="t-label-lg">Shabbat Dinner · 92%</span></div>
+            <div class="list-row" style="border:none"><span class="grow t-body-lg" style="font-size:14px">No-show rate</span><span class="t-label-lg" style="color:var(--warning)">11%</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">69 · Attendance trend</span><span class="a-route">/admin/analytics/attendance</span></div>
+        <div class="a-roles"><span>Community Admin</span></div>
+        <p class="a-notes">Attendance rate over recent events (RSVP'd vs checked-in), best turnout, and no-show rate. Same bar component used in the Sub Admin analytics — unified.</p>
+      </div>
+    </div>
+
+    <!-- 70 · Most active members -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title">Analytics</span></div>
+          <div class="screen-pad"><div class="seg" style="margin-bottom:16px"><span class="s">Growth</span><span class="s">Attendance</span><span class="s on">Members</span></div></div>
+          <div class="scroll screen-pad">
+            <div class="t-label-sm" style="margin-bottom:12px">Most active · last 90 days</div>
+            <div class="col" style="gap:14px">
+              <div class="row" style="gap:11px"><span class="t-title-md" style="width:20px;color:var(--accent-ink)">1</span><div class="avatar sm">DK</div><div class="grow"><div class="t-label-lg">David Katz</div><div class="progress-track" style="margin-top:5px"><span style="width:100%"></span></div></div><span class="t-body-md" style="margin:0">28</span></div>
+              <div class="row" style="gap:11px"><span class="t-title-md" style="width:20px;color:var(--accent-ink)">2</span><div class="avatar sm">NL</div><div class="grow"><div class="t-label-lg">Noa Levi</div><div class="progress-track" style="margin-top:5px"><span style="width:75%"></span></div></div><span class="t-body-md" style="margin:0">21</span></div>
+              <div class="row" style="gap:11px"><span class="t-title-md" style="width:20px;color:var(--muted)">3</span><div class="avatar sm">YL</div><div class="grow"><div class="t-label-lg">Yael Levi</div><div class="progress-track" style="margin-top:5px"><span style="width:64%"></span></div></div><span class="t-body-md" style="margin:0">18</span></div>
+              <div class="row" style="gap:11px"><span class="t-title-md" style="width:20px;color:var(--muted)">4</span><div class="avatar sm">SB</div><div class="grow"><div class="t-label-lg">Sarah Ben-David</div><div class="progress-track" style="margin-top:5px"><span style="width:50%"></span></div></div><span class="t-body-md" style="margin:0">14</span></div>
+              <div class="row" style="gap:11px"><span class="t-title-md" style="width:20px;color:var(--muted)">5</span><div class="avatar sm">AM</div><div class="grow"><div class="t-label-lg">Avi Mizrahi</div><div class="progress-track" style="margin-top:5px"><span style="width:39%"></span></div></div><span class="t-body-md" style="margin:0">11</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">70 · Most active members</span><span class="a-route">/admin/analytics/members</span></div>
+        <div class="a-roles"><span>Community Admin</span></div>
+        <p class="a-notes">Leaderboard by events attended, with relative bars. Top performers are obvious candidates for the <b>Event Manager</b> role (links to 67).</p>
+      </div>
+    </div>
+
+    <!-- 71 · Subscription management -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title grow">Subscriptions</span><button class="ic-btn"><span class="msr">tune</span></button></div>
+          <div class="scroll screen-pad">
+            <div class="grid2" style="margin-bottom:16px">
+              <div class="kpi"><div class="k-lbl">Active</div><div class="k-num">110</div></div>
+              <div class="kpi"><div class="k-lbl">MRR</div><div class="k-num">₪3,200</div></div>
+            </div>
+            <div class="hscroll" style="margin-bottom:8px"><span class="chip active">All</span><span class="chip">Monthly</span><span class="chip">Annual</span><span class="chip">Past due</span></div>
+            <div class="list-row"><div class="avatar sm">NL</div><div class="grow"><div class="t-label-lg">Noa Levi</div><div class="t-body-md" style="margin:0;font-size:11px">Monthly · renews Apr 2</div></div><div style="text-align:right"><div class="t-label-lg">₪29</div><span class="status-chip sc-pub" style="height:18px;font-size:10px">Active</span></div></div>
+            <div class="list-row"><div class="avatar sm">DK</div><div class="grow"><div class="t-label-lg">David Katz</div><div class="t-body-md" style="margin:0;font-size:11px">Annual · renews Nov 12</div></div><div style="text-align:right"><div class="t-label-lg">₪290</div><span class="status-chip sc-pub" style="height:18px;font-size:10px">Active</span></div></div>
+            <div class="list-row"><div class="avatar sm">YL</div><div class="grow"><div class="t-label-lg">Yael Levi</div><div class="t-body-md" style="margin:0;font-size:11px">Monthly · failed Mar 1</div></div><div style="text-align:right"><div class="t-label-lg">₪29</div><span class="status-chip sc-cancel" style="height:18px;font-size:10px;background:var(--error-wash);color:var(--error)">Past due</span></div></div>
+            <div class="list-row" style="border:none"><div class="avatar sm">SB</div><div class="grow"><div class="t-label-lg">Sarah Ben-David</div><div class="t-body-md" style="margin:0;font-size:11px">Annual · renews Jul 8</div></div><div style="text-align:right"><div class="t-label-lg">₪290</div><span class="status-chip sc-pub" style="height:18px;font-size:10px">Active</span></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">71 · Subscription management</span><span class="a-route">/admin/finances/subscriptions</span></div>
+        <div class="a-roles"><span>Community Admin</span></div>
+        <p class="a-notes">Active subscriptions with plan, renewal date, and amount. <b>Past-due</b> states flag dunning. Tap a row to view history, comp, or cancel on the member's behalf.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer class="gx-foot">
+  <b>Commons</b> · Batch D of 6 — Community Admin (59–71). Next: Super Admin + Payments (72–85). Shared components from <b>assets/app.css</b>.
+</footer>
+
+<script>
+  document.querySelectorAll('.phone').forEach(p=>{
+    const time = p.dataset.time || '9:41';
+    const sb = document.createElement('div');
+    sb.className = 'statusbar';
+    sb.innerHTML = '<span>'+time+'</span><span class="sb-right"><span class="msr" style="font-size:16px">signal_cellular_alt</span><span class="msr" style="font-size:16px">wifi</span><span class="msr" style="font-size:18px">battery_full</span></span>';
+    p.prepend(sb);
+    const hi = document.createElement('div');
+    hi.className = 'home-ind';
+    p.append(hi);
+  });
+</script>
+</body>
+</html>

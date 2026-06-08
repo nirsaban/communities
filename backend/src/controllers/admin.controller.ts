@@ -299,23 +299,42 @@ export const memberDetail = asyncHandler(async (req: Request, res: Response) => 
 // GET /api/v1/communities/:cid/admin/moderation — recent posts (and any hidden).
 // In v1 we don't have a flagging model yet; this surface lets sub-admins act on
 // recent + already-hidden content (logged as a deviation for the UI).
+// We join the author's name so the UI can render the design's quote card.
 export const moderationQueue = asyncHandler(async (req: Request, res: Response) => {
   const cid = communityIdFromReq(req);
   const posts = await Post.find({ communityId: cid })
     .sort({ hidden: -1, createdAt: -1 })
     .limit(50)
     .lean();
+
+  const authorIds = Array.from(new Set(posts.map((p) => String(p.authorId))));
+  const authors = await User.find({ _id: { $in: authorIds } })
+    .select({ name: 1, email: 1, photoUrl: 1 })
+    .lean();
+  const authorById = new Map(authors.map((u) => [String(u._id), u]));
+
   ok(
     res,
-    posts.map((p) => ({
-      id: String(p._id),
-      authorId: String(p.authorId),
-      type: p.type,
-      title: p.title,
-      body: p.body,
-      hidden: !!p.hidden,
-      createdAt: p.createdAt,
-    })),
+    posts.map((p) => {
+      const u = authorById.get(String(p.authorId));
+      return {
+        id: String(p._id),
+        authorId: String(p.authorId),
+        author: u
+          ? {
+              id: String(u._id),
+              name: u.name ?? 'Member',
+              email: u.email ?? null,
+              photoUrl: u.photoUrl ?? null,
+            }
+          : null,
+        type: p.type,
+        title: p.title,
+        body: p.body,
+        hidden: !!p.hidden,
+        createdAt: p.createdAt,
+      };
+    }),
   );
 });
 
@@ -369,8 +388,17 @@ export const broadcastEvent = asyncHandler(async (req: Request, res: Response) =
   }
   const event = await EventModel.findById(req.params.eid);
   if (!event) throw AppError.notFound('Event not found');
-  const message = String(req.body?.message ?? '').trim();
+  // Accept legacy `body` for backward compat; canonical field is `message`.
+  const message = String(req.body?.message ?? req.body?.body ?? '').trim();
   if (message.length < 1) throw AppError.invalidInput('message required');
+  const rawChannels = Array.isArray(req.body?.channels) ? (req.body.channels as unknown[]) : [];
+  const channels = rawChannels
+    .map((c) => String(c).toLowerCase())
+    .filter((c): c is 'push' | 'inApp' | 'email' =>
+      c === 'push' || c === 'inapp' || c === 'in_app' || c === 'email',
+    );
+  const scheduleAtRaw = typeof req.body?.scheduleAt === 'string' ? req.body.scheduleAt : null;
+  const scheduleAt = scheduleAtRaw ? new Date(scheduleAtRaw) : null;
 
   // Permissions: event manager / community admin / community subadmin / superadmin.
   if (req.user.globalRole !== 'superadmin') {
@@ -379,9 +407,7 @@ export const broadcastEvent = asyncHandler(async (req: Request, res: Response) =
       communityId: event.communityId,
       status: 'active',
     });
-    const isManager =
-      membership?.role === 'event_manager' &&
-      event.managers.some((m) => String(m) === String(req.user!._id));
+    const isManager = event.managers.some((m) => String(m) === String(req.user!._id));
     const isAdmin = membership?.role === 'admin' || membership?.role === 'subadmin';
     if (!isManager && !isAdmin) {
       throw AppError.unauthorized('Not allowed to broadcast');
@@ -410,9 +436,17 @@ export const broadcastEvent = asyncHandler(async (req: Request, res: Response) =
     communityId: event.communityId,
     targetType: 'event',
     targetId: event._id,
-    metadata: { delivered: docs.length },
+    metadata: {
+      delivered: docs.length,
+      channels,
+      scheduleAt: scheduleAt && !Number.isNaN(scheduleAt.getTime()) ? scheduleAt.toISOString() : null,
+    },
   });
-  ok(res, { delivered: docs.length });
+  ok(res, {
+    delivered: docs.length,
+    channels,
+    scheduledFor: scheduleAt && !Number.isNaN(scheduleAt.getTime()) ? scheduleAt.toISOString() : null,
+  });
 });
 
 // GET /api/v1/communities/:cid/admin/subscriptions   (admin only — blocked for sub-admin

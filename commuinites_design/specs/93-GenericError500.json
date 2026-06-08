@@ -1,0 +1,62 @@
+{
+  "screen": "GenericError500",
+  "route": "/500",
+  "roles": [
+    "member",
+    "admin",
+    "subadmin",
+    "event_manager",
+    "super_admin"
+  ],
+  "components": [
+    {
+      "name": "ErrorBlob",
+      "type": "icon",
+      "color": "error"
+    },
+    {
+      "name": "Headline",
+      "type": "text",
+      "style": "titleLarge"
+    },
+    {
+      "name": "Body",
+      "type": "text",
+      "style": "bodyLarge",
+      "color": "muted"
+    },
+    {
+      "name": "TryAgainButton",
+      "type": "button",
+      "style": "primary"
+    },
+    {
+      "name": "ContactSupportButton",
+      "type": "button",
+      "style": "ghost"
+    },
+    {
+      "name": "ErrorId",
+      "type": "text",
+      "style": "mono"
+    }
+  ],
+  "states": [
+    "error"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)",
+    "error": "var(--error)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 24
+  },
+  "interactions": [
+    "takes blame (on our end)",
+    "copyable error id for support",
+    "auto-reports to monitoring"
+  ]
+}

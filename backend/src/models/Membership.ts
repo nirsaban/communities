@@ -49,7 +49,7 @@ membershipSchema.methods.toClientJSON = function toClientJSON(this: IMembership)
     id: String(this._id),
     userId: String(this.userId),
     communityId: String(this.communityId),
-    role: this.role,
+    role: this.role === 'event_manager' ? 'eventManager' : this.role,
     status: this.status,
     joinedAt: this.joinedAt,
     invitedBy: this.invitedBy ? String(this.invitedBy) : null,

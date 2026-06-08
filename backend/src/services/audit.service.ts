@@ -35,11 +35,16 @@ export async function audit(entry: AuditEntry): Promise<void> {
 
 export function auditFromReq(
   req: Request,
-  entry: Omit<AuditEntry, 'ipAddress' | 'userAgent' | 'actorId' | 'actorRole'>,
+  entry: Omit<AuditEntry, 'ipAddress' | 'userAgent' | 'actorRole'> & {
+    actorId?: Types.ObjectId | string;
+  },
 ): Promise<void> {
+  // For public endpoints (login/register/verify) req.user is not set —
+  // the controller may pass actorId explicitly so the audit log still names
+  // the human who performed the action.
   return audit({
     ...entry,
-    actorId: req.user?._id,
+    actorId: entry.actorId ?? req.user?._id,
     actorRole: req.membership?.role || req.user?.globalRole,
     ipAddress: req.ip,
     userAgent: req.get('user-agent') || undefined,

@@ -1,0 +1,59 @@
+{
+  "screen": "EditPricing",
+  "route": "/admin/events/:id/pricing",
+  "roles": [
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "SaveButton",
+      "type": "link"
+    },
+    {
+      "name": "IntegrityWarningCard",
+      "type": "card",
+      "variant": "warningWash"
+    },
+    {
+      "name": "BasePriceField",
+      "type": "textField"
+    },
+    {
+      "name": "PriceTierList",
+      "type": "list",
+      "editable": true
+    },
+    {
+      "name": "AddTierButton",
+      "type": "button",
+      "style": "secondary"
+    },
+    {
+      "name": "SavePricingButton",
+      "type": "button",
+      "style": "primary",
+      "width": "full"
+    }
+  ],
+  "states": [
+    "default",
+    "focused"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 14
+  },
+  "interactions": [
+    "PriceTierList → early-bird/member tiers",
+    "warning when changing price with existing paid RSVPs"
+  ]
+}

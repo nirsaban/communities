@@ -1,0 +1,55 @@
+{
+  "screen": "NotFound404",
+  "route": "/404",
+  "roles": [
+    "member",
+    "admin",
+    "subadmin",
+    "event_manager",
+    "super_admin"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "SearchBlob",
+      "type": "icon",
+      "color": "muted"
+    },
+    {
+      "name": "Headline",
+      "type": "text",
+      "style": "titleLarge"
+    },
+    {
+      "name": "Body",
+      "type": "text",
+      "style": "bodyLarge",
+      "color": "muted"
+    },
+    {
+      "name": "HomeButton",
+      "type": "button",
+      "style": "primary"
+    }
+  ],
+  "states": [
+    "error"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 24
+  },
+  "interactions": [
+    "neutral low-alarm tone",
+    "single way home",
+    "deep-linked dead routes land here"
+  ]
+}

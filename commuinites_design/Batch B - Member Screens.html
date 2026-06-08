@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commons — Batch B · Member Screens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&family=Material+Symbols+Rounded:FILL,GRAD,opsz,wght@0..1,-50..200,20..48,100..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="stylesheet" href="assets/gallery.css">
+<style>
+  /* member-specific helpers */
+  .feed-head{ display:flex; align-items:center; gap:10px; padding:8px 16px 12px; }
+  .switch-pill{ display:flex; align-items:center; gap:9px; padding:5px 12px 5px 5px; border-radius:99px; background:var(--surface-2); }
+  .switch-pill .lg{ width:32px; height:32px; border-radius:9px; background:var(--accent); display:grid; place-items:center; }
+  .switch-pill .lg .msr{ font-size:18px; color:#fff; }
+  .announce{ background:var(--accent-wash); border:1px solid transparent; border-radius:var(--r-md); padding:14px; }
+  .theme-dark .announce{ border-color:var(--border); }
+  .hscroll{ display:flex; gap:12px; overflow:hidden; padding-bottom:2px; }
+  .ev-tile{ width:208px; flex:0 0 208px; }
+  .ev-tile .cover{ height:112px; border-radius:12px 12px 0 0; }
+  .post .reacts{ display:flex; gap:14px; color:var(--muted); font-size:12.5px; font-weight:600; margin-top:10px; }
+  .post .reacts .r{ display:flex; align-items:center; gap:5px; }
+  .seg{ display:flex; background:var(--surface-2); border-radius:var(--r-md); padding:3px; gap:2px; }
+  .seg .s{ flex:1; text-align:center; padding:8px 0; border-radius:9px; font-size:13px; font-weight:600; color:var(--muted); }
+  .seg .s.on{ background:var(--surface); color:var(--on-bg); box-shadow:var(--shadow-low); }
+  .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+  .cal-grid .d{ aspect-ratio:1; display:grid; place-items:center; font-size:13px; font-weight:500; border-radius:9px; position:relative; }
+  .cal-grid .d.mut{ color:var(--muted); opacity:.5; }
+  .cal-grid .d.on{ background:var(--accent); color:var(--on-accent); font-weight:700; }
+  .cal-grid .d .dot{ position:absolute; bottom:5px; width:5px; height:5px; border-radius:50%; background:var(--accent); }
+  .cal-grid .d.on .dot{ background:#fff; }
+  .speaker{ display:flex; align-items:center; gap:11px; }
+  .qa{ border-left:2px solid var(--border); padding-left:13px; }
+  .progress-track{ height:7px; border-radius:9px; background:var(--surface-2); overflow:hidden; }
+  .progress-track > span{ display:block; height:100%; border-radius:9px; background:var(--accent); }
+  .list-row{ display:flex; align-items:center; gap:13px; padding:13px 0; border-bottom:1px solid var(--border); }
+  .list-row:last-child{ border-bottom:none; }
+  .toggle{ width:46px; height:28px; border-radius:99px; position:relative; flex:0 0 46px; }
+  .toggle.on{ background:var(--accent); } .toggle.off{ background:var(--border-2); }
+  .toggle > span{ position:absolute; top:3px; width:22px; height:22px; border-radius:50%; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.2); }
+  .toggle.on > span{ right:3px; } .toggle.off > span{ left:3px; }
+  .notif{ display:flex; gap:12px; padding:13px 0; border-bottom:1px solid var(--border); }
+  .notif .ic{ width:40px; height:40px; flex:0 0 40px; border-radius:11px; display:grid; place-items:center; }
+</style>
+</head>
+<body class="gallery">
+
+<header class="gx-head">
+  <div class="gx-mark">
+    <span class="gx-logo"><i></i><i></i></span>
+    <span class="gx-word">Commons</span>
+  </div>
+  <div class="gx-eyebrow">Batch B — Member Experience</div>
+  <h1>Everything a member touches.</h1>
+  <p class="lede">The member is the heart of the platform — they discover, RSVP, show up, contribute, and stay. These 21 screens cover the full member journey: home feed, events end-to-end (including paid checkout), initiatives, inbox, profile, and account settings. Member chrome only — no admin tooling ever leaks in.</p>
+  <div class="gx-meta">
+    <span class="pill">Role <b>Member</b></span>
+    <span class="pill">Nav <b>Home · Events · Initiatives · Inbox · Profile</b></span>
+    <span class="pill">Screens <b>19 – 39</b></span>
+    <span class="pill"><span class="sw" style="background:#FF5C35"></span>Same tokens as Batch A</span>
+  </div>
+</header>
+
+<!-- ============================================================
+     HOME & FEED
+     ============================================================ -->
+<section class="sect">
+  <div class="sect-head">
+    <span class="sect-num">19 · 30</span>
+    <h2>Home &amp; community</h2>
+    <span class="sub">The first thing a member sees each day — what's happening, what's new, and a fast way to hop between the communities they belong to.</span>
+  </div>
+  <div class="deck">
+
+    <!-- 19 · Home feed -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="feed-head">
+            <div class="switch-pill"><span class="lg"><span class="msr">menu_book</span></span><b style="font-size:14px">Beit Tefilah</b><span class="msr" style="font-size:18px;color:var(--muted)">unfold_more</span></div>
+            <span class="grow"></span>
+            <button class="ic-btn"><span class="msr">search</span></button>
+            <button class="ic-btn"><span class="nav-ico"><span class="msr">notifications</span><span class="badge-dot">3</span></span></button>
+          </div>
+          <div class="scroll screen-pad">
+            <div style="margin:2px 0 16px"><div class="t-display-md">Shalom, Noa</div><div class="t-body-md">Tuesday, March 4</div></div>
+            <div class="announce" style="margin-bottom:18px">
+              <div class="row" style="gap:7px;margin-bottom:6px"><span class="msr" style="font-size:16px;color:var(--accent-ink)">push_pin</span><span class="t-label-sm" style="color:var(--accent-ink)">Pinned by admin</span></div>
+              <div class="t-title-md" style="font-size:15px;margin-bottom:3px">Passover schedule is live</div>
+              <div class="t-body-md" style="margin:0">Seder sign-ups close Friday — tap to RSVP early.</div>
+            </div>
+            <div class="section-header"><span class="sh-title">Happening soon</span><span class="sh-link">See all</span></div>
+            <div class="hscroll" style="margin-bottom:20px">
+              <div class="ev-tile card" style="padding:0;overflow:hidden">
+                <div class="cover imgph"><span class="lbl">cover</span></div>
+                <div style="padding:11px"><div class="event-card" style="border:none;box-shadow:none;padding:0;display:block"><span class="when" style="color:var(--accent-ink);font-weight:600;font-size:11.5px">TONIGHT · 19:00</span><div class="ttl" style="font-size:14px;font-weight:700;margin:4px 0">Hebrew Conversation Café</div><span class="price-tag pt-free"><span class="msr">check</span>Free</span></div></div>
+              </div>
+              <div class="ev-tile card" style="padding:0;overflow:hidden">
+                <div class="cover imgph"><span class="lbl">cover</span></div>
+                <div style="padding:11px"><span class="when" style="color:var(--accent-ink);font-weight:600;font-size:11.5px">SAT · 10:00</span><div style="font-size:14px;font-weight:700;margin:4px 0">Torah Study Circle</div><span class="price-tag pt-free"><span class="msr">check</span>Free</span></div>
+              </div>
+            </div>
+            <div class="section-header"><span class="sh-title">From the community</span></div>
+            <div class="card post" style="padding:14px;margin-bottom:14px">
+              <div class="row" style="gap:10px;margin-bottom:9px"><div class="avatar sm">RM</div><div class="grow"><div class="t-label-lg">Rabbi Mizrahi</div><div class="t-body-md" style="margin:0;font-size:12px">2 hours ago</div></div><span class="msr muted">more_horiz</span></div>
+              <div class="t-body-lg">Beautiful turnout at last night's study. Notes &amp; the recording are up on the event page — thank you all. 🙏</div>
+              <div class="reacts"><span class="r"><span class="msr" style="font-size:17px">favorite</span>34</span><span class="r"><span class="msr" style="font-size:17px">mode_comment</span>8</span></div>
+            </div>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item active"><span class="msr fill">home</span>Home</div>
+            <div class="nav-item"><span class="msr">calendar_month</span>Events</div>
+            <div class="nav-item"><span class="msr">lightbulb</span>Initiatives</div>
+            <div class="nav-item"><span class="nav-ico"><span class="msr">forum</span><span class="badge-dot">3</span></span>Inbox</div>
+            <div class="nav-item"><span class="msr">person</span>Profile</div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">19 · Home feed</span><span class="a-route">/home</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">Greeting, <b>pinned admin announcement</b>, horizontally-scrollable "happening soon", then the community feed. Tapping the switcher pill opens screen 30. Staggered reveal on load.</p>
+      </div>
+    </div>
+
+    <!-- 30 · Community switcher -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="scrim" style="background:var(--scrim)"></div>
+          <div class="sheet" style="max-height:none">
+            <div class="handle"></div>
+            <div class="between" style="margin-bottom:14px"><div class="t-title-lg">Your communities</div><button class="ic-btn soft" style="width:32px;height:32px;font-size:20px"><span class="msr">close</span></button></div>
+            <div class="col" style="gap:8px">
+              <div class="card row" style="padding:12px;gap:12px;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-wash)"><div class="avatar" style="border-radius:11px;background:var(--accent);color:#fff"><span class="msr">menu_book</span></div><div class="grow"><div class="t-title-md" style="font-size:15px">Beit Tefilah</div><div class="t-body-md" style="margin:0">1,240 members</div></div><span class="role-badge rb-member">Member</span></div>
+              <div class="card row" style="padding:12px;gap:12px"><div class="avatar" style="border-radius:11px;background:var(--surface-2)"><span class="msr">rocket_launch</span></div><div class="grow"><div class="t-title-md" style="font-size:15px">TLV Founders</div><div class="t-body-md" style="margin:0">860 members</div></div><span class="nav-ico"><span class="badge-dot" style="position:static">5</span></span></div>
+              <div class="card row" style="padding:12px;gap:12px"><div class="avatar" style="border-radius:11px;background:var(--surface-2)"><span class="msr">self_improvement</span></div><div class="grow"><div class="t-title-md" style="font-size:15px">Sunrise Yoga</div><div class="t-body-md" style="margin:0">312 members</div></div><span class="role-badge rb-em"><span class="msr">event</span>Mgr</span></div>
+            </div>
+            <button class="btn btn-secondary" style="margin-top:16px"><span class="msr">add</span>Discover more communities</button>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">30 · Community switcher</span><span class="a-route">/communities</span></div>
+        <div class="a-roles"><span>Member</span><span>multi-community</span></div>
+        <p class="a-notes">Bottom sheet with drag handle. Shows the member's <b>role per community</b> and unread counts. Switching reloads the entire app context (feed, nav, brand color).</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     EVENTS
+     ============================================================ -->
+<section class="sect">
+  <div class="sect-head">
+    <span class="sect-num">20 – 29</span>
+    <h2>Events</h2>
+    <span class="sub">The lifecycle a member moves through: browse → detail → RSVP (free or paid) → attend → materials, Q&amp;A and recap. Plus calendar, waitlist and "my RSVPs".</span>
+  </div>
+  <div class="deck">
+
+    <!-- 20 · Events list -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><span class="tb-title">Events</span><button class="ic-btn"><span class="msr">tune</span></button><button class="ic-btn"><span class="msr">calendar_month</span></button></div>
+          <div class="screen-pad"><div class="seg" style="margin-bottom:14px"><span class="s on">Upcoming</span><span class="s">Past</span><span class="s">All</span></div>
+            <div class="hscroll" style="margin-bottom:8px"><span class="chip active">All</span><span class="chip"><span class="msr">payments</span>Free</span><span class="chip">This week</span><span class="chip">Faith</span><span class="chip">Wellness</span></div>
+          </div>
+          <div class="scroll screen-pad">
+            <div class="t-label-sm" style="margin:6px 0 10px">This week</div>
+            <div class="col" style="gap:11px">
+              <div class="event-card"><div class="cover imgph"><span class="lbl">cover</span></div><div class="body"><span class="when">TONIGHT · 19:00</span><span class="ttl">Hebrew Conversation Café</span><span class="meta"><span class="msr">place</span>Café Nava</span><div class="foot"><span class="price-tag pt-free"><span class="msr">check</span>Free</span><span class="status-chip sc-pub">23 going</span></div></div></div>
+              <div class="event-card"><div class="cover imgph"><span class="lbl">cover</span></div><div class="body"><span class="when">SAT · MAR 8 · 10:00</span><span class="ttl">Torah Study Circle</span><span class="meta"><span class="msr">place</span>Beit Tefilah</span><div class="foot"><span class="price-tag pt-free"><span class="msr">check</span>Free</span><span class="role-badge rb-member" style="background:var(--success-wash);color:var(--success)"><span class="msr">check_circle</span>Going</span></div></div></div>
+              <div class="event-card"><div class="cover imgph"><span class="lbl">cover</span></div><div class="body"><span class="when">SUN · MAR 9 · 18:30</span><span class="ttl">Weekly Yoga Class</span><span class="meta"><span class="msr">place</span>Studio Jaffa</span><div class="foot"><span class="price-tag pt-paid">₪45</span><span class="status-chip sc-pub">8 spots left</span></div></div></div>
+            </div>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item"><span class="msr">home</span>Home</div>
+            <div class="nav-item active"><span class="msr fill">calendar_month</span>Events</div>
+            <div class="nav-item"><span class="msr">lightbulb</span>Initiatives</div>
+            <div class="nav-item"><span class="nav-ico"><span class="msr">forum</span><span class="badge-dot">3</span></span>Inbox</div>
+            <div class="nav-item"><span class="msr">person</span>Profile</div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">20 · Events list</span><span class="a-route">/events</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">Segmented <b>Upcoming / Past / All</b> + scrollable filter chips (category, free/paid, date). Cards show RSVP state inline. Calendar icon → screen 21.</p>
+      </div>
+    </div>
+
+    <!-- 21 · Calendar view -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><span class="tb-title">Events</span><button class="ic-btn"><span class="msr">view_agenda</span></button><button class="ic-btn soft"><span class="msr fill" style="color:var(--accent)">calendar_month</span></button></div>
+          <div class="scroll screen-pad">
+            <div class="between" style="margin-bottom:14px"><button class="ic-btn" style="width:32px;height:32px"><span class="msr">chevron_left</span></button><div class="t-title-md">March 2025</div><button class="ic-btn" style="width:32px;height:32px"><span class="msr">chevron_right</span></button></div>
+            <div class="cal-grid" style="margin-bottom:10px;color:var(--muted);font-size:11px;font-weight:600"><div class="d">S</div><div class="d">M</div><div class="d">T</div><div class="d">W</div><div class="d">T</div><div class="d">F</div><div class="d">S</div></div>
+            <div class="cal-grid" style="margin-bottom:18px">
+              <div class="d mut">23</div><div class="d mut">24</div><div class="d mut">25</div><div class="d mut">26</div><div class="d mut">27</div><div class="d mut">28</div><div class="d">1</div>
+              <div class="d">2</div><div class="d">3</div><div class="d">4<span class="dot"></span></div><div class="d">5</div><div class="d">6</div><div class="d">7</div><div class="d on">8<span class="dot"></span></div>
+              <div class="d">9<span class="dot"></span></div><div class="d">10</div><div class="d">11</div><div class="d">12</div><div class="d">13</div><div class="d">14<span class="dot"></span></div><div class="d">15</div>
+              <div class="d">16</div><div class="d">17</div><div class="d">18</div><div class="d">19</div><div class="d">20</div><div class="d">21</div><div class="d">22</div>
+            </div>
+            <div class="t-label-sm" style="margin-bottom:10px">Saturday, March 8</div>
+            <div class="col" style="gap:11px">
+              <div class="event-card"><div class="cover imgph"><span class="lbl">cover</span></div><div class="body"><span class="when">10:00 – 11:30</span><span class="ttl">Torah Study Circle</span><span class="meta"><span class="msr">place</span>Beit Tefilah</span><div class="foot"><span class="price-tag pt-free"><span class="msr">check</span>Free</span></div></div></div>
+              <div class="event-card"><div class="cover imgph"><span class="lbl">cover</span></div><div class="body"><span class="when">20:00 – 22:00</span><span class="ttl">Kabbalat Shabbat Sing</span><span class="meta"><span class="msr">place</span>Rooftop</span><div class="foot"><span class="price-tag pt-free"><span class="msr">check</span>Free</span></div></div></div>
+            </div>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item"><span class="msr">home</span>Home</div>
+            <div class="nav-item active"><span class="msr fill">calendar_month</span>Events</div>
+            <div class="nav-item"><span class="msr">lightbulb</span>Initiatives</div>
+            <div class="nav-item"><span class="nav-ico"><span class="msr">forum</span><span class="badge-dot">3</span></span>Inbox</div>
+            <div class="nav-item"><span class="msr">person</span>Profile</div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">21 · Calendar view</span><span class="a-route">/events?view=calendar</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">Month grid with event dots; tapping a day filters the agenda below. Toggle (top-right) flips between agenda and calendar. Selected day = coral fill.</p>
+      </div>
+    </div>
+
+    <!-- 22 · Event detail -->
+    <div class="unit">
+      <div class="phone theme-light on-cover">
+        <div class="screen">
+          <div class="imgph" style="position:absolute;inset:0 0 auto;height:288px;border-radius:0;background-color:#2a2620"><div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,19,15,.25),rgba(20,19,15,.05) 40%,transparent)"></div></div>
+          <div class="topbar" style="position:relative;z-index:5"><button class="ic-btn" style="background:rgba(0,0,0,.3);color:#fff"><span class="msr">arrow_back</span></button><span class="grow"></span><button class="ic-btn" style="background:rgba(0,0,0,.3);color:#fff"><span class="msr">ios_share</span></button><button class="ic-btn" style="background:rgba(0,0,0,.3);color:#fff"><span class="msr">bookmark_border</span></button></div>
+          <div class="scroll" style="position:relative">
+            <div style="height:150px"></div>
+            <div style="background:var(--bg);border-radius:22px 22px 0 0;padding:22px 20px 18px;min-height:420px">
+              <span class="status-chip sc-pub" style="margin-bottom:12px">Published</span>
+              <h1 class="t-display-md" style="margin:8px 0 16px">Torah Study Circle</h1>
+              <div class="list-row" style="padding:11px 0;border-color:var(--border)"><span class="msr" style="color:var(--accent)">calendar_today</span><div><div class="t-label-lg">Saturday, March 8</div><div class="t-body-md" style="margin:0">10:00 – 11:30 · weekly</div></div></div>
+              <div class="list-row" style="padding:11px 0"><span class="msr" style="color:var(--accent)">place</span><div><div class="t-label-lg">Beit Tefilah · Main Hall</div><div class="t-body-md" style="margin:0">14 Yehuda HaLevi St, Tel Aviv</div></div></div>
+              <div class="t-label-sm" style="margin:16px 0 8px">About</div>
+              <p class="t-body-lg" style="margin:0 0 18px">A quiet weekly gathering for close reading of the parsha. All levels welcome — texts provided, tea after.</p>
+              <div class="t-label-sm" style="margin-bottom:10px">Led by</div>
+              <div class="speaker"><div class="avatar sm">RM</div><div><div class="t-label-lg">Rabbi Mizrahi</div><div class="t-body-md" style="margin:0">Community teacher</div></div></div>
+            </div>
+          </div>
+          <div style="flex:0 0 auto;background:var(--surface);border-top:1px solid var(--border);padding:12px 20px 26px;display:flex;align-items:center;gap:14px;position:relative;z-index:20">
+            <div><div class="t-body-md" style="margin:0;font-size:11px">Price</div><div class="t-title-md" style="color:var(--success)">Free</div></div>
+            <button class="btn btn-primary grow" style="width:auto">RSVP — I'm going</button>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">22 · Event detail</span><span class="a-route">/events/:id</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">Parallax cover with translucent controls; status bar inverts white. Sticky pay-bar pins the price + CTA. Free → screen 23; paid → 24; full → 29.</p>
+      </div>
+    </div>
+
+    <!-- 23 · RSVP confirmation (free) -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><span class="grow"></span><button class="ic-btn"><span class="msr">close</span></button></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column;align-items:center;text-align:center">
+            <div class="blob" style="background:var(--success-wash);color:var(--success);margin-top:24px"><span class="msr" style="font-size:46px">check_circle</span></div>
+            <h1 class="t-display-md" style="margin:20px 0 6px">You're going!</h1>
+            <p class="t-body-lg muted" style="margin:0 0 24px">We've saved your spot. See you there, Noa.</p>
+            <div class="card" style="width:100%;padding:14px;text-align:left;margin-bottom:20px">
+              <div class="event-card" style="border:none;box-shadow:none;padding:0"><div class="cover imgph"><span class="lbl">cover</span></div><div class="body"><span class="when">SAT · MAR 8 · 10:00</span><span class="ttl">Torah Study Circle</span><span class="meta"><span class="msr">place</span>Beit Tefilah · Main Hall</span></div></div>
+            </div>
+            <button class="btn btn-primary"><span class="msr">calendar_add_on</span>Add to calendar</button>
+            <div class="wrap" style="margin-top:12px;justify-content:center"><span class="chip"><span class="msr">ios_share</span>Share</span><span class="chip"><span class="msr">group_add</span>Invite a friend</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">23 · RSVP confirmation</span><span class="a-route">/events/:id/rsvp</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">Free-event success. Spring-scales the check on entry. Add-to-calendar generates an .ics; invite shares the deep link. Lands back on detail in the "Going" state.</p>
+      </div>
+    </div>
+
+    <!-- 24 · Checkout (paid / Stripe) -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title">Checkout</span></div>
+          <div class="scroll screen-pad">
+            <div class="card" style="padding:14px;margin-bottom:18px"><div class="event-card" style="border:none;box-shadow:none;padding:0"><div class="cover imgph"><span class="lbl">cover</span></div><div class="body"><span class="when">SUN · MAR 9 · 18:30</span><span class="ttl">Weekly Yoga Class</span><span class="meta"><span class="msr">person</span>1 ticket</span></div></div></div>
+            <div class="list-row"><span class="grow t-body-lg">1 × General admission</span><span class="t-label-lg">₪45.00</span></div>
+            <div class="list-row"><span class="grow t-body-md" style="color:var(--on-bg)">Service fee</span><span class="t-label-lg">₪2.50</span></div>
+            <div class="between" style="padding:14px 0"><span class="t-title-md">Total</span><span class="t-title-lg" style="font-family:var(--fs-display)">₪47.50</span></div>
+            <div style="background:var(--surface-2);border-radius:14px;padding:16px;margin-top:6px">
+              <div class="row" style="gap:7px;margin-bottom:12px"><span class="msr" style="font-size:18px;color:var(--muted)">lock</span><span class="t-label-sm" style="margin:0">Secured by Stripe</span></div>
+              <div class="field" style="margin-bottom:10px"><div class="control" style="background:var(--surface)"><span class="msr">credit_card</span><span class="val">4242 4242 4242 4242</span><span class="grow"></span><span style="font-size:12px;color:var(--muted)">12/27</span></div></div>
+            </div>
+            <button class="btn btn-primary" style="margin-top:16px"><span class="msr">lock</span>Pay ₪47.50</button>
+            <p class="t-body-md center" style="margin-top:12px">Opens Stripe's secure checkout in-app.</p>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">24 · Checkout (paid)</span><span class="a-route">/events/:id/checkout</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">Order summary, then a <b>Stripe WebView handoff</b> for PCI-safe card entry. On success → payment-success (Batch E · 83); on failure → 84. Never stores card data in-app.</p>
+      </div>
+    </div>
+
+    <!-- 25 · My RSVPs -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title">My RSVPs</span></div>
+          <div class="screen-pad"><div class="seg" style="margin-bottom:14px"><span class="s on">Upcoming</span><span class="s">Past</span></div></div>
+          <div class="scroll screen-pad">
+            <div class="col" style="gap:11px">
+              <div class="event-card"><div class="cover imgph"><span class="lbl">cover</span></div><div class="body"><span class="when">SAT · MAR 8 · 10:00</span><span class="ttl">Torah Study Circle</span><div class="foot"><span class="role-badge" style="background:var(--success-wash);color:var(--success)"><span class="msr">check_circle</span>Going</span></div></div></div>
+              <div class="event-card"><div class="cover imgph"><span class="lbl">cover</span></div><div class="body"><span class="when">SUN · MAR 9 · 18:30</span><span class="ttl">Weekly Yoga Class</span><div class="foot"><span class="role-badge" style="background:var(--warning-wash);color:var(--warning)"><span class="msr">hourglass_top</span>Waitlist #4</span></div></div></div>
+              <div class="event-card"><div class="cover imgph"><span class="lbl">cover</span></div><div class="body"><span class="when">FRI · MAR 14 · 18:30</span><span class="ttl">Opening Shabbat Dinner</span><div class="foot"><span class="price-tag pt-paid">Paid · ₪47.50</span></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">25 · My RSVPs</span><span class="a-route">/me/rsvps</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">Reached from Profile. Upcoming / Past split; each card carries its real state — <b>Going, Waitlisted (#n), or Paid</b>. Swipe a card to cancel an RSVP.</p>
+      </div>
+    </div>
+
+    <!-- 26 · Event materials -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title">Materials</span></div>
+          <div class="scroll screen-pad">
+            <div class="t-body-md" style="margin:2px 0 16px">Torah Study Circle · Mar 1</div>
+            <div class="t-label-sm" style="margin-bottom:10px">Recording</div>
+            <div class="card" style="padding:0;overflow:hidden;margin-bottom:20px"><div class="imgph" style="height:140px;position:relative"><span class="lbl">video</span><span style="position:absolute;width:54px;height:54px;border-radius:50%;background:rgba(0,0,0,.55);display:grid;place-items:center"><span class="msr" style="color:#fff;font-size:30px">play_arrow</span></span><span style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.7);color:#fff;font-size:11px;padding:2px 6px;border-radius:5px">1:24:06</span></div></div>
+            <div class="t-label-sm" style="margin-bottom:8px">Documents</div>
+            <div class="col">
+              <div class="list-row"><span class="ic" style="width:40px;height:40px;border-radius:11px;background:var(--error-wash);color:var(--error);display:grid;place-items:center;flex:0 0 40px"><span class="msr">picture_as_pdf</span></span><div class="grow"><div class="t-label-lg">Parsha notes — Vayikra</div><div class="t-body-md" style="margin:0">PDF · 1.2 MB</div></div><button class="ic-btn"><span class="msr">download</span></button></div>
+              <div class="list-row"><span class="ic" style="width:40px;height:40px;border-radius:11px;background:var(--accent-wash);color:var(--accent-ink);display:grid;place-items:center;flex:0 0 40px"><span class="msr">slideshow</span></span><div class="grow"><div class="t-label-lg">Discussion slides</div><div class="t-body-md" style="margin:0">PDF · 18 slides</div></div><button class="ic-btn"><span class="msr">download</span></button></div>
+              <div class="list-row"><span class="ic" style="width:40px;height:40px;border-radius:11px;background:var(--surface-2);color:var(--on-bg-2);display:grid;place-items:center;flex:0 0 40px"><span class="msr">link</span></span><div class="grow"><div class="t-label-lg">Further reading</div><div class="t-body-md" style="margin:0">sefaria.org</div></div><button class="ic-btn"><span class="msr">open_in_new</span></button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">26 · Event materials</span><span class="a-route">/events/:id/materials</span></div>
+        <div class="a-roles"><span>Member</span><span>attendees</span></div>
+        <p class="a-notes">Grouped by type — recordings, slides, docs, links. Gated to attendees if the organizer sets it private. Files download or open in-app viewer.</p>
+      </div>
+    </div>
+
+    <!-- 27 · Q&A thread -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title">Q&amp;A</span></div>
+          <div class="scroll screen-pad">
+            <div class="card" style="padding:14px;margin-bottom:12px">
+              <div class="row" style="gap:9px;margin-bottom:8px"><div class="avatar sm">DK</div><div class="grow"><div class="t-label-lg">David Katz</div><div class="t-body-md" style="margin:0;font-size:11px">3 days ago</div></div><span class="chip tonal" style="height:30px;color:var(--accent-ink)"><span class="msr">arrow_upward</span>12</span></div>
+              <div class="t-body-lg" style="margin-bottom:12px">Will the texts be provided or should we bring our own Chumash?</div>
+              <div class="qa" style="border-color:var(--accent)"><div class="row" style="gap:8px;margin-bottom:5px"><div class="avatar sm" style="width:26px;height:26px;font-size:10px">RM</div><span class="t-label-lg" style="font-size:12.5px">Rabbi Mizrahi</span><span class="status-chip sc-pub" style="height:19px;font-size:10px"><span class="msr" style="font-size:11px">verified</span>Answer</span></div><div class="t-body-md" style="color:var(--on-bg)">Texts are provided — just bring yourself. Tea after, as always.</div></div>
+            </div>
+            <div class="card" style="padding:14px">
+              <div class="row" style="gap:9px;margin-bottom:8px"><div class="avatar sm">YL</div><div class="grow"><div class="t-label-lg">Yael Levi</div><div class="t-body-md" style="margin:0;font-size:11px">yesterday</div></div><span class="chip tonal" style="height:30px"><span class="msr">arrow_upward</span>4</span></div>
+              <div class="t-body-lg">Is the hall wheelchair accessible?</div>
+            </div>
+          </div>
+          <div style="flex:0 0 auto;padding:10px 16px 24px;border-top:1px solid var(--border);background:var(--surface)"><div class="control" style="height:46px;display:flex;align-items:center;gap:10px;padding:0 14px;background:var(--surface-2);border:1.5px solid var(--border-2);border-radius:var(--r-full)"><span class="ph grow">Ask a question…</span><button class="ic-btn soft" style="width:34px;height:34px;background:var(--accent);color:#fff"><span class="msr" style="font-size:18px">send</span></button></div></div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">27 · Event Q&amp;A</span><span class="a-route">/events/:id/qa</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">Upvotable questions sorted by votes; organizer answers are <b>pinned &amp; badged</b>. Members ask via the sticky composer. Managed by the Event Manager (Batch C · 46).</p>
+      </div>
+    </div>
+
+    <!-- 28 · Post-event summary -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title">Recap</span><button class="ic-btn"><span class="msr">ios_share</span></button></div>
+          <div class="scroll screen-pad">
+            <span class="status-chip sc-done" style="margin-bottom:10px">Completed · Mar 1</span>
+            <h1 class="t-display-md" style="margin:6px 0 16px">Torah Study Circle — Recap</h1>
+            <div class="row" style="gap:10px;margin-bottom:18px"><div class="card grow center" style="padding:12px"><div class="t-title-lg" style="font-family:var(--fs-display)">42</div><div class="t-body-md" style="margin:0;font-size:11px">attended</div></div><div class="card grow center" style="padding:12px"><div class="t-title-lg" style="font-family:var(--fs-display)">36</div><div class="t-body-md" style="margin:0;font-size:11px">photos</div></div><div class="card grow center" style="padding:12px"><div class="t-title-lg" style="font-family:var(--fs-display)">4.9</div><div class="t-body-md" style="margin:0;font-size:11px">rating</div></div></div>
+            <p class="t-body-lg" style="margin:0 0 18px">Thank you to everyone who joined our deep dive into Vayikra. The recording and notes are now available.</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:18px"><div class="imgph" style="aspect-ratio:1;border-radius:9px"></div><div class="imgph" style="aspect-ratio:1;border-radius:9px"></div><div class="imgph" style="aspect-ratio:1;border-radius:9px"><span class="lbl">+33</span></div></div>
+            <button class="btn btn-secondary"><span class="msr">folder_open</span>View materials</button>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">28 · Post-event summary</span><span class="a-route">/events/:id/recap</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">Auto-generated when the organizer publishes a recap (Batch C · 45). Attendance + photo gallery + organizer note; deep-links to materials.</p>
+      </div>
+    </div>
+
+    <!-- 29 · Waitlist joined -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><span class="grow"></span><button class="ic-btn"><span class="msr">close</span></button></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column;align-items:center;text-align:center">
+            <div class="blob" style="background:var(--warning-wash);color:var(--warning);margin-top:24px"><span class="msr" style="font-size:46px">hourglass_top</span></div>
+            <h1 class="t-display-md" style="margin:20px 0 6px">You're on the list</h1>
+            <p class="t-body-lg muted" style="margin:0 0 22px">Weekly Yoga Class is full — but spots open up often.</p>
+            <div class="card" style="width:100%;padding:18px;text-align:center;margin-bottom:18px"><div class="t-body-md" style="margin:0;font-size:11px">Your position</div><div class="t-display-lg" style="color:var(--accent);margin:4px 0">#4</div><div class="t-body-md" style="margin:0">in the waitlist of 12</div></div>
+            <div class="row" style="gap:8px;background:var(--surface-2);border-radius:12px;padding:12px 14px;width:100%"><span class="msr" style="color:var(--accent)">notifications_active</span><span class="t-body-md" style="color:var(--on-bg);text-align:left">We'll notify you the moment a spot frees up — you'll have 2 hours to claim it.</span></div>
+            <button class="btn btn-secondary" style="margin-top:18px">Got it</button>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">29 · Waitlist joined</span><span class="a-route">/events/:id/waitlist</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">Shown when a member RSVPs to a full event. Live position counter; auto-promotion sends a push with a 2-hour claim window. Reflected as "Waitlist #n" in My RSVPs.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     INITIATIVES
+     ============================================================ -->
+<section class="sect">
+  <div class="sect-head">
+    <span class="sect-num">31 – 33</span>
+    <h2>Initiatives</h2>
+    <span class="sub">Member-led projects and proposals — a community garden, a mentorship program, a food drive. People rally support, contribute, and track progress together.</span>
+  </div>
+  <div class="deck">
+
+    <!-- 31 · Initiatives list -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><span class="tb-title">Initiatives</span><button class="ic-btn"><span class="msr">tune</span></button></div>
+          <div class="screen-pad"><div class="hscroll" style="margin-bottom:6px"><span class="chip active"><span class="msr">trending_up</span>Trending</span><span class="chip">New</span><span class="chip">Active</span><span class="chip">Funded</span><span class="chip">Community</span></div></div>
+          <div class="scroll screen-pad">
+            <div class="col" style="gap:13px">
+              <div class="card" style="padding:14px">
+                <div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="chip tonal" style="height:24px;font-size:11px">🌱 Community</span><span class="status-chip sc-pub">Active</span></div>
+                <div class="t-title-md" style="margin-bottom:4px">Rooftop community garden</div>
+                <div class="t-body-md" style="margin:0 0 12px">Turn the unused roof into a shared herb &amp; vegetable garden.</div>
+                <div class="progress-track" style="margin-bottom:8px"><span style="width:72%"></span></div>
+                <div class="between"><div class="row" style="gap:0"><div class="avatar sm" style="width:24px;height:24px;font-size:9px;border:2px solid var(--surface)">DK</div><div class="avatar sm" style="width:24px;height:24px;font-size:9px;border:2px solid var(--surface);margin-left:-8px">YL</div><div class="avatar sm" style="width:24px;height:24px;font-size:9px;border:2px solid var(--surface);margin-left:-8px">RM</div><span class="t-body-md" style="margin:0 0 0 8px">128 supporters</span></div><span class="t-label-sm" style="margin:0;color:var(--accent-ink)">72% to goal</span></div>
+              </div>
+              <div class="card" style="padding:14px">
+                <div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="chip tonal" style="height:24px;font-size:11px">🤝 Education</span><span class="status-chip sc-pub">Active</span></div>
+                <div class="t-title-md" style="margin-bottom:4px">Youth mentorship program</div>
+                <div class="t-body-md" style="margin:0 0 12px">Pair teens with professionals for monthly guidance.</div>
+                <div class="between"><div class="row" style="gap:0"><div class="avatar sm" style="width:24px;height:24px;font-size:9px;border:2px solid var(--surface)">AM</div><div class="avatar sm" style="width:24px;height:24px;font-size:9px;border:2px solid var(--surface);margin-left:-8px">SB</div><span class="t-body-md" style="margin:0 0 0 8px">64 supporters</span></div><span class="t-body-md" style="margin:0">14 comments</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item"><span class="msr">home</span>Home</div>
+            <div class="nav-item"><span class="msr">calendar_month</span>Events</div>
+            <div class="nav-item active"><span class="msr fill">lightbulb</span>Initiatives</div>
+            <div class="nav-item"><span class="nav-ico"><span class="msr">forum</span><span class="badge-dot">3</span></span>Inbox</div>
+            <div class="nav-item"><span class="msr">person</span>Profile</div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">31 · Initiatives list</span><span class="a-route">/initiatives</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">Filter chips by status/category. Cards show supporter avatar-stack, optional goal progress, and comment counts. FAB-less — new initiative lives in the empty state &amp; profile.</p>
+      </div>
+    </div>
+
+    <!-- 32 · Initiative detail -->
+    <div class="unit">
+      <div class="phone theme-light on-cover">
+        <div class="screen">
+          <div class="imgph" style="position:absolute;inset:0 0 auto;height:240px;border-radius:0;background-color:#26301f"><div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,19,15,.2),transparent 50%)"></div></div>
+          <div class="topbar" style="position:relative;z-index:5"><button class="ic-btn" style="background:rgba(0,0,0,.3);color:#fff"><span class="msr">arrow_back</span></button><span class="grow"></span><button class="ic-btn" style="background:rgba(0,0,0,.3);color:#fff"><span class="msr">ios_share</span></button></div>
+          <div class="scroll" style="position:relative">
+            <div style="height:120px"></div>
+            <div style="background:var(--bg);border-radius:22px 22px 0 0;padding:20px;min-height:440px">
+              <div class="row" style="justify-content:space-between;margin-bottom:10px"><span class="chip tonal" style="height:24px;font-size:11px">🌱 Community</span><span class="status-chip sc-pub">Active</span></div>
+              <h1 class="t-display-md" style="margin:0 0 12px">Rooftop community garden</h1>
+              <div class="speaker" style="margin-bottom:16px"><div class="avatar sm">DK</div><div><div class="t-label-lg">Started by David Katz</div><div class="t-body-md" style="margin:0">3 weeks ago</div></div></div>
+              <p class="t-body-lg" style="margin:0 0 16px">Our roof sits empty. With a few raised beds and a watering rota we could grow herbs and vegetables for the whole community — and share meals from what we grow.</p>
+              <div class="card" style="padding:14px;margin-bottom:16px"><div class="between" style="margin-bottom:8px"><span class="t-label-lg">128 of 175 supporters</span><span class="t-label-sm" style="margin:0;color:var(--accent-ink)">72%</span></div><div class="progress-track"><span style="width:72%"></span></div></div>
+              <div class="t-label-sm" style="margin-bottom:10px">Latest update</div>
+              <div class="qa" style="border-color:var(--accent);margin-bottom:16px"><div class="t-body-md" style="color:var(--on-bg)"><b>The board approved a budget!</b> We're sourcing raised beds — volunteers needed for the build day, Mar 22.</div></div>
+              <div class="t-label-sm" style="margin-bottom:10px">Comments · 14</div>
+              <div class="row" style="gap:9px;align-items:flex-start"><div class="avatar sm">YL</div><div><span class="t-label-lg" style="font-size:12.5px">Yael Levi</span><div class="t-body-md" style="color:var(--on-bg)">I can bring soil &amp; tools 🙌</div></div></div>
+            </div>
+          </div>
+          <div style="flex:0 0 auto;background:var(--surface);border-top:1px solid var(--border);padding:12px 20px 26px;display:flex;gap:10px;position:relative;z-index:20">
+            <button class="btn btn-primary grow" style="width:auto"><span class="msr">favorite</span>Support</button>
+            <button class="btn btn-secondary" style="width:auto"><span class="msr">volunteer_activism</span>Contribute</button>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">32 · Initiative detail</span><span class="a-route">/initiatives/:id</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">Description, live support meter, updates timeline, and threaded comments. <b>Support</b> = endorse; <b>Contribute</b> = offer time/resources. Sticky action bar.</p>
+      </div>
+    </div>
+
+    <!-- 33 · New initiative -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">close</span></button><span class="tb-title">New initiative</span></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <label class="t-label-sm" style="display:block;margin-bottom:8px">Cover image</label>
+            <div class="imgph" style="height:96px;border-radius:12px;margin-bottom:16px"><span class="lbl">tap to add a cover · optional</span></div>
+            <div class="field"><label>Title</label><div class="control"><span class="val">Rooftop community garden</span></div></div>
+            <div class="field"><label>Category</label><div class="control"><span class="msr">category</span><span class="val">Community</span><span class="grow"></span><span class="msr">expand_more</span></div></div>
+            <div class="field"><label>What are you proposing?</label><div class="control" style="height:auto;align-items:flex-start;padding:14px 16px"><span class="val" style="line-height:1.5">Turn the unused roof into a shared herb &amp; vegetable garden with raised beds and a watering rota…</span></div></div>
+            <div class="field"><label>Target date <span class="muted" style="font-weight:400">· optional</span></label><div class="control"><span class="msr">flag</span><span class="val">June 2025</span></div></div>
+            <div style="margin-top:auto;padding-bottom:24px"><button class="btn btn-primary">Publish initiative</button><p class="t-body-md center" style="margin-top:10px">Submitted to community moderators for approval.</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">33 · New initiative</span><span class="a-route">/initiatives/new</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">Lightweight composer. On publish it enters the <b>moderation queue</b> (Batch C · 58) before going live — copy makes that explicit so there's no surprise.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     INBOX · PROFILE · SETTINGS
+     ============================================================ -->
+<section class="sect">
+  <div class="sect-head">
+    <span class="sect-num">34 – 39</span>
+    <h2>Inbox, profile &amp; settings</h2>
+    <span class="sub">Where members keep up, present themselves, and control their experience — including the things we hope they never need, like leaving.</span>
+  </div>
+  <div class="deck">
+
+    <!-- 34 · Inbox -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><span class="tb-title">Inbox</span><button class="ic-btn"><span class="msr">done_all</span></button></div>
+          <div class="scroll screen-pad">
+            <div class="card announce" style="margin-bottom:16px;display:flex;gap:11px;align-items:center"><span class="msr" style="color:var(--accent-ink)">bolt</span><div class="grow"><div class="t-label-lg">A waitlist spot opened!</div><div class="t-body-md" style="margin:0">Weekly Yoga — claim within 2 hrs</div></div><button class="btn btn-primary btn-sm">Claim</button></div>
+            <div class="t-label-sm" style="margin-bottom:4px">Today</div>
+            <div class="notif"><span class="ic" style="background:var(--accent-wash);color:var(--accent-ink)"><span class="msr">forum</span></span><div class="grow"><div class="t-body-lg" style="font-size:14px"><b>Rabbi Mizrahi</b> answered your question on Torah Study Circle</div><div class="t-body-md" style="margin:2px 0 0;font-size:11px">2h ago</div></div><span style="width:8px;height:8px;border-radius:50%;background:var(--accent);margin-top:6px"></span></div>
+            <div class="notif"><span class="ic" style="background:var(--success-wash);color:var(--success)"><span class="msr">favorite</span></span><div class="grow"><div class="t-body-lg" style="font-size:14px"><b>5 new supporters</b> on Rooftop community garden</div><div class="t-body-md" style="margin:2px 0 0;font-size:11px">5h ago</div></div><span style="width:8px;height:8px;border-radius:50%;background:var(--accent);margin-top:6px"></span></div>
+            <div class="t-label-sm" style="margin:10px 0 4px">Earlier</div>
+            <div class="notif"><span class="ic" style="background:var(--surface-2);color:var(--on-bg-2)"><span class="msr">event</span></span><div class="grow"><div class="t-body-lg" style="font-size:14px">New event: <b>Opening Shabbat Dinner</b> · Mar 14</div><div class="t-body-md" style="margin:2px 0 0;font-size:11px">Yesterday</div></div></div>
+            <div class="notif" style="border:none"><span class="ic" style="background:var(--surface-2);color:var(--on-bg-2)"><span class="msr">receipt_long</span></span><div class="grow"><div class="t-body-lg" style="font-size:14px">Receipt for <b>Weekly Yoga Class</b> · ₪47.50</div><div class="t-body-md" style="margin:2px 0 0;font-size:11px">2 days ago</div></div></div>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item"><span class="msr">home</span>Home</div>
+            <div class="nav-item"><span class="msr">calendar_month</span>Events</div>
+            <div class="nav-item"><span class="msr">lightbulb</span>Initiatives</div>
+            <div class="nav-item active"><span class="msr fill">forum</span>Inbox</div>
+            <div class="nav-item"><span class="msr">person</span>Profile</div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">34 · Inbox</span><span class="a-route">/inbox</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">Grouped by recency; <b>actionable</b> items (waitlist claim) float to a banner. Unread dot + nav badge. "Mark all read" top-right. Type-coded icon tiles.</p>
+      </div>
+    </div>
+
+    <!-- 35 · Profile -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><span class="tb-title">Profile</span><button class="ic-btn"><span class="msr">settings</span></button></div>
+          <div class="scroll screen-pad">
+            <div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:18px">
+              <div class="avatar lg" style="width:88px;height:88px;font-size:30px">NL</div>
+              <div class="t-title-lg" style="margin:12px 0 2px">Noa Levi</div>
+              <div class="t-body-md" style="margin:0">@noalevi</div>
+              <p class="t-body-lg" style="margin:10px 0 0;max-width:260px">Reader, gardener, perpetual beginner. Tea after study, always.</p>
+            </div>
+            <div class="row" style="gap:10px;margin-bottom:18px"><div class="card grow center" style="padding:12px"><div class="t-title-lg" style="font-family:var(--fs-display)">12</div><div class="t-body-md" style="margin:0;font-size:11px">RSVPs</div></div><div class="card grow center" style="padding:12px"><div class="t-title-lg" style="font-family:var(--fs-display)">3</div><div class="t-body-md" style="margin:0;font-size:11px">Initiatives</div></div><div class="card grow center" style="padding:12px"><div class="t-title-lg" style="font-family:var(--fs-display)">3</div><div class="t-body-md" style="margin:0;font-size:11px">Communities</div></div></div>
+            <div class="t-label-sm" style="margin-bottom:10px">Interests</div>
+            <div class="wrap" style="margin-bottom:18px"><span class="chip tonal" style="height:30px">Faith &amp; study</span><span class="chip tonal" style="height:30px">Tech</span><span class="chip tonal" style="height:30px">Music</span></div>
+            <div class="card" style="padding:4px 14px">
+              <div class="list-row"><span class="msr muted">event_available</span><span class="grow t-body-lg" style="font-size:14px">My RSVPs</span><span class="msr muted">chevron_right</span></div>
+              <div class="list-row"><span class="msr muted">lightbulb</span><span class="grow t-body-lg" style="font-size:14px">My initiatives</span><span class="msr muted">chevron_right</span></div>
+              <div class="list-row" style="border:none"><span class="msr muted">groups</span><span class="grow t-body-lg" style="font-size:14px">My communities</span><span class="msr muted">chevron_right</span></div>
+            </div>
+            <button class="btn btn-secondary" style="margin-top:14px"><span class="msr">edit</span>Edit profile</button>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item"><span class="msr">home</span>Home</div>
+            <div class="nav-item"><span class="msr">calendar_month</span>Events</div>
+            <div class="nav-item"><span class="msr">lightbulb</span>Initiatives</div>
+            <div class="nav-item"><span class="nav-ico"><span class="msr">forum</span><span class="badge-dot">3</span></span>Inbox</div>
+            <div class="nav-item active"><span class="msr fill">person</span>Profile</div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">35 · Member profile</span><span class="a-route">/me</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">Self-view. Avatar, bio, interests, activity stats, and shortcuts to RSVPs / initiatives / communities. Gear → settings (37–39). Public view honors privacy (38).</p>
+      </div>
+    </div>
+
+    <!-- 36 · Edit profile -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title grow">Edit profile</span><span style="color:var(--accent-ink);font-weight:600;font-size:14px">Save</span></div>
+          <div class="scroll screen-pad">
+            <div style="display:flex;justify-content:center;margin:6px 0 22px"><div class="avatar lg" style="width:96px;height:96px;font-size:28px">NL<span style="position:absolute;right:-2px;bottom:-2px;width:34px;height:34px;border-radius:50%;background:var(--accent);border:3px solid var(--surface);display:grid;place-items:center"><span class="msr" style="font-size:18px;color:#fff">photo_camera</span></span></div></div>
+            <div class="field"><label>Display name</label><div class="control"><span class="val">Noa Levi</span></div></div>
+            <div class="field"><label>Username</label><div class="control"><span class="muted">@</span><span class="val">noalevi</span></div></div>
+            <div class="field"><label>Bio</label><div class="control" style="height:auto;align-items:flex-start;padding:14px 16px"><span class="val" style="line-height:1.5">Reader, gardener, perpetual beginner. Tea after study, always.</span></div><div class="hint">62 / 160</div></div>
+            <label class="t-label-sm" style="display:block;margin-bottom:8px">Interests</label>
+            <div class="wrap"><span class="chip active" style="height:30px">Faith &amp; study <span class="msr" style="font-size:15px">close</span></span><span class="chip active" style="height:30px">Tech <span class="msr" style="font-size:15px">close</span></span><span class="chip active" style="height:30px">Music <span class="msr" style="font-size:15px">close</span></span><span class="chip" style="height:30px"><span class="msr" style="font-size:15px">add</span>Add</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">36 · Edit profile</span><span class="a-route">/me/edit</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">Inline avatar upload, character-counted bio, removable interest chips. Save validates username uniqueness; unsaved-changes guard on back.</p>
+      </div>
+    </div>
+
+    <!-- 37 · Notification preferences -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title">Notifications</span></div>
+          <div class="scroll screen-pad">
+            <div class="between" style="padding:4px 0 12px;color:var(--muted)"><span class="grow"></span><span class="t-label-sm" style="width:48px;text-align:center;margin:0">Push</span><span class="t-label-sm" style="width:48px;text-align:center;margin:0">Email</span></div>
+            <div class="t-label-sm" style="margin-bottom:6px">Events</div>
+            <div class="list-row"><span class="grow t-body-lg" style="font-size:14px">New events</span><span class="toggle on" style="width:40px;height:24px"><span style="width:18px;height:18px"></span></span><span style="width:8px;flex:0 0 8px"></span><span class="toggle on" style="width:40px;height:24px"><span style="width:18px;height:18px"></span></span></div>
+            <div class="list-row"><span class="grow t-body-lg" style="font-size:14px">RSVP reminders</span><span class="toggle on" style="width:40px;height:24px"><span style="width:18px;height:18px"></span></span><span style="width:8px;flex:0 0 8px"></span><span class="toggle off" style="width:40px;height:24px"><span style="width:18px;height:18px"></span></span></div>
+            <div class="list-row"><span class="grow t-body-lg" style="font-size:14px">Waitlist openings</span><span class="toggle on" style="width:40px;height:24px"><span style="width:18px;height:18px"></span></span><span style="width:8px;flex:0 0 8px"></span><span class="toggle on" style="width:40px;height:24px"><span style="width:18px;height:18px"></span></span></div>
+            <div class="t-label-sm" style="margin:14px 0 6px">Initiatives &amp; community</div>
+            <div class="list-row"><span class="grow t-body-lg" style="font-size:14px">Replies &amp; mentions</span><span class="toggle on" style="width:40px;height:24px"><span style="width:18px;height:18px"></span></span><span style="width:8px;flex:0 0 8px"></span><span class="toggle off" style="width:40px;height:24px"><span style="width:18px;height:18px"></span></span></div>
+            <div class="list-row"><span class="grow t-body-lg" style="font-size:14px">Announcements</span><span class="toggle on" style="width:40px;height:24px"><span style="width:18px;height:18px"></span></span><span style="width:8px;flex:0 0 8px"></span><span class="toggle on" style="width:40px;height:24px"><span style="width:18px;height:18px"></span></span></div>
+            <div class="list-row" style="border:none"><span class="grow t-body-lg" style="font-size:14px">Weekly digest</span><span class="toggle off" style="width:40px;height:24px"><span style="width:18px;height:18px"></span></span><span style="width:8px;flex:0 0 8px"></span><span class="toggle on" style="width:40px;height:24px"><span style="width:18px;height:18px"></span></span></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">37 · Notification prefs</span><span class="a-route">/settings/notifications</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes"><b>Per-type × per-channel</b> matrix (Push / Email). Saves instantly. Honors OS-level push permission; a banner appears if push is disabled system-wide.</p>
+      </div>
+    </div>
+
+    <!-- 38 · Privacy settings -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title">Privacy</span></div>
+          <div class="scroll screen-pad">
+            <div class="t-label-sm" style="margin-bottom:10px">Who can see my profile</div>
+            <div class="col" style="gap:10px;margin-bottom:18px">
+              <div class="card row" style="padding:14px;gap:12px;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-wash)"><span class="msr" style="color:var(--accent)">groups</span><span class="grow t-body-lg" style="font-size:14px">Members of my communities</span><span class="msr" style="color:var(--accent)">radio_button_checked</span></div>
+              <div class="card row" style="padding:14px;gap:12px"><span class="msr muted">public</span><span class="grow t-body-lg" style="font-size:14px">Everyone</span><span class="msr muted">radio_button_unchecked</span></div>
+              <div class="card row" style="padding:14px;gap:12px"><span class="msr muted">lock</span><span class="grow t-body-lg" style="font-size:14px">Only me</span><span class="msr muted">radio_button_unchecked</span></div>
+            </div>
+            <div class="t-label-sm" style="margin-bottom:6px">Visibility</div>
+            <div class="list-row"><span class="grow t-body-lg" style="font-size:14px">Show my RSVPs to others</span><span class="toggle off"><span></span></span></div>
+            <div class="list-row"><span class="grow t-body-lg" style="font-size:14px">List me in member directory</span><span class="toggle on"><span></span></span></div>
+            <div class="list-row"><span class="grow t-body-lg" style="font-size:14px">Allow direct messages</span><span class="toggle on"><span></span></span></div>
+            <div class="list-row" style="border:none"><span class="msr muted">block</span><span class="grow t-body-lg" style="font-size:14px">Blocked members</span><span class="t-body-md" style="margin:0">2</span><span class="msr muted">chevron_right</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">38 · Privacy settings</span><span class="a-route">/settings/privacy</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">Profile-visibility radio + granular visibility toggles. Drives what the public profile view (35) reveals. Blocked-members list is its own sub-screen.</p>
+      </div>
+    </div>
+
+    <!-- 39 · Account deletion -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title">Delete account</span></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <div class="blob" style="background:var(--error-wash);color:var(--error);margin:10px 0 18px"><span class="msr" style="font-size:42px">warning</span></div>
+            <h1 class="t-display-md" style="margin:0 0 10px">Delete your account?</h1>
+            <p class="t-body-lg muted" style="margin:0 0 18px">This is permanent. Once it's done, we can't bring it back.</p>
+            <div class="col" style="gap:11px;margin-bottom:20px">
+              <div class="row" style="gap:10px"><span class="msr" style="color:var(--error);font-size:20px">close</span><span class="t-body-lg" style="font-size:14px">Your profile &amp; activity are erased</span></div>
+              <div class="row" style="gap:10px"><span class="msr" style="color:var(--error);font-size:20px">close</span><span class="t-body-lg" style="font-size:14px">You'll lose access to all 3 communities</span></div>
+              <div class="row" style="gap:10px"><span class="msr" style="color:var(--error);font-size:20px">close</span><span class="t-body-lg" style="font-size:14px">Upcoming RSVPs are cancelled</span></div>
+            </div>
+            <div class="field"><label>Type <b style="color:var(--error)">DELETE</b> to confirm</label><div class="control" style="border-color:var(--error)"><span class="val" style="letter-spacing:.1em">DELETE</span><span class="caret"></span></div></div>
+            <div style="margin-top:auto;padding-bottom:24px;display:flex;flex-direction:column;gap:10px"><button class="btn btn-danger">Permanently delete account</button><button class="btn btn-ghost" style="color:var(--on-bg)">Keep my account</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">39 · Account deletion</span><span class="a-route">/settings/delete</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">The <b>ConfirmDialog</b> pattern: spelled-out consequences + <b>typed "DELETE"</b> gate. Danger button stays disabled until the text matches. 30-day soft-delete grace before purge.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer class="gx-foot">
+  <b>Commons</b> · Batch B of 6 — Member experience (19–39). Next: Event Manager &amp; Sub Admin (40–58). All components inherited from <b>assets/app.css</b>; member chrome only.
+</footer>
+
+<script>
+  document.querySelectorAll('.phone').forEach(p=>{
+    const time = p.dataset.time || '9:41';
+    const sb = document.createElement('div');
+    sb.className = 'statusbar';
+    sb.innerHTML = '<span>'+time+'</span><span class="sb-right"><span class="msr" style="font-size:16px">signal_cellular_alt</span><span class="msr" style="font-size:16px">wifi</span><span class="msr" style="font-size:18px">battery_full</span></span>';
+    p.prepend(sb);
+    const hi = document.createElement('div');
+    hi.className = 'home-ind';
+    p.append(hi);
+  });
+</script>
+</body>
+</html>

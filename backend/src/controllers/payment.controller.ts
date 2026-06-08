@@ -113,6 +113,28 @@ export const finances = asyncHandler(async (req: Request, res: Response) => {
   ok(res, snapshot);
 });
 
+// GET /api/v1/payments/:pid — admin-of-community detail view used by the
+// IssueRefund screen. Caller must be a member of the payment's community
+// with admin role (sub-admin is blocked at the route layer).
+export const getPayment = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) throw AppError.unauthenticated();
+  const { Payment } = await import('../models/Payment');
+  const { Membership } = await import('../models/Membership');
+  const payment = await Payment.findById(req.params.pid);
+  if (!payment) throw AppError.notFound('Payment not found');
+  if (req.user.globalRole !== 'superadmin') {
+    const m = await Membership.findOne({
+      userId: req.user._id,
+      communityId: payment.communityId,
+      status: 'active',
+    });
+    if (!m || (m.role !== 'admin' && m.role !== 'subadmin')) {
+      throw AppError.unauthorized('Not allowed');
+    }
+  }
+  ok(res, payment.toClientJSON());
+});
+
 /**
  * Polled by the mobile checkout screen after the user returns from PayPlus.
  * No auth. Returns { status, paymentId } so the client can flip to the success

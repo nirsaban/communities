@@ -1,0 +1,43 @@
+{
+  "screen": "CommunitySettings",
+  "route": "/admin/settings",
+  "roles": [
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "GeneralSettingsCard",
+      "type": "card"
+    },
+    {
+      "name": "CustomizationCard",
+      "type": "card"
+    },
+    {
+      "name": "DangerZoneCard",
+      "type": "card",
+      "variant": "danger"
+    }
+  ],
+  "states": [
+    "default"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)",
+    "danger": "var(--error)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 18
+  },
+  "interactions": [
+    "DangerZone → transfer/archive/delete with typed-confirmation dialogs",
+    "CustomizationCard → branding/privacy/roles"
+  ]
+}

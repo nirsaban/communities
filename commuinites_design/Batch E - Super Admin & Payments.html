@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commons — Batch E · Super Admin & Payments</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&family=Material+Symbols+Rounded:FILL,GRAD,opsz,wght@0..1,-50..200,20..48,100..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="stylesheet" href="assets/gallery.css">
+<style>
+  .area{ width:100%; height:96px; display:block; }
+  .plan{ border:1.5px solid var(--border-2); border-radius:var(--r-lg); padding:18px; }
+  .plan.on{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-wash); }
+  .plan .feat{ display:flex; align-items:center; gap:9px; font-size:13.5px; padding:4px 0; }
+  .plan .feat .msr{ font-size:18px; color:var(--success); }
+  .save-tag{ background:var(--accent); color:var(--on-accent); font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:99px; }
+  .kbd{ font-family:"DM Mono",monospace; font-size:12px; background:var(--surface-2); padding:2px 8px; border-radius:6px; color:var(--on-bg); }
+</style>
+</head>
+<body class="gallery">
+
+<header class="gx-head">
+  <div class="gx-mark"><span class="gx-logo"><i></i><i></i></span><span class="gx-word">Commons</span></div>
+  <div class="gx-eyebrow">Batch E — Super Admin &amp; Payments</div>
+  <h1>The platform, and the money rail.</h1>
+  <p class="lede">Two very different audiences. The <b>Super Admin</b> operates the whole platform — every community, every user, billing keys, maintenance mode — shown in a dark "operator" skin to signal elevated context. The <b>payment</b> screens are member-facing moments of truth: plans, success, failure, refunds.</p>
+  <div class="gx-meta">
+    <span class="pill">Roles <b>Super Admin · Member (payments)</b></span>
+    <span class="pill"><span class="sw" style="background:#0F0F0F;border:1px solid #444"></span>Operator skin <b>Dark</b></span>
+    <span class="pill">Screens <b>72 – 85</b></span>
+  </div>
+</header>
+
+<!-- ============================================================
+     SUPER ADMIN  (dark operator skin)
+     ============================================================ -->
+<section class="sect">
+  <div class="sect-head">
+    <span class="sect-num">72 – 79</span>
+    <h2>Super Admin</h2>
+    <span class="sub">Global platform operator. Cross-tenant metrics, lifecycle control over communities &amp; users, and the platform-wide settings no community admin can reach.</span>
+  </div>
+  <div class="deck">
+
+    <!-- 72 · Super Admin dashboard -->
+    <div class="unit">
+      <div class="phone theme-dark">
+        <div class="screen">
+          <div class="feed-head" style="padding:8px 16px 10px"><span class="gx-logo" style="width:28px;height:28px"><i style="width:18px;height:18px;top:5px;background:var(--accent)"></i><i style="width:18px;height:18px;top:5px;right:0;background:#FAFAF7;mix-blend-mode:difference"></i></span><b style="font-size:15px">Commons</b><span class="role-badge rb-super" style="margin-left:4px"><span class="msr">verified_user</span>Platform</span><span class="grow"></span><button class="ic-btn"><span class="msr">notifications</span></button></div>
+          <div class="scroll screen-pad">
+            <div class="t-display-md" style="font-size:24px;margin:4px 0 14px">Platform health</div>
+            <div class="grid2" style="margin-bottom:11px">
+              <div class="kpi"><div class="k-lbl"><span class="msr" style="font-size:15px">hub</span>Communities</div><div class="k-num">48</div><div class="k-delta up">▲ 3</div></div>
+              <div class="kpi"><div class="k-lbl"><span class="msr" style="font-size:15px">group</span>Users</div><div class="k-num">24.6k</div><div class="k-delta up">▲ 2.1%</div></div>
+              <div class="kpi"><div class="k-lbl"><span class="msr" style="font-size:15px">payments</span>Platform MRR</div><div class="k-num">₪142k</div><div class="k-delta up">▲ 9%</div></div>
+              <div class="kpi"><div class="k-lbl"><span class="msr" style="font-size:15px">bolt</span>DAU / MAU</div><div class="k-num">38%</div><div class="k-delta" style="color:var(--muted)">stickiness</div></div>
+            </div>
+            <div class="card" style="padding:16px;margin-bottom:16px">
+              <div class="between" style="margin-bottom:12px"><span class="t-label-lg">Active users · 14 days</span></div>
+              <svg class="area" viewBox="0 0 300 96" preserveAspectRatio="none"><defs><linearGradient id="ag2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity=".25"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs><polygon fill="url(#ag2)" points="0,72 30,66 60,70 90,54 120,58 150,44 180,48 210,34 240,38 270,24 300,20 300,96 0,96"/><polyline fill="none" stroke="var(--accent)" stroke-width="2.5" points="0,72 30,66 60,70 90,54 120,58 150,44 180,48 210,34 240,38 270,24 300,20"/></svg>
+            </div>
+            <div class="section-header"><span class="sh-title" style="font-size:16px">Activity</span></div>
+            <div class="notif" style="border-color:var(--border)"><span class="ic" style="background:var(--success-wash);color:var(--success)"><span class="msr">add_business</span></span><div class="grow"><div class="t-body-lg" style="font-size:14px"><b>Sunrise Yoga</b> community created</div><div class="t-body-md" style="margin:2px 0 0;font-size:11px">1h ago</div></div></div>
+            <div class="notif" style="border:none"><span class="ic" style="background:var(--error-wash);color:var(--error)"><span class="msr">report</span></span><div class="grow"><div class="t-body-lg" style="font-size:14px">2 abuse reports need review</div><div class="t-body-md" style="margin:2px 0 0;font-size:11px">3h ago</div></div></div>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item active"><span class="msr fill">space_dashboard</span>Dashboard</div>
+            <div class="nav-item"><span class="msr">hub</span>Communities</div>
+            <div class="nav-item"><span class="msr">group</span>Users</div>
+            <div class="nav-item"><span class="msr">settings</span>Settings</div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">72 · Super Admin dashboard</span><span class="a-route">/super</span></div>
+        <div class="a-roles"><span>Super Admin</span></div>
+        <p class="a-notes">Platform-wide KPIs (communities, users, MRR, DAU/MAU), an active-user trend, and a cross-tenant activity feed. Shown in the <span class="tag-dark">dark operator skin</span>.</p>
+      </div>
+    </div>
+
+    <!-- 73 · Communities list -->
+    <div class="unit">
+      <div class="phone theme-dark">
+        <div class="screen">
+          <div class="topbar"><span class="tb-title grow">Communities · 48</span><button class="ic-btn"><span class="msr">tune</span></button></div>
+          <div class="screen-pad"><div class="control" style="height:44px;display:flex;align-items:center;gap:10px;padding:0 14px;background:var(--surface-2);border:none;border-radius:var(--r-full);margin-bottom:10px"><span class="msr muted">search</span><span class="ph grow">Search communities…</span></div><div class="hscroll" style="margin-bottom:6px"><span class="chip active">All</span><span class="chip">Active</span><span class="chip">Suspended</span><span class="chip">New</span></div></div>
+          <div class="scroll screen-pad">
+            <div class="list-row"><div class="avatar sm" style="border-radius:9px;background:var(--accent);color:#fff"><span class="msr">menu_book</span></div><div class="grow"><div class="t-label-lg">Beit Tefilah</div><div class="t-body-md" style="margin:0;font-size:11px">1,240 members · ₪3.2k MRR</div></div><span class="status-chip sc-pub" style="height:19px;font-size:10px">Active</span></div>
+            <div class="list-row"><div class="avatar sm" style="border-radius:9px;background:var(--surface-2)"><span class="msr">rocket_launch</span></div><div class="grow"><div class="t-label-lg">TLV Founders</div><div class="t-body-md" style="margin:0;font-size:11px">860 members · ₪5.1k MRR</div></div><span class="status-chip sc-pub" style="height:19px;font-size:10px">Active</span></div>
+            <div class="list-row"><div class="avatar sm" style="border-radius:9px;background:var(--surface-2)"><span class="msr">self_improvement</span></div><div class="grow"><div class="t-label-lg">Sunrise Yoga</div><div class="t-body-md" style="margin:0;font-size:11px">312 members · new</div></div><span class="status-chip sc-draft" style="height:19px;font-size:10px">Trial</span></div>
+            <div class="list-row" style="border:none"><div class="avatar sm" style="border-radius:9px;background:var(--surface-2);opacity:.6"><span class="msr">storefront</span></div><div class="grow"><div class="t-label-lg" style="opacity:.7">Bargain Bros</div><div class="t-body-md" style="margin:0;font-size:11px">flagged · spam</div></div><span class="status-chip sc-cancel" style="height:19px;font-size:10px;background:var(--error-wash);color:var(--error)">Suspended</span></div>
+          </div>
+          <button class="fab"><span class="msr">add</span>New</button>
+          <div class="bottom-nav">
+            <div class="nav-item"><span class="msr">space_dashboard</span>Dashboard</div>
+            <div class="nav-item active"><span class="msr fill">hub</span>Communities</div>
+            <div class="nav-item"><span class="msr">group</span>Users</div>
+            <div class="nav-item"><span class="msr">settings</span>Settings</div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">73 · Communities list</span><span class="a-route">/super/communities</span></div>
+        <div class="a-roles"><span>Super Admin</span></div>
+        <p class="a-notes">Every tenant with member count + MRR and a <b>status badge</b> (Active / Trial / Suspended). Suspended rows are dimmed. FAB launches the create-community wizard.</p>
+      </div>
+    </div>
+
+    <!-- 74 · Create community wizard -->
+    <div class="unit">
+      <div class="phone theme-dark">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">close</span></button><span class="tb-title">New community</span></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <h1 class="t-display-md" style="margin:2px 0 20px">Provision a<br>community</h1>
+            <div class="field"><label>Community name</label><div class="control"><span class="msr">hub</span><span class="val">Jerusalem Makers</span></div></div>
+            <div class="field"><label>Initial admin email</label><div class="control"><span class="msr">mail</span><span class="val">admin@jlmakers.org</span></div><div class="hint">They'll receive an onboarding invite as Community Admin.</div></div>
+            <div class="field"><label>Category</label><div class="control"><span class="msr">category</span><span class="val">Maker &amp; tech</span><span class="grow"></span><span class="msr">expand_more</span></div></div>
+            <div class="field"><label>Plan</label><div class="control"><span class="msr">workspace_premium</span><span class="val">Standard · 30-day trial</span><span class="grow"></span><span class="msr">expand_more</span></div></div>
+            <div style="margin-top:auto;padding-bottom:24px"><button class="btn btn-primary">Create &amp; send invite</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">74 · Create community</span><span class="a-route">/super/communities/new</span></div>
+        <div class="a-roles"><span>Super Admin</span></div>
+        <p class="a-notes">Provisions a tenant and emails the named admin a Community Admin onboarding invite (Batch A · 13–18). Plan + trial set the billing state.</p>
+      </div>
+    </div>
+
+    <!-- 75 · Community detail -->
+    <div class="unit">
+      <div class="phone theme-dark">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title grow">Beit Tefilah</span><button class="ic-btn"><span class="msr">more_vert</span></button></div>
+          <div class="scroll screen-pad">
+            <div class="row" style="gap:12px;margin:2px 0 16px"><div class="avatar" style="border-radius:13px;background:var(--accent);color:#fff"><span class="msr">menu_book</span></div><div class="grow"><div class="t-title-lg" style="font-size:18px">Beit Tefilah</div><div class="t-body-md" style="margin:0">Faith &amp; study · created Jan 2023</div></div><span class="status-chip sc-pub" style="height:19px;font-size:10px">Active</span></div>
+            <div class="grid2" style="margin-bottom:11px">
+              <div class="kpi"><div class="k-lbl">Members</div><div class="k-num">1,240</div></div>
+              <div class="kpi"><div class="k-lbl">MRR</div><div class="k-num">₪3,200</div></div>
+              <div class="kpi"><div class="k-lbl">Events</div><div class="k-num">312</div></div>
+              <div class="kpi"><div class="k-lbl">Plan</div><div class="k-num" style="font-size:18px;padding-top:6px">Standard</div></div>
+            </div>
+            <div class="t-label-sm" style="margin:14px 0 6px">Owner</div>
+            <div class="list-row"><div class="avatar sm">RM</div><div class="grow"><div class="t-label-lg">Rabbi Mizrahi</div><div class="t-body-md" style="margin:0;font-size:11px">rabbi@beit-tefilah.org</div></div><span class="role-badge rb-admin" style="height:19px;font-size:10px">Admin</span></div>
+            <div class="t-label-sm" style="margin:16px 0 8px;color:var(--error)">Platform actions</div>
+            <div class="row" style="gap:10px"><button class="btn btn-secondary grow" style="width:auto"><span class="msr">pause_circle</span>Suspend</button><button class="btn btn-secondary grow" style="width:auto;color:var(--error);border-color:var(--error)"><span class="msr">delete_forever</span>Delete</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">75 · Community detail</span><span class="a-route">/super/communities/:id</span></div>
+        <div class="a-roles"><span>Super Admin</span></div>
+        <p class="a-notes">Tenant vitals + owner, with <b>Suspend / Restore / Delete</b> lifecycle controls. Suspend → typed confirmation (76). Members hitting a suspended community see Batch F · 89.</p>
+      </div>
+    </div>
+
+    <!-- 76 · Suspend confirmation -->
+    <div class="unit">
+      <div class="phone theme-dark">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title">Suspend community</span></div>
+          <div class="scroll screen-pad">
+            <div class="blob" style="background:var(--warning-wash);color:var(--warning);margin:10px 0 16px"><span class="msr" style="font-size:40px">pause_circle</span></div>
+            <h1 class="t-display-md" style="margin:0 0 10px">Suspend Beit Tefilah?</h1>
+            <p class="t-body-lg muted" style="margin:0 0 16px">All 1,240 members lose access immediately. Billing pauses. You can restore it at any time.</p>
+            <div class="field"><label>Type <span class="kbd">Beit Tefilah</span> to confirm</label><div class="control" style="border-color:var(--warning)"><span class="val">Beit Tefilah</span><span class="caret"></span></div></div>
+            <div class="field"><label>Reason <span class="muted" style="font-weight:400">· logged</span></label><div class="control"><span class="msr">help</span><span class="val">Payment dispute</span><span class="grow"></span><span class="msr">expand_more</span></div></div>
+            <button class="btn btn-danger" style="background:var(--warning)"><span class="msr">pause_circle</span>Suspend community</button>
+            <button class="btn btn-ghost" style="color:var(--on-bg);margin-top:8px">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">76 · Suspend confirmation</span><span class="a-route">/super/communities/:id/suspend</span></div>
+        <div class="a-roles"><span>Super Admin</span></div>
+        <p class="a-notes">High-stakes action behind a <b>typed-name gate</b> + logged reason. Reversible (warning, not error coloring). Delete uses the same pattern but with destructive red.</p>
+      </div>
+    </div>
+
+    <!-- 77 · Global user list -->
+    <div class="unit">
+      <div class="phone theme-dark">
+        <div class="screen">
+          <div class="topbar"><span class="tb-title grow">Users · 24.6k</span><button class="ic-btn"><span class="msr">tune</span></button></div>
+          <div class="screen-pad"><div class="control" style="height:44px;display:flex;align-items:center;gap:10px;padding:0 14px;background:var(--surface-2);border:none;border-radius:var(--r-full);margin-bottom:10px"><span class="msr muted">search</span><span class="val">noa.levi@gmail.com</span></div><div class="hscroll" style="margin-bottom:6px"><span class="chip active">All</span><span class="chip">Admins</span><span class="chip">Disabled</span></div></div>
+          <div class="scroll screen-pad">
+            <div class="list-row"><div class="avatar sm">NL</div><div class="grow"><div class="t-label-lg">Noa Levi</div><div class="t-body-md" style="margin:0;font-size:11px">noa.levi@gmail.com · 3 communities</div></div><span class="role-badge rb-member" style="height:19px;font-size:10px">Member</span></div>
+            <div class="list-row"><div class="avatar sm">RM</div><div class="grow"><div class="t-label-lg">Rabbi Mizrahi</div><div class="t-body-md" style="margin:0;font-size:11px">rabbi@beit-tefilah.org · 1 community</div></div><span class="role-badge rb-admin" style="height:19px;font-size:10px">Admin</span></div>
+            <div class="list-row"><div class="avatar sm">DK</div><div class="grow"><div class="t-label-lg">David Katz</div><div class="t-body-md" style="margin:0;font-size:11px">david@katz.io · 2 communities</div></div><span class="role-badge rb-em" style="height:19px;font-size:10px">Event Mgr</span></div>
+            <div class="list-row" style="border:none"><div class="avatar sm" style="opacity:.6">??</div><div class="grow"><div class="t-label-lg" style="opacity:.7">spammer_99</div><div class="t-body-md" style="margin:0;font-size:11px">disabled · abuse</div></div><span class="status-chip sc-cancel" style="height:19px;font-size:10px;background:var(--error-wash);color:var(--error)">Disabled</span></div>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item"><span class="msr">space_dashboard</span>Dashboard</div>
+            <div class="nav-item"><span class="msr">hub</span>Communities</div>
+            <div class="nav-item active"><span class="msr fill">group</span>Users</div>
+            <div class="nav-item"><span class="msr">settings</span>Settings</div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">77 · Global user list</span><span class="a-route">/super/users</span></div>
+        <div class="a-roles"><span>Super Admin</span></div>
+        <p class="a-notes">Search by email/name across all tenants, role filter. Shows how many communities each user belongs to + their highest role. Disabled accounts dimmed.</p>
+      </div>
+    </div>
+
+    <!-- 78 · User detail -->
+    <div class="unit">
+      <div class="phone theme-dark">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title grow">User</span><button class="ic-btn"><span class="msr">more_vert</span></button></div>
+          <div class="scroll screen-pad">
+            <div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:16px"><div class="avatar lg">NL</div><div class="t-title-lg" style="margin:12px 0 2px">Noa Levi</div><div class="t-body-md" style="margin:0">noa.levi@gmail.com</div><div class="t-body-md" style="margin:2px 0 0;font-size:11px">User since Feb 2025 · ID usr_8fK2</div></div>
+            <div class="t-label-sm" style="margin-bottom:6px">Communities · 3</div>
+            <div class="list-row"><div class="avatar sm" style="width:28px;height:28px;font-size:10px;border-radius:8px;background:var(--accent);color:#fff"><span class="msr" style="font-size:15px">menu_book</span></div><div class="grow t-label-lg" style="font-size:13.5px">Beit Tefilah</div><span class="role-badge rb-member" style="height:18px;font-size:10px">Member</span></div>
+            <div class="list-row"><div class="avatar sm" style="width:28px;height:28px;font-size:10px;border-radius:8px"><span class="msr" style="font-size:15px">self_improvement</span></div><div class="grow t-label-lg" style="font-size:13.5px">Sunrise Yoga</div><span class="role-badge rb-em" style="height:18px;font-size:10px">Mgr</span></div>
+            <div class="t-label-sm" style="margin:16px 0 8px;color:var(--error)">Account actions</div>
+            <div class="card" style="padding:4px 14px">
+              <div class="list-row"><span class="msr muted">lock_reset</span><span class="grow t-body-lg" style="font-size:14px">Force password reset</span><span class="msr muted">chevron_right</span></div>
+              <div class="list-row" style="border:none"><span class="msr" style="color:var(--error)">block</span><span class="grow t-body-lg" style="font-size:14px;color:var(--error)">Disable account</span><span class="msr muted">chevron_right</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">78 · User detail</span><span class="a-route">/super/users/:id</span></div>
+        <div class="a-roles"><span>Super Admin</span></div>
+        <p class="a-notes">Cross-tenant view of a user's memberships &amp; roles, with platform actions: <b>force reset</b> and <b>disable</b>. Super Admins never see a user's password or payment card.</p>
+      </div>
+    </div>
+
+    <!-- 79 · Platform settings -->
+    <div class="unit">
+      <div class="phone theme-dark">
+        <div class="screen">
+          <div class="topbar"><span class="tb-title">Platform settings</span></div>
+          <div class="scroll screen-pad">
+            <div class="t-label-sm" style="margin-bottom:8px">Billing</div>
+            <div class="card" style="padding:14px;margin-bottom:18px">
+              <div class="between" style="margin-bottom:10px"><div class="row" style="gap:8px"><span class="msr" style="color:#635BFF">credit_card</span><span class="t-label-lg" style="font-size:13.5px">Stripe</span></div><span class="status-chip sc-pub" style="height:19px;font-size:10px">Connected</span></div>
+              <div class="control" style="background:var(--surface-2);border:none;font-family:'DM Mono',monospace;font-size:12px"><span class="muted">sk_live_</span><span class="val">••••••••4Qx2</span><span class="grow"></span><span class="msr muted">visibility</span></div>
+            </div>
+            <div class="t-label-sm" style="margin-bottom:6px">System</div>
+            <div class="list-row"><span class="msr muted">construction</span><div class="grow"><div class="t-body-lg" style="font-size:14px">Maintenance mode</div><div class="t-body-md" style="margin:0;font-size:11px">Show a banner; block writes</div></div><span class="toggle off"><span></span></span></div>
+            <div class="list-row"><span class="msr muted">person_add</span><div class="grow t-body-lg" style="font-size:14px">Allow new signups</div><span class="toggle on"><span></span></span></div>
+            <div class="list-row"><span class="msr muted">mail</span><span class="grow t-body-lg" style="font-size:14px">Email templates</span><span class="msr muted">chevron_right</span></div>
+            <div class="list-row" style="border:none"><span class="msr muted">gavel</span><span class="grow t-body-lg" style="font-size:14px">Terms &amp; policies</span><span class="msr muted">chevron_right</span></div>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item"><span class="msr">space_dashboard</span>Dashboard</div>
+            <div class="nav-item"><span class="msr">hub</span>Communities</div>
+            <div class="nav-item"><span class="msr">group</span>Users</div>
+            <div class="nav-item active"><span class="msr fill">settings</span>Settings</div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">79 · Platform settings</span><span class="a-route">/super/settings</span></div>
+        <div class="a-roles"><span>Super Admin</span></div>
+        <p class="a-notes">Stripe connection (masked keys, reveal-gated), <b>maintenance mode</b>, signup gate, email templates &amp; policies. The only place billing credentials live.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     PAYMENTS  (member-facing)
+     ============================================================ -->
+<section class="sect">
+  <div class="sect-head">
+    <span class="sect-num">80 – 85</span>
+    <h2>Payments &amp; subscriptions</h2>
+    <span class="sub">Moments of truth, member-side. Calm, legible, and honest — especially the failure and cancellation paths, where most apps get sloppy.</span>
+  </div>
+  <div class="deck">
+
+    <!-- 80 · Subscription plans -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">close</span></button><span class="tb-title">Membership</span></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <h1 class="t-display-md" style="margin:2px 0 6px">Become a member</h1>
+            <p class="t-body-md" style="margin:0 0 18px">Free entry to all classes, member-only events, and early RSVPs.</p>
+            <div class="seg" style="margin-bottom:16px"><span class="s on">Annual · save 17%</span><span class="s">Monthly</span></div>
+            <div class="plan on" style="margin-bottom:14px">
+              <div class="between" style="margin-bottom:10px"><div><div class="t-title-md" style="font-size:15px">Annual</div><div class="t-body-md" style="margin:0">Billed once a year</div></div><div style="text-align:right"><div class="t-display-md" style="font-size:26px">₪290</div><div class="t-body-md" style="margin:0;font-size:11px">≈ ₪24 / mo</div></div></div>
+              <div class="feat"><span class="msr">check_circle</span>Free entry to all paid classes</div>
+              <div class="feat"><span class="msr">check_circle</span>Member-only events &amp; early RSVP</div>
+              <div class="feat"><span class="msr">check_circle</span>Priority off the waitlist</div>
+            </div>
+            <div style="margin-top:auto;padding-bottom:24px"><button class="btn btn-primary">Subscribe · ₪290 / year</button><p class="t-body-md center" style="margin-top:10px">Renews yearly · cancel anytime</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">80 · Subscription plans</span><span class="a-route">/subscribe</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">Annual/Monthly toggle with a visible savings tag; the selected plan card is accent-ringed. Subscribe → Stripe checkout (Batch B · 24), then success (83).</p>
+      </div>
+    </div>
+
+    <!-- 81 · Manage subscription -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title">My membership</span></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <div class="card" style="padding:16px;margin-bottom:16px">
+              <div class="between" style="margin-bottom:12px"><span class="role-badge" style="background:#EFE7FF;color:#5B3D9E"><span class="msr">workspace_premium</span>Annual member</span><span class="status-chip sc-pub" style="height:20px">Active</span></div>
+              <div class="between" style="padding:8px 0;border-bottom:1px solid var(--border)"><span class="t-body-lg" style="font-size:14px">Plan</span><span class="t-label-lg">Annual · ₪290</span></div>
+              <div class="between" style="padding:8px 0;border-bottom:1px solid var(--border)"><span class="t-body-lg" style="font-size:14px">Renews</span><span class="t-label-lg">Nov 12, 2025</span></div>
+              <div class="between" style="padding:8px 0"><span class="t-body-lg" style="font-size:14px">Payment</span><span class="t-label-lg">Visa ···· 4242</span></div>
+            </div>
+            <div class="card" style="padding:4px 14px">
+              <div class="list-row"><span class="msr muted">receipt_long</span><span class="grow t-body-lg" style="font-size:14px">Billing history</span><span class="msr muted">chevron_right</span></div>
+              <div class="list-row" style="border:none"><span class="msr muted">credit_card</span><span class="grow t-body-lg" style="font-size:14px">Update payment method</span><span class="msr muted">chevron_right</span></div>
+            </div>
+            <div style="margin-top:auto;padding-bottom:24px"><button class="btn btn-ghost" style="color:var(--error)">Cancel membership</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">81 · Manage subscription</span><span class="a-route">/me/membership</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">Plan, renewal date, payment method, billing history. <b>Cancel</b> is a low-emphasis ghost link (not a trap) → confirmation (82).</p>
+      </div>
+    </div>
+
+    <!-- 82 · Cancellation confirmation -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button><span class="tb-title">Cancel membership</span></div>
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column">
+            <div class="blob" style="background:var(--warning-wash);color:var(--warning);margin:10px 0 16px"><span class="msr" style="font-size:40px">sentiment_dissatisfied</span></div>
+            <h1 class="t-display-md" style="margin:0 0 10px">Cancel your membership?</h1>
+            <p class="t-body-lg muted" style="margin:0 0 16px">You'll keep your benefits until <b style="color:var(--on-bg)">Nov 12, 2025</b>. After that, paid classes return to full price.</p>
+            <div class="card" style="padding:14px;margin-bottom:8px"><div class="t-label-sm" style="margin-bottom:8px">You'll lose</div><div class="feat" style="color:var(--muted)"><span class="msr" style="color:var(--error)">cancel</span>Free entry to classes</div><div class="feat" style="color:var(--muted)"><span class="msr" style="color:var(--error)">cancel</span>Member-only events</div></div>
+            <div style="margin-top:auto;padding-bottom:24px;display:flex;flex-direction:column;gap:10px"><button class="btn btn-secondary">Keep my membership</button><button class="btn btn-ghost" style="color:var(--error)">Cancel anyway</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">82 · Cancellation confirm</span><span class="a-route">/me/membership/cancel</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">Honest retention screen: states the access-until date + what's lost, leads with <b>Keep</b>. Cancel sets the sub to "cancels at period end", not immediate.</p>
+      </div>
+    </div>
+
+    <!-- 83 · Payment success -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column;align-items:center;text-align:center">
+            <div class="blob" style="background:var(--success-wash);color:var(--success);margin-top:46px"><span class="msr" style="font-size:48px">check_circle</span></div>
+            <h1 class="t-display-md" style="margin:22px 0 6px">Payment confirmed</h1>
+            <p class="t-body-lg muted" style="margin:0 0 24px">You're all set for Weekly Yoga Class.</p>
+            <div class="card" style="width:100%;padding:16px;text-align:left;margin-bottom:8px">
+              <div class="between" style="padding-bottom:8px;border-bottom:1px solid var(--border)"><span class="t-body-lg" style="font-size:14px">Weekly Yoga · 1 ticket</span><span class="t-label-lg">₪47.50</span></div>
+              <div class="between" style="padding-top:10px"><span class="t-body-md" style="margin:0">Visa ···· 4242</span><span class="t-body-md" style="margin:0;font-family:'DM Mono',monospace;font-size:11px">#RC-48213</span></div>
+            </div>
+            <div style="margin-top:auto;padding-bottom:24px;width:100%"><button class="btn btn-primary"><span class="msr">calendar_add_on</span>Add to calendar</button><button class="btn btn-ghost" style="margin-top:8px;color:var(--on-bg)">View my RSVP</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">83 · Payment success</span><span class="a-route">/pay/success</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">Returned from the Stripe WebView on success. Spring-scales the check, shows a receipt with order number, and routes to calendar / My RSVPs (25).</p>
+      </div>
+    </div>
+
+    <!-- 84 · Payment failure -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column;align-items:center;text-align:center">
+            <div class="blob" style="background:var(--error-wash);color:var(--error);margin-top:46px"><span class="msr" style="font-size:48px">credit_card_off</span></div>
+            <h1 class="t-display-md" style="margin:22px 0 6px">Payment didn't go through</h1>
+            <p class="t-body-lg muted" style="margin:0 0 22px">Your card was declined. No charge was made — your spot is held for 10 minutes.</p>
+            <div class="card row" style="width:100%;padding:13px;gap:10px;margin-bottom:8px"><span class="msr muted">credit_card</span><span class="grow t-body-lg" style="font-size:14px;text-align:left">Visa ···· 4242</span><span class="t-label-sm" style="margin:0;color:var(--error)">Declined</span></div>
+            <div style="margin-top:auto;padding-bottom:24px;width:100%"><button class="btn btn-primary">Try again</button><button class="btn btn-secondary" style="margin-top:10px"><span class="msr">add_card</span>Use a different card</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">84 · Payment failure</span><span class="a-route">/pay/failed</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">Reassures first (<b>no charge made</b>, spot held 10 min), then offers retry or a different method. Never blames the user; surfaces the decline reason when Stripe provides one.</p>
+      </div>
+    </div>
+
+    <!-- 85 · Refund received -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="scroll screen-pad" style="display:flex;flex-direction:column;align-items:center;text-align:center">
+            <div class="blob" style="background:var(--accent-wash);color:var(--accent-ink);margin-top:46px"><span class="msr" style="font-size:46px">paid</span></div>
+            <h1 class="t-display-md" style="margin:22px 0 6px">Refund on its way</h1>
+            <p class="t-body-lg muted" style="margin:0 0 24px">₪47.50 is being returned to your Visa ···· 4242.</p>
+            <div class="card" style="width:100%;padding:16px;text-align:left;margin-bottom:8px">
+              <div class="between" style="padding-bottom:8px;border-bottom:1px solid var(--border)"><span class="t-body-lg" style="font-size:14px">Weekly Yoga Class</span><span class="t-label-lg" style="color:var(--success)">+ ₪47.50</span></div>
+              <div class="between" style="padding-top:10px"><span class="t-body-md" style="margin:0">Arrives in 5–10 days</span><span class="t-body-md" style="margin:0;font-family:'DM Mono',monospace;font-size:11px">#RF-9920</span></div>
+            </div>
+            <div style="margin-top:auto;padding-bottom:24px;width:100%"><button class="btn btn-secondary">Done</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">85 · Refund received</span><span class="a-route">/pay/refund</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">Triggered when the admin issues a refund (Batch D · 64). Confirms amount, destination card, and arrival window with a reference number. Also lands in the inbox.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer class="gx-foot">
+  <b>Commons</b> · Batch E of 6 — Super Admin &amp; Payments (72–85). Final batch next: Edge states (86–94). Shared components from <b>assets/app.css</b>.
+</footer>
+
+<script>
+  document.querySelectorAll('.phone').forEach(p=>{
+    const time = p.dataset.time || '9:41';
+    const sb = document.createElement('div');
+    sb.className = 'statusbar';
+    sb.innerHTML = '<span>'+time+'</span><span class="sb-right"><span class="msr" style="font-size:16px">signal_cellular_alt</span><span class="msr" style="font-size:16px">wifi</span><span class="msr" style="font-size:18px">battery_full</span></span>';
+    p.prepend(sb);
+    const hi = document.createElement('div');
+    hi.className = 'home-ind';
+    p.append(hi);
+  });
+</script>
+</body>
+</html>

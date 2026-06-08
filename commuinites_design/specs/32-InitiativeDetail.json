@@ -1,0 +1,86 @@
+{
+  "screen": "InitiativeDetail",
+  "route": "/initiatives/:id",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "CoverImage",
+      "type": "image",
+      "height": 240,
+      "width": "full"
+    },
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "ShareButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "CategoryChip",
+      "type": "chip"
+    },
+    {
+      "name": "StatusChip",
+      "type": "chip"
+    },
+    {
+      "name": "Title",
+      "type": "text",
+      "style": "displayMedium"
+    },
+    {
+      "name": "CreatorRow",
+      "type": "listRow"
+    },
+    {
+      "name": "Description",
+      "type": "text",
+      "style": "bodyLarge"
+    },
+    {
+      "name": "SupportMeter",
+      "type": "progress"
+    },
+    {
+      "name": "UpdatesTimeline",
+      "type": "list"
+    },
+    {
+      "name": "Comments",
+      "type": "list"
+    },
+    {
+      "name": "SupportButton",
+      "type": "button",
+      "style": "primary"
+    },
+    {
+      "name": "ContributeButton",
+      "type": "button",
+      "style": "secondary"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated",
+    "error"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "SupportButton → endorse",
+    "ContributeButton → offer time/resources",
+    "sticky action bar"
+  ]
+}

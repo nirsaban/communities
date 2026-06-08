@@ -22,7 +22,7 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: production
-      PORT: 3000
+      PORT: 4242
       MONGO_URI: mongodb://mongo:27017/community
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-dev-only-access-secret-change-me-please}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev-only-refresh-secret-change-me-please}
@@ -32,12 +32,27 @@ services:
       MAIL_DRIVER: console
       STORAGE_DRIVER: local
       UPLOAD_DIR: /app/uploads
-      API_BASE_URL: http://localhost:3000
+      API_BASE_URL: http://localhost:4242
+      WEB_BASE_URL: http://localhost:5174
       LOG_LEVEL: info
     ports:
-      - '3000:3000'
+      - '4242:4242'
     volumes:
       - api_uploads:/app/uploads
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      args:
+        # Same-origin API path — nginx in the web container proxies /api/v1/*
+        # to the api service via the internal docker network.
+        VITE_API_BASE_URL: /api/v1
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - '5174:80'
 
 volumes:
   mongo_data:

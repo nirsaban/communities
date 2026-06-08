@@ -1,0 +1,70 @@
+{
+  "screen": "HomeFeed",
+  "route": "/home",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "CommunitySwitcherPill",
+      "type": "button"
+    },
+    {
+      "name": "SearchButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "NotificationsButton",
+      "type": "iconButton",
+      "badge": true
+    },
+    {
+      "name": "Greeting",
+      "type": "text",
+      "style": "displayMedium",
+      "color": "onBackground"
+    },
+    {
+      "name": "PinnedAnnouncement",
+      "type": "card",
+      "variant": "accentWash"
+    },
+    {
+      "name": "HappeningSoonRail",
+      "type": "horizontalScroll"
+    },
+    {
+      "name": "EventTile",
+      "type": "card",
+      "repeat": true
+    },
+    {
+      "name": "CommunityPost",
+      "type": "card"
+    },
+    {
+      "name": "BottomNav",
+      "type": "nav",
+      "active": "Home"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated",
+    "empty"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 20
+  },
+  "interactions": [
+    "CommunitySwitcherPill → community switcher",
+    "EventTile → event detail",
+    "staggered reveal on load"
+  ]
+}

@@ -1,0 +1,39 @@
+import { useNavigate } from 'react-router-dom';
+import { AppBar, Screen } from '../../components/AppBar';
+import { AppButton } from '../../components/AppButton';
+import { Icon } from '../../components/Icon';
+
+export function UnauthorizedScreen() {
+  const nav = useNavigate();
+  return (
+    <Screen>
+      <AppBar back title="No access" />
+      <main className="flex flex-1 flex-col items-center justify-center px-6 text-center">
+        <span
+          className="grid place-items-center mb-4"
+          style={{
+            width: 104,
+            height: 104,
+            borderRadius: '50%',
+            background: 'rgb(var(--warning-wash))',
+            color: 'rgb(var(--warning))',
+          }}
+        >
+          <Icon name="lock" size={52} />
+        </span>
+        <h1 className="font-display text-3xl text-ink mb-2">You don't have access</h1>
+        <p className="t-body-md max-w-xs mb-6" style={{ margin: 0 }}>
+          This area is for community admins. If you think that's a mistake, ask a community admin.
+        </p>
+      </main>
+      <footer
+        className="safe-bottom border-t px-4 py-3"
+        style={{ background: 'rgb(var(--surface))', borderColor: 'rgb(var(--border))' }}
+      >
+        <AppButton variant="primary" onClick={() => nav('/home')}>
+          Back to home
+        </AppButton>
+      </footer>
+    </Screen>
+  );
+}

@@ -1,0 +1,175 @@
+// 40 · My Events — Event Manager home
+// Design: commuinites_design/Batch C · 40 · My Events
+// Surfaces only events the manager is assigned to (or admin/subadmin manages).
+// Upcoming/Past segmented control + EventManageCard with RSVP/waitlist counts.
+
+import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { EmptyState } from '../../components/EmptyState';
+import { Icon } from '../../components/Icon';
+import { Shimmer } from '../../components/Shimmer';
+import { fmtEventWhen } from '../../lib/format';
+import { useMyManagedEvents, type EventCard } from '../../lib/queries';
+import { useAuth } from '../../lib/auth';
+import { Avatar } from '../../components/Avatar';
+
+type Bucket = 'upcoming' | 'past';
+
+export function EventManagerHomeScreen() {
+  const nav = useNavigate();
+  const auth = useAuth();
+  const [bucket, setBucket] = useState<Bucket>('upcoming');
+  const { data, isLoading } = useMyManagedEvents(bucket);
+
+  const items = useMemo(() => data ?? [], [data]);
+  const activeCount = items.filter((e) => e.status === 'published').length;
+
+  return (
+    <div className="flex min-h-full flex-col bg-bg">
+      <header
+        className="feed-head safe-top"
+        style={{ padding: '8px 16px 12px' }}
+      >
+        <div className="grow">
+          <div className="t-display-md" style={{ fontSize: 24 }}>
+            My events
+          </div>
+          <div className="t-body-md" style={{ margin: 0 }}>
+            Assigned to you · {activeCount} active
+          </div>
+        </div>
+        <div style={{ position: 'relative' }}>
+          <Avatar name={auth.user?.name} size={40} />
+          <span
+            className="role-dot"
+            style={{
+              position: 'absolute',
+              bottom: -2,
+              right: -2,
+              width: 18,
+              height: 18,
+              borderRadius: 999,
+              background: '#9A6B12',
+              border: '2px solid rgb(var(--bg))',
+              display: 'grid',
+              placeItems: 'center',
+              color: '#fff',
+            }}
+            title="Event Manager"
+          >
+            <Icon name="event" size={11} />
+          </span>
+        </div>
+      </header>
+
+      <div className="px-5">
+        <div className="seg" style={{ marginBottom: 14 }} role="tablist">
+          <button
+            type="button"
+            className={`s ${bucket === 'upcoming' ? 'on' : ''}`}
+            onClick={() => setBucket('upcoming')}
+            role="tab"
+            aria-selected={bucket === 'upcoming'}
+          >
+            Upcoming
+          </button>
+          <button
+            type="button"
+            className={`s ${bucket === 'past' ? 'on' : ''}`}
+            onClick={() => setBucket('past')}
+            role="tab"
+            aria-selected={bucket === 'past'}
+          >
+            Past
+          </button>
+        </div>
+      </div>
+
+      <main className="flex-1 px-5 pb-6">
+        {isLoading && (
+          <div className="space-y-3">
+            <Shimmer style={{ height: 92, borderRadius: 12 }} />
+            <Shimmer style={{ height: 92, borderRadius: 12 }} />
+            <Shimmer style={{ height: 92, borderRadius: 12 }} />
+          </div>
+        )}
+
+        {!isLoading && items.length === 0 && (
+          <EmptyState
+            icon={bucket === 'upcoming' ? 'event_busy' : 'history'}
+            title={bucket === 'upcoming' ? 'Nothing to manage yet' : 'No past events'}
+            body={
+              bucket === 'upcoming'
+                ? "Events you're assigned to will show up here"
+                : "Past events you ran will appear here once they wrap"
+            }
+          />
+        )}
+
+        <div className="flex flex-col" style={{ gap: 11 }}>
+          {items.map((ev) => (
+            <EventManageCard key={ev.id} ev={ev} onClick={() => nav(`/events/${ev.id}/command`)} />
+          ))}
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function EventManageCard({ ev, onClick }: { ev: EventCard; onClick: () => void }) {
+  const w = fmtEventWhen(ev.startAt);
+  const isDraft = ev.status === 'draft';
+  return (
+    <button type="button" onClick={onClick} className="card text-start w-full" style={{ padding: 13 }}>
+      <div className="row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+        <span
+          className="when"
+          style={{
+            color: isDraft ? 'rgb(var(--muted))' : 'rgb(var(--brand-ink))',
+            fontWeight: 600,
+            fontSize: 11.5,
+          }}
+        >
+          {w.line}
+        </span>
+        <span className={`status-chip ${statusChipClass(ev.status)}`}>{statusLabel(ev.status)}</span>
+      </div>
+      <div className="t-title-md" style={{ marginBottom: 10 }}>
+        {ev.title}
+      </div>
+      <div className="row" style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+        {isDraft ? (
+          <span className="t-body-md" style={{ margin: 0 }}>Not published yet</span>
+        ) : (
+          <>
+            <span className="t-body-md" style={{ margin: 0 }}>
+              <b style={{ color: 'rgb(var(--on-bg))' }}>{ev.rsvpStats.going}</b> going
+            </span>
+            {ev.rsvpStats.waitlist > 0 && (
+              <span className="t-body-md" style={{ margin: 0 }}>
+                <b style={{ color: 'rgb(var(--on-bg))' }}>{ev.rsvpStats.waitlist}</b> waitlist
+              </span>
+            )}
+          </>
+        )}
+        <span className="grow" style={{ flex: 1 }} />
+        <span className="t-label-sm" style={{ margin: 0, color: 'rgb(var(--brand-ink))' }}>
+          Manage →
+        </span>
+      </div>
+    </button>
+  );
+}
+
+function statusChipClass(s: EventCard['status']): string {
+  if (s === 'published') return 'sc-pub';
+  if (s === 'cancelled') return 'sc-cancel';
+  if (s === 'completed') return 'sc-done';
+  return 'sc-draft';
+}
+function statusLabel(s: EventCard['status']): string {
+  if (s === 'published') return 'Published';
+  if (s === 'cancelled') return 'Cancelled';
+  if (s === 'completed') return 'Completed';
+  return 'Draft';
+}

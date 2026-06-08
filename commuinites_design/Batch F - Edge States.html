@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commons — Batch F · Edge States</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&family=Material+Symbols+Rounded:FILL,GRAD,opsz,wght@0..1,-50..200,20..48,100..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="stylesheet" href="assets/gallery.css">
+<style>
+  .offbanner{ display:flex; align-items:center; gap:9px; background:var(--on-bg); color:var(--bg); padding:9px 16px; font-size:12.5px; font-weight:600; }
+  .offbanner .dotspin{ width:13px; height:13px; border-radius:50%; border:2px solid var(--bg); border-top-color:transparent; animation:spin .8s linear infinite; }
+  .capbar{ height:8px; border-radius:99px; background:var(--surface-2); overflow:hidden; }
+  .capbar > i{ display:block; height:100%; background:var(--error); border-radius:99px; }
+</style>
+</head>
+<body class="gallery">
+
+<header class="gx-head">
+  <div class="gx-mark"><span class="gx-logo"><i></i><i></i></span><span class="gx-word">Commons</span></div>
+  <div class="gx-eyebrow">Batch F — Edge States</div>
+  <h1>The screens that earn trust.</h1>
+  <p class="lede">Empty, full, broken, offline, forbidden. These are the moments most apps neglect — so they're where care shows most. Every state is warm and illustrated (never a bare "No data"), names what happened in plain language, and always offers a way forward.</p>
+  <div class="gx-meta">
+    <span class="pill">Coverage <b>Empty · Full · Error · Offline · Auth</b></span>
+    <span class="pill">Pattern <b>EmptyState · ErrorState</b></span>
+    <span class="pill">Screens <b>86 – 94</b></span>
+  </div>
+</header>
+
+<section class="sect">
+  <div class="sect-head">
+    <span class="sect-num">86 – 94</span>
+    <h2>Edge &amp; system states</h2>
+    <span class="sub">Built on the EmptyState / ErrorState components from the design system — icon + headline + plain-language body + a single clear action.</span>
+  </div>
+  <div class="deck">
+
+    <!-- 86 · Empty home feed -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="feed-head" style="padding:8px 16px 12px"><div class="switch-pill"><span class="lg"><span class="msr">menu_book</span></span><b style="font-size:14px">Beit Tefilah</b></div><span class="grow"></span><button class="ic-btn"><span class="msr">search</span></button><button class="ic-btn"><span class="msr">notifications</span></button></div>
+          <div class="state">
+            <div class="blob"><span class="msr">waving_hand</span></div>
+            <h3>Welcome, Noa</h3>
+            <p>Your feed is quiet for now. Follow a few topics and RSVP to something — it'll fill up fast.</p>
+            <button class="btn btn-primary" style="width:auto;margin-top:16px"><span class="msr">explore</span>Explore events</button>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item active"><span class="msr fill">home</span>Home</div>
+            <div class="nav-item"><span class="msr">calendar_month</span>Events</div>
+            <div class="nav-item"><span class="msr">lightbulb</span>Initiatives</div>
+            <div class="nav-item"><span class="msr">forum</span>Inbox</div>
+            <div class="nav-item"><span class="msr">person</span>Profile</div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">86 · Empty home feed</span><span class="a-route">/home · empty</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">New member, nothing followed yet. Keeps full chrome (nav stays) so it reads as "ready", not "broken"; CTA bootstraps engagement.</p>
+      </div>
+    </div>
+
+    <!-- 87 · Empty events list -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><span class="tb-title">Events</span><button class="ic-btn"><span class="msr">tune</span></button><button class="ic-btn"><span class="msr">calendar_month</span></button></div>
+          <div class="screen-pad"><div class="seg" style="margin-bottom:8px"><span class="s on">Upcoming</span><span class="s">Past</span><span class="s">All</span></div></div>
+          <div class="state">
+            <div class="blob"><span class="msr">event_upcoming</span></div>
+            <h3>No events yet</h3>
+            <p>Beit Tefilah hasn't scheduled anything upcoming. We'll let you know the moment they do.</p>
+            <button class="btn btn-secondary" style="width:auto;margin-top:16px"><span class="msr">notifications_active</span>Notify me</button>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item"><span class="msr">home</span>Home</div>
+            <div class="nav-item active"><span class="msr fill">calendar_month</span>Events</div>
+            <div class="nav-item"><span class="msr">lightbulb</span>Initiatives</div>
+            <div class="nav-item"><span class="msr">forum</span>Inbox</div>
+            <div class="nav-item"><span class="msr">person</span>Profile</div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">87 · Empty events list</span><span class="a-route">/events · empty</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">Community just created. The admin's version of this state swaps the CTA for <b>"Create your first event"</b> (ties to Batch C/D composers).</p>
+      </div>
+    </div>
+
+    <!-- 88 · Full capacity / waitlist -->
+    <div class="unit">
+      <div class="phone theme-light on-cover">
+        <div class="screen">
+          <div class="imgph" style="position:absolute;inset:0 0 auto;height:240px;border-radius:0;background-color:#2a2620"><div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,19,15,.25),transparent 55%)"></div></div>
+          <div class="topbar" style="position:relative;z-index:5"><button class="ic-btn" style="background:rgba(0,0,0,.3);color:#fff"><span class="msr">arrow_back</span></button><span class="grow"></span><button class="ic-btn" style="background:rgba(0,0,0,.3);color:#fff"><span class="msr">ios_share</span></button></div>
+          <div class="scroll" style="position:relative">
+            <div style="height:120px"></div>
+            <div style="background:var(--bg);border-radius:22px 22px 0 0;padding:20px;min-height:420px">
+              <span class="status-chip sc-cancel" style="background:var(--error-wash);color:var(--error);margin-bottom:10px"><span class="msr" style="font-size:11px">block</span>Sold out</span>
+              <h1 class="t-display-md" style="margin:6px 0 16px">Weekly Yoga Class</h1>
+              <div class="card" style="padding:14px;margin-bottom:16px"><div class="between" style="margin-bottom:8px"><span class="t-label-lg">Capacity</span><span class="t-label-lg" style="color:var(--error)">50 / 50 full</span></div><div class="capbar"><i style="width:100%"></i></div></div>
+              <div class="row" style="gap:9px;background:var(--surface-2);border-radius:12px;padding:13px 14px"><span class="msr" style="color:var(--accent)">hourglass_top</span><span class="t-body-md" style="color:var(--on-bg)">12 people are waiting. Spots open up often — join and we'll notify you.</span></div>
+            </div>
+          </div>
+          <div style="flex:0 0 auto;background:var(--surface);border-top:1px solid var(--border);padding:12px 20px 26px;position:relative;z-index:20"><button class="btn btn-primary"><span class="msr">playlist_add</span>Join the waitlist</button></div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">88 · Full capacity</span><span class="a-route">/events/:id · full</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">RSVP swaps to <b>Join the waitlist</b>; a full capacity bar + live waiting count set expectations. Joining → confirmation (Batch B · 29).</p>
+      </div>
+    </div>
+
+    <!-- 89 · Suspended community -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="state" style="justify-content:center">
+            <div class="blob" style="background:var(--warning-wash);color:var(--warning)"><span class="msr">pause_circle</span></div>
+            <h3>This community is paused</h3>
+            <p>Beit Tefilah is temporarily unavailable. Your membership is safe — we'll restore access as soon as it's back.</p>
+            <button class="btn btn-secondary" style="width:auto;margin-top:16px">My other communities</button>
+            <button class="btn btn-ghost" style="width:auto;margin-top:4px;color:var(--on-bg)">Contact support</button>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">89 · Suspended community</span><span class="a-route">/c/:slug · suspended</span></div>
+        <div class="a-roles"><span>Member</span></div>
+        <p class="a-notes">Shown when a member opens a community the Super Admin suspended (Batch E · 76). Reassures ("membership is safe"), routes to their other communities.</p>
+      </div>
+    </div>
+
+    <!-- 90 · Offline -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="offbanner"><span class="dotspin"></span>You're offline — showing saved content · reconnecting</div>
+          <div class="feed-head" style="padding:8px 16px 12px;opacity:.55"><div class="switch-pill"><span class="lg"><span class="msr">menu_book</span></span><b style="font-size:14px">Beit Tefilah</b></div><span class="grow"></span><button class="ic-btn"><span class="msr">search</span></button></div>
+          <div class="scroll screen-pad" style="opacity:.55;pointer-events:none">
+            <div class="t-label-sm" style="margin:4px 0 10px">Last synced 8 min ago</div>
+            <div class="event-card" style="margin-bottom:10px"><div class="cover imgph"><span class="lbl">cover</span></div><div class="body"><span class="when">SAT · MAR 8 · 10:00</span><span class="ttl">Torah Study Circle</span><div class="foot"><span class="price-tag pt-free"><span class="msr">check</span>Free</span></div></div></div>
+            <div class="event-card"><div class="cover imgph"><span class="lbl">cover</span></div><div class="body"><span class="when">SUN · MAR 9 · 18:30</span><span class="ttl">Weekly Yoga Class</span><div class="foot"><span class="price-tag pt-paid">₪45</span></div></div></div>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item active"><span class="msr fill">home</span>Home</div>
+            <div class="nav-item"><span class="msr">calendar_month</span>Events</div>
+            <div class="nav-item"><span class="msr">lightbulb</span>Initiatives</div>
+            <div class="nav-item"><span class="msr">forum</span>Inbox</div>
+            <div class="nav-item"><span class="msr">person</span>Profile</div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">90 · Offline</span><span class="a-route">· offline</span></div>
+        <div class="a-roles"><span>All roles</span></div>
+        <p class="a-notes">Persistent top banner with a live reconnect spinner; cached content stays visible but dimmed &amp; non-interactive, with a "last synced" timestamp. Auto-recovers.</p>
+      </div>
+    </div>
+
+    <!-- 91 · 403 Unauthorized -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button></div>
+          <div class="state" style="justify-content:center;margin-top:-40px">
+            <div class="blob"><span class="msr">lock</span></div>
+            <h3>You don't have access</h3>
+            <p>This area is for admins of Beit Tefilah. If you think that's a mistake, ask a community admin.</p>
+            <button class="btn btn-primary" style="width:auto;margin-top:16px">Back to home</button>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">91 · 403 Unauthorized</span><span class="a-route">· 403</span></div>
+        <div class="a-roles"><span>All roles</span></div>
+        <p class="a-notes">Wrong-role guard — e.g. a Member or Sub Admin hitting a financial route. Names the required role rather than a cryptic code; never leaks what's behind it.</p>
+      </div>
+    </div>
+
+    <!-- 92 · 404 Not found -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="topbar"><button class="ic-btn"><span class="msr">arrow_back</span></button></div>
+          <div class="state" style="justify-content:center;margin-top:-40px">
+            <div class="blob" style="background:var(--surface-2);color:var(--muted)"><span class="msr">travel_explore</span></div>
+            <h3>We can't find that</h3>
+            <p>This page or event may have been moved, cancelled, or removed.</p>
+            <button class="btn btn-primary" style="width:auto;margin-top:16px">Back to home</button>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">92 · 404 Not found</span><span class="a-route">· 404</span></div>
+        <div class="a-roles"><span>All roles</span></div>
+        <p class="a-notes">Neutral, low-alarm tone (a deleted event is normal, not scary). Single way home. Deep-linked dead routes land here.</p>
+      </div>
+    </div>
+
+    <!-- 93 · 500 Generic error -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="state" style="justify-content:center">
+            <div class="blob" style="background:var(--error-wash);color:var(--error)"><span class="msr">cloud_off</span></div>
+            <h3>Something went wrong</h3>
+            <p>An unexpected error happened on our end — not you. We've been notified.</p>
+            <button class="btn btn-primary" style="width:auto;margin-top:16px"><span class="msr">refresh</span>Try again</button>
+            <button class="btn btn-ghost" style="width:auto;margin-top:4px;color:var(--on-bg)">Contact support</button>
+            <div class="t-body-md" style="margin-top:14px;font-family:'DM Mono',monospace;font-size:11px">error id · 5f3a-91c</div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">93 · Generic error (500)</span><span class="a-route">· 500</span></div>
+        <div class="a-roles"><span>All roles</span></div>
+        <p class="a-notes">Takes the blame ("on our end"), offers retry + support, and surfaces a copyable <b>error id</b> for support tickets. Auto-reports to monitoring.</p>
+      </div>
+    </div>
+
+    <!-- 94 · App update required -->
+    <div class="unit">
+      <div class="phone theme-light">
+        <div class="screen">
+          <div class="state" style="justify-content:center">
+            <div class="blob"><span class="msr">system_update</span></div>
+            <h3>Time for an update</h3>
+            <p>This version of Commons is no longer supported. Update to the latest to keep going — it only takes a moment.</p>
+            <button class="btn btn-primary" style="width:auto;margin-top:16px"><span class="msr">download</span>Update now</button>
+            <div class="t-body-md" style="margin-top:12px;font-size:11px">v2.4.0 → v3.0.1</div>
+          </div>
+        </div>
+      </div>
+      <div class="anno">
+        <div class="a-top"><span class="a-name">94 · App update required</span><span class="a-route">· force-update</span></div>
+        <div class="a-roles"><span>All roles</span></div>
+        <p class="a-notes"><b>Blocking</b> — no dismiss, no back. Triggered when the client is below the minimum supported version. Button deep-links to the App Store / Play Store.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer class="gx-foot">
+  <b>Commons</b> · Batch F of 6 — Edge states (86–94). That completes all 94 screens across 5 roles, plus the design system. Every screen is built from the shared tokens &amp; components in <b>assets/app.css</b> — swap any community's <b>--brand</b> to re-skin the entire app.
+</footer>
+
+<script>
+  document.querySelectorAll('.phone').forEach(p=>{
+    const time = p.dataset.time || '9:41';
+    const sb = document.createElement('div');
+    sb.className = 'statusbar';
+    sb.innerHTML = '<span>'+time+'</span><span class="sb-right"><span class="msr" style="font-size:16px">signal_cellular_alt</span><span class="msr" style="font-size:16px">wifi</span><span class="msr" style="font-size:18px">battery_full</span></span>';
+    p.prepend(sb);
+    const hi = document.createElement('div');
+    hi.className = 'home-ind';
+    p.append(hi);
+  });
+</script>
+</body>
+</html>

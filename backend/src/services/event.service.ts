@@ -345,8 +345,15 @@ export async function listRsvps(
   const rsvps = await EventRSVP.find({ eventId: eid })
     .sort({ createdAt: 1 })
     .populate<{ userId: IUser }>('userId', 'email name photoUrl');
+  // Waitlist position is 1-indexed by createdAt across the waitlist subset.
+  let waitlistPos = 0;
   return rsvps.map((r) => {
     const user = r.userId as unknown as IUser & { _id: Types.ObjectId };
+    let position: number | undefined;
+    if (r.status === 'waitlist') {
+      waitlistPos += 1;
+      position = waitlistPos;
+    }
     return {
       id: String(r._id),
       userId: String(user._id),
@@ -355,6 +362,8 @@ export async function listRsvps(
       photoUrl: user.photoUrl,
       status: r.status,
       paymentStatus: r.paymentStatus,
+      attendedAt: r.attendedAt ?? null,
+      waitlistPosition: position,
       createdAt: r.createdAt,
     };
   });
@@ -373,12 +382,11 @@ export async function assignManager(eid: string, userId: string): Promise<IEvent
   if (!membership) throw AppError.invalidInput('User is not a member of the community');
   if (!event.managers.some((m) => String(m) === userId)) {
     event.managers.push(uid);
-    if (membership.role === 'member') {
-      membership.role = 'event_manager';
-      await membership.save();
-    }
     await event.save();
   }
+  // Manager powers come from Event.managers[] alone per PRD 06 §4 — we no
+  // longer flip Membership.role to 'event_manager'. The membership stays as
+  // whatever community role the user already holds.
   return event;
 }
 

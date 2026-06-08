@@ -1,0 +1,54 @@
+{
+  "screen": "EventCommandCenter",
+  "route": "/manage/events/:id",
+  "roles": [
+    "event_manager"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "EventHeaderCard",
+      "type": "card"
+    },
+    {
+      "name": "CheckInKPIs",
+      "type": "kpiRow"
+    },
+    {
+      "name": "ActionTileGrid",
+      "type": "grid",
+      "tiles": [
+        "Attendees",
+        "Materials",
+        "QA",
+        "Recap"
+      ]
+    },
+    {
+      "name": "BroadcastButton",
+      "type": "button",
+      "style": "primary"
+    }
+  ],
+  "states": [
+    "loading",
+    "populated"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "ActionTileGrid → attendees/materials/qa/recap",
+    "BroadcastButton → composer",
+    "live check-in counter"
+  ]
+}

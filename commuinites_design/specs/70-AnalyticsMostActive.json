@@ -1,0 +1,44 @@
+{
+  "screen": "AnalyticsMostActive",
+  "route": "/admin/analytics/members",
+  "roles": [
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "SegmentedControl",
+      "type": "segmented",
+      "options": [
+        "Growth",
+        "Attendance",
+        "Members"
+      ]
+    },
+    {
+      "name": "LeaderboardList",
+      "type": "list",
+      "ranked": true,
+      "bars": true
+    }
+  ],
+  "states": [
+    "loading",
+    "populated"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 14
+  },
+  "interactions": [
+    "LeaderboardList → by events attended; candidates for Event Manager (links to roles)"
+  ]
+}

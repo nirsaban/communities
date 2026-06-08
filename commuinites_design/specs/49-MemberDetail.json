@@ -1,0 +1,72 @@
+{
+  "screen": "MemberDetail",
+  "route": "/admin/members/:id",
+  "roles": [
+    "subadmin",
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "Avatar",
+      "type": "avatar",
+      "height": 72,
+      "width": 72
+    },
+    {
+      "name": "Name",
+      "type": "text",
+      "style": "titleLarge"
+    },
+    {
+      "name": "RoleBadge",
+      "type": "badge"
+    },
+    {
+      "name": "ActivityKPIs",
+      "type": "kpiRow"
+    },
+    {
+      "name": "SpendGuardCard",
+      "type": "card",
+      "variant": "surface2"
+    },
+    {
+      "name": "ActionsList",
+      "type": "card"
+    },
+    {
+      "name": "RemoveButton",
+      "type": "button",
+      "style": "secondary",
+      "color": "error"
+    }
+  ],
+  "states": [
+    "populated"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "LifetimeSpend",
+      "hiddenFor": [
+        "subadmin"
+      ]
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "ActionsList → promote/suspend",
+    "RemoveButton → remove from community",
+    "spend visible to admin only"
+  ]
+}

@@ -14,8 +14,9 @@ const csv = (s: string): string[] =>
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  PORT: z.coerce.number().int().positive().default(3000),
-  API_BASE_URL: z.string().default('http://localhost:3000'),
+  PORT: z.coerce.number().int().positive().default(4242),
+  API_BASE_URL: z.string().default('http://localhost:4242'),
+  WEB_BASE_URL: z.string().default('http://localhost:5174'),
 
   MONGO_URI: z.string().min(1, 'MONGO_URI is required'),
 
@@ -25,6 +26,7 @@ const envSchema = z.object({
   JWT_REFRESH_TTL: z.string().default('30d'),
 
   PASSWORD_RESET_TTL_MINUTES: z.coerce.number().int().positive().default(30),
+  EMAIL_VERIFICATION_TTL_MINUTES: z.coerce.number().int().positive().default(15),
 
   RATE_LIMIT_AUTH_MAX: z.coerce.number().int().positive().default(10),
   RATE_LIMIT_AUTH_WINDOW_MS: z.coerce.number().int().positive().default(15 * 60 * 1000),

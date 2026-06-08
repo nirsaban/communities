@@ -1,0 +1,53 @@
+{
+  "screen": "RSVPConfirmation",
+  "route": "/events/:id/rsvp",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "CloseButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "SuccessBlob",
+      "type": "icon",
+      "color": "success"
+    },
+    {
+      "name": "Title",
+      "type": "text",
+      "style": "displayMedium"
+    },
+    {
+      "name": "EventSummaryCard",
+      "type": "card"
+    },
+    {
+      "name": "AddToCalendarButton",
+      "type": "button",
+      "style": "primary"
+    },
+    {
+      "name": "ShareChips",
+      "type": "chipGroup"
+    }
+  ],
+  "states": [
+    "populated"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "AddToCalendarButton → generates .ics",
+    "ShareChips → invite friend",
+    "spring-scale check on entry"
+  ]
+}

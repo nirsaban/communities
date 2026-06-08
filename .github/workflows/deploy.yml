@@ -1,0 +1,99 @@
+name: deploy
+
+on:
+  push:
+    branches: [main]
+    # Skip pure-doc commits so the deploy doesn't churn on README edits.
+    paths-ignore:
+      - '**/*.md'
+      - 'AUDIT.md'
+      - 'agents/**'
+  workflow_dispatch:
+
+# Only one deploy can run at a time. Cancel an in-flight one if a newer
+# commit lands.
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: prod        # set "Required reviewers" in repo settings if you want manual approval
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout commit being deployed
+        uses: actions/checkout@v4
+
+      - name: Validate secrets
+        run: |
+          test -n "${{ secrets.DEPLOY_HOST }}"    || { echo "::error::secret DEPLOY_HOST is not set"; exit 1; }
+          test -n "${{ secrets.DEPLOY_SSH_KEY }}" || { echo "::error::secret DEPLOY_SSH_KEY is not set"; exit 1; }
+          echo "deploying ${{ github.sha }} to ${{ secrets.DEPLOY_HOST }}"
+
+      - name: Install rsync
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq rsync
+
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+      - name: Trust the host
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          # Strip user@ prefix to get the bare host for keyscan
+          BARE="${HOST#*@}"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          ssh-keyscan -H "$BARE" >> ~/.ssh/known_hosts 2>/dev/null
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Run deploy.sh
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          chmod +x infra/deploy.sh
+          ./infra/deploy.sh "$HOST"
+
+      - name: Post-deploy smoke test (api direct)
+        env:
+          HOST_IP: ${{ secrets.DEPLOY_HOST_IP }}
+        run: |
+          # Optional — only runs if you set the DEPLOY_HOST_IP secret.
+          if [ -n "$HOST_IP" ]; then
+            echo "→ api /health"
+            curl -fsS --max-time 10 "http://$HOST_IP:3010/api/v1/health" | head -c 300
+            echo
+            echo "→ web /healthz"
+            curl -fsS --max-time 10 "http://$HOST_IP:3011/healthz"
+            echo
+            echo "→ web → api proxy"
+            curl -fsS --max-time 10 "http://$HOST_IP:3011/api/v1/health" | head -c 300
+            echo
+          else
+            echo "DEPLOY_HOST_IP not set — skipping external smoke test"
+          fi
+
+      - name: Summary
+        if: always()
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          HOST_IP: ${{ secrets.DEPLOY_HOST_IP }}
+        run: |
+          {
+            echo "### Deploy summary"
+            echo
+            echo "| Field | Value |"
+            echo "|---|---|"
+            echo "| Commit | \`${{ github.sha }}\` |"
+            echo "| Triggered by | ${{ github.actor }} |"
+            echo "| Host | $HOST |"
+            if [ -n "$HOST_IP" ]; then
+              echo "| Web | http://$HOST_IP:3011/ |"
+              echo "| API direct | http://$HOST_IP:3010/api/v1/health |"
+              echo "| API via web | http://$HOST_IP:3011/api/v1/health |"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

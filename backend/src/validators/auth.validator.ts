@@ -37,6 +37,15 @@ export const resetPasswordSchema = z.object({
   newPassword: passwordSchema,
 });
 
+export const verifyEmailSchema = z.object({
+  email: emailSchema,
+  code: z.string().regex(/^\d{6}$/, 'Code must be 6 digits'),
+});
+
+export const resendVerificationSchema = z.object({
+  email: emailSchema,
+});
+
 export const updateMeSchema = z
   .object({
     name: z.string().min(1).max(120).optional(),
@@ -53,3 +62,5 @@ export type LogoutInput = z.infer<typeof logoutSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type UpdateMeInput = z.infer<typeof updateMeSchema>;
+export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
+export type ResendVerificationInput = z.infer<typeof resendVerificationSchema>;

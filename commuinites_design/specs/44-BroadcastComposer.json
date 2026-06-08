@@ -1,0 +1,65 @@
+{
+  "screen": "BroadcastComposer",
+  "route": "/manage/events/:id/broadcast",
+  "roles": [
+    "event_manager",
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "CloseButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "RecipientRow",
+      "type": "listRow"
+    },
+    {
+      "name": "MessageField",
+      "type": "textArea"
+    },
+    {
+      "name": "ScheduleToggle",
+      "type": "toggle"
+    },
+    {
+      "name": "ChannelChips",
+      "type": "chipGroup",
+      "options": [
+        "Push",
+        "In-app",
+        "Email"
+      ]
+    },
+    {
+      "name": "SendButton",
+      "type": "button",
+      "style": "primary",
+      "width": "full"
+    }
+  ],
+  "states": [
+    "default",
+    "focused"
+  ],
+  "conditionalVisibility": [
+    {
+      "component": "DateTimePicker",
+      "shownFor": [
+        "ScheduleToggle on"
+      ]
+    }
+  ],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 14
+  },
+  "interactions": [
+    "SendButton → members inbox",
+    "ScheduleToggle → reveals date/time picker"
+  ]
+}

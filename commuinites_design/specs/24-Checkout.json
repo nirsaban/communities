@@ -1,0 +1,54 @@
+{
+  "screen": "Checkout",
+  "route": "/events/:id/checkout",
+  "roles": [
+    "member"
+  ],
+  "components": [
+    {
+      "name": "BackButton",
+      "type": "iconButton"
+    },
+    {
+      "name": "EventSummaryCard",
+      "type": "card"
+    },
+    {
+      "name": "LineItems",
+      "type": "list"
+    },
+    {
+      "name": "TotalRow",
+      "type": "row"
+    },
+    {
+      "name": "StripeCardField",
+      "type": "webViewHandoff"
+    },
+    {
+      "name": "PayButton",
+      "type": "button",
+      "style": "primary"
+    }
+  ],
+  "states": [
+    "default",
+    "loading",
+    "error"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 14
+  },
+  "interactions": [
+    "PayButton → Stripe WebView",
+    "success → /pay/success",
+    "failure → /pay/failed",
+    "no card data stored in-app"
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "screen": "AdminWizardInvite",
+  "route": "/admin/setup/6",
+  "roles": [
+    "admin"
+  ],
+  "components": [
+    {
+      "name": "ProgressBar",
+      "type": "progress",
+      "segments": 6
+    },
+    {
+      "name": "OptionalBadge",
+      "type": "badge",
+      "color": "accent"
+    },
+    {
+      "name": "Title",
+      "type": "text",
+      "style": "displayMedium"
+    },
+    {
+      "name": "EmailChipsField",
+      "type": "chipInput"
+    },
+    {
+      "name": "InviteLinkRow",
+      "type": "card",
+      "trailing": "copyButton"
+    },
+    {
+      "name": "ShareChips",
+      "type": "chipGroup"
+    },
+    {
+      "name": "FinishButton",
+      "type": "button",
+      "style": "primary",
+      "width": "full",
+      "height": 50
+    },
+    {
+      "name": "LaterButton",
+      "type": "button",
+      "style": "ghost"
+    }
+  ],
+  "states": [
+    "default"
+  ],
+  "conditionalVisibility": [],
+  "colors": {
+    "background": "var(--bg)",
+    "accent": "var(--accent)"
+  },
+  "spacing": {
+    "pagePadding": 20,
+    "sectionGap": 16
+  },
+  "interactions": [
+    "FinishButton → admin dashboard with confetti",
+    "ShareChips → native share / QR",
+    "LaterButton → skip"
+  ]
+}
