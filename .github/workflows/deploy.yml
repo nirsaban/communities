@@ -3,84 +3,93 @@ name: deploy
 on:
   push:
     branches: [main]
-    # Skip pure-doc commits so the deploy doesn't churn on README edits.
     paths-ignore:
       - '**/*.md'
       - 'AUDIT.md'
       - 'agents/**'
   workflow_dispatch:
 
-# Only one deploy can run at a time. Cancel an in-flight one if a newer
-# commit lands.
+# Only one deploy at a time; cancel an in-flight one when a newer commit lands.
 concurrency:
   group: deploy-prod
   cancel-in-progress: true
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
-    environment: prod        # set "Required reviewers" in repo settings if you want manual approval
+    # Self-hosted runner installed on the VPS via infra/install-github-runner.sh.
+    # The VPS firewall blocks inbound SSH from GitHub's hosted runners, so we
+    # run the deploy locally on the host instead.
+    runs-on: [self-hosted, communities]
+    environment: prod
     timeout-minutes: 25
 
     steps:
       - name: Checkout commit being deployed
         uses: actions/checkout@v4
 
-      - name: Validate secrets
+      - name: Sync working tree to /opt/communities
         run: |
-          test -n "${{ secrets.DEPLOY_HOST }}"    || { echo "::error::secret DEPLOY_HOST is not set"; exit 1; }
-          test -n "${{ secrets.DEPLOY_SSH_KEY }}" || { echo "::error::secret DEPLOY_SSH_KEY is not set"; exit 1; }
-          echo "deploying ${{ github.sha }} to ${{ secrets.DEPLOY_HOST }}"
+          # The runner checks code into /opt/actions-runner/_work/... but the
+          # deployed tree lives in /opt/communities. Mirror everything (minus
+          # the usual junk) so the docker build sees the latest code.
+          sudo rsync -az --delete \
+            --exclude='.git/' \
+            --exclude='node_modules/' \
+            --exclude='backend/dist/' \
+            --exclude='backend/uploads/' \
+            --exclude='backend/coverage/' \
+            --exclude='web/dist/' \
+            --exclude='web/.vite/' \
+            --exclude='.env' \
+            --exclude='.env.prod' \
+            --exclude='.claude/' \
+            "$GITHUB_WORKSPACE/" /opt/communities/
 
-      - name: Install rsync
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq rsync
-
-      - name: Set up SSH agent
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
-
-      - name: Trust the host
-        env:
-          HOST: ${{ secrets.DEPLOY_HOST }}
+      - name: Ensure .env.prod exists and has every key from the example
         run: |
-          # Strip user@ prefix to get the bare host for keyscan
-          BARE="${HOST#*@}"
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          ssh-keyscan -H "$BARE" >> ~/.ssh/known_hosts 2>/dev/null
-          chmod 600 ~/.ssh/known_hosts
-
-      - name: Run deploy.sh
-        env:
-          HOST: ${{ secrets.DEPLOY_HOST }}
-        run: |
-          chmod +x infra/deploy.sh
-          ./infra/deploy.sh "$HOST"
-
-      - name: Post-deploy smoke test (api direct)
-        env:
-          HOST_IP: ${{ secrets.DEPLOY_HOST_IP }}
-        run: |
-          # Optional — only runs if you set the DEPLOY_HOST_IP secret.
-          if [ -n "$HOST_IP" ]; then
-            echo "→ api /health"
-            curl -fsS --max-time 10 "http://$HOST_IP:3010/api/v1/health" | head -c 300
-            echo
-            echo "→ web /healthz"
-            curl -fsS --max-time 10 "http://$HOST_IP:3011/healthz"
-            echo
-            echo "→ web → api proxy"
-            curl -fsS --max-time 10 "http://$HOST_IP:3011/api/v1/health" | head -c 300
-            echo
-          else
-            echo "DEPLOY_HOST_IP not set — skipping external smoke test"
+          cd /opt/communities
+          if [ ! -f .env.prod ]; then
+            sudo cp infra/.env.prod.example .env.prod
+            sudo chmod 600 .env.prod
+            JWT_A=$(openssl rand -hex 32)
+            JWT_R=$(openssl rand -hex 32)
+            sudo sed -i "s|REPLACE_WITH_RANDOM_32_BYTE_HEX|$JWT_A|" .env.prod
+            sudo sed -i "s|REPLACE_WITH_DIFFERENT_RANDOM_32_BYTE_HEX|$JWT_R|" .env.prod
+            echo "Generated fresh JWT secrets into .env.prod"
           fi
+          added=()
+          while IFS= read -r line; do
+            case "$line" in ''|\#*) continue ;; esac
+            key="${line%%=*}"
+            if ! grep -qE "^[[:space:]]*${key}=" .env.prod; then
+              echo "$line" | sudo tee -a .env.prod >/dev/null
+              added+=("$key")
+            fi
+          done < infra/.env.prod.example
+          if [ ${#added[@]} -gt 0 ]; then
+            echo "Added missing keys from example: ${added[*]}"
+          fi
+
+      - name: Build + restart containers
+        run: |
+          cd /opt/communities
+          sudo docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+
+      - name: Health check
+        run: |
+          sleep 8
+          echo "→ api /health"
+          curl -fsS --max-time 10 http://localhost:3010/api/v1/health | head -c 300
+          echo
+          echo "→ web /healthz"
+          curl -fsS --max-time 10 http://localhost:3011/healthz
+          echo
+          echo "→ web → api proxy"
+          curl -fsS --max-time 10 http://localhost:3011/api/v1/health | head -c 300
 
       - name: Summary
         if: always()
         env:
-          HOST: ${{ secrets.DEPLOY_HOST }}
           HOST_IP: ${{ secrets.DEPLOY_HOST_IP }}
         run: |
           {
@@ -90,7 +99,7 @@ jobs:
             echo "|---|---|"
             echo "| Commit | \`${{ github.sha }}\` |"
             echo "| Triggered by | ${{ github.actor }} |"
-            echo "| Host | $HOST |"
+            echo "| Runner | self-hosted on the VPS |"
             if [ -n "$HOST_IP" ]; then
               echo "| Web | http://$HOST_IP:3011/ |"
               echo "| API direct | http://$HOST_IP:3010/api/v1/health |"
