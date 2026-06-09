@@ -32,7 +32,9 @@ jobs:
           # The runner checks code into /opt/actions-runner/_work/... but the
           # deployed tree lives in /opt/communities. Mirror everything (minus
           # the usual junk) so the docker build sees the latest code.
-          sudo rsync -az --delete \
+          # No sudo: /opt/communities is owned by actions-runner (chowned at
+          # install time); the runner user is in the docker group.
+          rsync -az --delete \
             --exclude='.git/' \
             --exclude='node_modules/' \
             --exclude='backend/dist/' \
@@ -49,12 +51,12 @@ jobs:
         run: |
           cd /opt/communities
           if [ ! -f .env.prod ]; then
-            sudo cp infra/.env.prod.example .env.prod
-            sudo chmod 600 .env.prod
+            cp infra/.env.prod.example .env.prod
+            chmod 600 .env.prod
             JWT_A=$(openssl rand -hex 32)
             JWT_R=$(openssl rand -hex 32)
-            sudo sed -i "s|REPLACE_WITH_RANDOM_32_BYTE_HEX|$JWT_A|" .env.prod
-            sudo sed -i "s|REPLACE_WITH_DIFFERENT_RANDOM_32_BYTE_HEX|$JWT_R|" .env.prod
+            sed -i "s|REPLACE_WITH_RANDOM_32_BYTE_HEX|$JWT_A|" .env.prod
+            sed -i "s|REPLACE_WITH_DIFFERENT_RANDOM_32_BYTE_HEX|$JWT_R|" .env.prod
             echo "Generated fresh JWT secrets into .env.prod"
           fi
           added=()
@@ -62,7 +64,7 @@ jobs:
             case "$line" in ''|\#*) continue ;; esac
             key="${line%%=*}"
             if ! grep -qE "^[[:space:]]*${key}=" .env.prod; then
-              echo "$line" | sudo tee -a .env.prod >/dev/null
+              echo "$line" >> .env.prod
               added+=("$key")
             fi
           done < infra/.env.prod.example
@@ -73,7 +75,7 @@ jobs:
       - name: Build + restart containers
         run: |
           cd /opt/communities
-          sudo docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+          docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
 
       - name: Health check
         run: |
