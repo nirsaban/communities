@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api, extractError } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
 import { landingPathAfterAuth } from '../../lib/role';
@@ -11,6 +11,10 @@ import { t } from '../../i18n';
 export function LoginScreen() {
   const nav = useNavigate();
   const auth = useAuth();
+  const [params] = useSearchParams();
+  // Whitelist `next` to in-app paths so it can't be used as an open redirect.
+  const rawNext = params.get('next');
+  const next = rawNext && rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : null;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -28,6 +32,11 @@ export function LoginScreen() {
       const rt = d.tokens?.refreshToken;
       if (!at || !rt) throw new Error('bad-response');
       auth.loginSuccess(at, rt, d.user);
+      // Honor ?next= so the invite-accept flow can resume after sign-in.
+      if (next) {
+        nav(next, { replace: true });
+        return;
+      }
       const target = await landingPathAfterAuth(d.user);
       nav(target, { replace: true });
     } catch (err) {

@@ -297,20 +297,27 @@ export async function acceptInvitation(
   let createdAccount = false;
 
   if (!user) {
-    // Inline signup path: look up by email, otherwise create.
-    user = await User.findOne({ email: invitation.email });
-    if (!user) {
-      if (!input.password) {
-        throw AppError.invalidInput('Password required to accept invitation as a new user');
-      }
-      const passwordHash = await bcrypt.hash(input.password, 12);
-      user = await User.create({
-        email: invitation.email,
-        passwordHash,
-        name: input.name || '',
-      });
-      createdAccount = true;
+    // Anonymous accept is only allowed for brand-new accounts (inline signup).
+    // If an account already exists for this email, we must NOT issue a session
+    // based on email alone — that would let anyone with the invite token log
+    // in as the existing user. The web client routes them through /login,
+    // then re-enters /invite/<token> authenticated.
+    const existing = await User.findOne({ email: invitation.email });
+    if (existing) {
+      throw AppError.unauthorized(
+        'Sign in as ' + invitation.email + ' to accept this invitation',
+      );
     }
+    if (!input.password) {
+      throw AppError.invalidInput('Password required to accept invitation as a new user');
+    }
+    const passwordHash = await bcrypt.hash(input.password, 12);
+    user = await User.create({
+      email: invitation.email,
+      passwordHash,
+      name: input.name || '',
+    });
+    createdAccount = true;
   } else {
     // If logged in but invitation is addressed to a different email, only allow same email.
     if (user.email !== invitation.email) {

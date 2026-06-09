@@ -249,8 +249,11 @@ export function InvitationAcceptScreen() {
             <p className="t-body-md mb-4">
               An account with this email already exists. Sign in to accept the invitation.
             </p>
-            <AppButton variant="secondary" onClick={() => nav('/login')}>
-              Sign in
+            <AppButton
+              variant="secondary"
+              onClick={() => nav(`/login?next=${encodeURIComponent(`/invite/${token}`)}`)}
+            >
+              Sign in to accept
             </AppButton>
           </>
         )}
