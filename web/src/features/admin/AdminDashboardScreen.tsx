@@ -275,13 +275,13 @@ export function AdminDashboardScreen() {
           </span>
           <span className="flex-1">
             <span className="t-label-lg block" style={{ color: '#fff' }}>
-              New event
+              {isSubAdmin ? 'New free event' : 'New event'}
             </span>
             <span
               className="t-body-md block"
               style={{ color: 'rgba(255,255,255,0.85)', margin: 0, fontSize: 11 }}
             >
-              Plan, price, publish
+              {isSubAdmin ? 'Plan & publish' : 'Plan, price, publish'}
             </span>
           </span>
           <Icon name="arrow_forward" />
@@ -331,10 +331,16 @@ export function AdminDashboardScreen() {
                             {isSubAdmin ? 'Paid' : fmtCents(e.priceCents)}
                           </span>
                         ) : isSub ? (
-                          <span className="price-tag pt-sub">
-                            <Icon name="workspace_premium" size={11} />
-                            Subs
-                          </span>
+                          // Sub-admin must not see subscription affordances —
+                          // collapse to a neutral "Paid" pill (no workspace_premium icon).
+                          isSubAdmin ? (
+                            <span className="price-tag pt-paid">Paid</span>
+                          ) : (
+                            <span className="price-tag pt-sub">
+                              <Icon name="workspace_premium" size={11} />
+                              Subs
+                            </span>
+                          )
                         ) : (
                           <span className="price-tag pt-free">
                             <Icon name="check" size={11} />

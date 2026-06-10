@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AppBar, Screen } from '../../components/AppBar';
+import { Icon } from '../../components/Icon';
 import { LoadingDots } from '../../components/LoadingDots';
 import { AppButton } from '../../components/AppButton';
 import { api, extractError } from '../../lib/api';
@@ -114,6 +115,25 @@ export function EditEventScreen() {
             {topError}
           </div>
         )}
+        {/* Sub-admin gets an explicit "limited admin" banner explaining what they
+            can and can't change before they discover the locked pricing block
+            mid-scroll. Without this, the locked block reads as a bug. */}
+        {!canPrice && (
+          <div
+            className="card row mb-4 flex items-start gap-3"
+            style={{
+              padding: 12,
+              background: 'rgb(var(--surface-2))',
+              border: 'none',
+            }}
+          >
+            <Icon name="shield" size={18} className="text-warn" />
+            <div className="grow t-body-md" style={{ margin: 0, fontSize: 12 }}>
+              <b>Limited admin.</b> You can edit the title, schedule, location
+              and capacity. Pricing is set by the Community Admin.
+            </div>
+          </div>
+        )}
         <EventForm values={values} onChange={setValues} allowPricing={canPrice} errors={errors} />
 
         <div className="mt-6">
@@ -123,7 +143,16 @@ export function EditEventScreen() {
               style={{ border: '1px solid rgb(var(--error))', background: 'rgb(var(--error-wash))' }}
             >
               <div className="t-label-lg mb-2">Cancel this event?</div>
-              <div className="t-body-md mb-3">Attendees will be notified. This can't be undone.</div>
+              <div className="t-body-md mb-3">
+                Attendees will be notified. This can't be undone.
+                {!canPrice && values.pricingType !== 'free' && (
+                  <>
+                    {' '}
+                    Any refunds for paid attendees will be handled by the
+                    Community Admin.
+                  </>
+                )}
+              </div>
               <div className="grid grid-cols-2 gap-2.5">
                 <AppButton variant="secondary" onClick={() => setShowCancelConfirm(false)}>
                   Back
