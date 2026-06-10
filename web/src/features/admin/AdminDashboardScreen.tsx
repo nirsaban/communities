@@ -98,6 +98,33 @@ export function AdminDashboardScreen() {
       </div>
 
       <main className="flex-1 px-5 pb-6 overflow-y-auto">
+        {/* Cross-role: when super admin suspends this community, the admin must
+            see why every write action is rejected. Without this banner the
+            admin gets opaque 403s on settings/invites/event-create. */}
+        {community?.status === 'suspended' && (
+          <Card
+            className="mb-3 p-3 flex items-start gap-2.5"
+            style={{
+              background: 'rgb(var(--warning-wash))',
+              borderColor: 'rgb(var(--warning))',
+            }}
+          >
+            <Icon
+              name="pause_circle"
+              size={20}
+              style={{ color: 'rgb(var(--warning))', marginTop: 2 }}
+            />
+            <div className="flex-1">
+              <div className="t-label-lg">Community paused by platform</div>
+              <p className="t-body-md" style={{ margin: '2px 0 0', fontSize: 12 }}>
+                A super admin has temporarily suspended this community. Member
+                actions, new events and most settings are blocked until it's
+                restored. Reach out to platform support if this is unexpected.
+              </p>
+            </div>
+          </Card>
+        )}
+
         <div className="row mb-3.5 flex items-center gap-2.5" style={{ marginTop: 4 }}>
           <div className="t-display-md" style={{ fontSize: 24 }}>
             Overview

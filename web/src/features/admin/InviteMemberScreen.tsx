@@ -22,7 +22,6 @@ export function InviteMemberScreen() {
   const cid = ctx.currentCommunityId ?? mine?.[0]?.community.id;
   const myRole = mine?.find((m) => m.community.id === cid)?.membership.role;
   const isSubAdmin = myRole === 'subadmin';
-  const community = mine?.find((m) => m.community.id === cid)?.community;
   const invite = useInviteMember(cid);
   const [mode, setMode] = useState<Mode>('single');
   const [emails, setEmails] = useState<string[]>([]);
@@ -31,6 +30,13 @@ export function InviteMemberScreen() {
   const [role, setRole] = useState<MembershipRole>('member');
   const [error, setError] = useState<string | null>(null);
   const [sentCount, setSentCount] = useState(0);
+  // Cross-role: after the backend creates each invitation it returns the
+  // single-use accept token. We surface the full /invite/<token> URL here so
+  // the admin can paste it into WhatsApp / Slack / SMS without waiting for
+  // email delivery. Without this, the admin clicks Send and has no way to
+  // re-share the link if the email never arrives.
+  const [sentLinks, setSentLinks] = useState<Array<{ email: string; url: string }>>([]);
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
 
   // PRD 05 §3: sub-admin can assign Event Manager but cannot promote to
   // Sub-Admin or Admin. Filter the chip list accordingly.
@@ -99,31 +105,52 @@ export function InviteMemberScreen() {
     }
     setError(null);
     setSentCount(0);
+    setSentLinks([]);
     let ok = 0;
     let firstErr: string | null = null;
+    const links: Array<{ email: string; url: string }> = [];
     for (const email of list) {
       try {
-        await invite.mutateAsync({ email, role });
+        const r = await invite.mutateAsync({ email, role });
         ok += 1;
+        const token = (r as { data?: { data?: { token?: string } } })?.data?.data?.token;
+        if (token) {
+          links.push({
+            email,
+            url: `${window.location.origin}/invite/${token}`,
+          });
+        }
       } catch (err) {
         firstErr = firstErr ?? extractError(err).message;
       }
     }
     setSentCount(ok);
+    setSentLinks(links);
     if (firstErr && ok === 0) {
       setError(firstErr);
       return;
     }
-    setTimeout(() => nav(-1), 1200);
+    // Keep the admin on this screen when we have copyable links so they can
+    // grab them. nav(-1) only fires when there's nothing useful to show.
+    if (links.length === 0) {
+      setTimeout(() => nav(-1), 1200);
+    }
+  }
+
+  async function copyLink(idx: number, url: string): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedIdx(idx);
+      setTimeout(() => setCopiedIdx((v) => (v === idx ? null : v)), 1500);
+    } catch {
+      /* clipboard blocked — ignore */
+    }
   }
 
   const buttonLabel =
     effectiveEmails.length <= 1
       ? 'Send invite'
       : `Send ${effectiveEmails.length} invites`;
-  const joinLink = community?.slug
-    ? `commons.app/j/${community.slug.toUpperCase()}`
-    : 'commons.app/j/—';
 
   return (
     <Screen>
@@ -244,39 +271,69 @@ export function InviteMemberScreen() {
           </div>
         </div>
 
-        {/* Shareable join link fallback */}
-        <div
-          className="card row mt-1 flex items-center gap-2"
-          style={{ padding: '12px 14px' }}
-        >
-          <Icon name="link" size={18} className="text-muted" />
-          <span
-            className="grow t-body-md"
-            style={{
-              margin: 0,
-              fontFamily: "'DM Mono', ui-monospace, monospace",
-              fontSize: 12,
-              color: 'rgb(var(--on-bg))',
-            }}
-            dir="ltr"
-          >
-            {joinLink}
-          </span>
-          <button
-            type="button"
-            onClick={() => {
-              if (navigator?.clipboard) navigator.clipboard.writeText(joinLink).catch(() => {});
-            }}
-            className="chip"
-            style={{
-              background: 'rgb(var(--surface-2))',
-              borderColor: 'transparent',
-              height: 28,
-            }}
-          >
-            Copy
-          </button>
-        </div>
+        {/* Cross-role: once invites have been sent, render the actual
+            /invite/<token> URLs so the admin can paste them straight into
+            WhatsApp / Slack without waiting for the email to land. Each link
+            is single-use per backend invariant. */}
+        {sentLinks.length > 0 && (
+          <div className="mt-3">
+            <div className="t-label-sm mb-2 block">
+              Share links · paste anywhere
+            </div>
+            <div className="flex flex-col gap-2">
+              {sentLinks.map((l, idx) => (
+                <div
+                  key={l.url}
+                  className="card row flex items-center gap-2"
+                  style={{ padding: '10px 12px' }}
+                >
+                  <Icon name="link" size={16} className="text-muted" />
+                  <div className="flex-1 min-w-0">
+                    <div
+                      className="t-body-md truncate"
+                      style={{ margin: 0, fontSize: 11 }}
+                      dir="ltr"
+                    >
+                      {l.email}
+                    </div>
+                    <div
+                      className="t-body-md truncate"
+                      style={{
+                        margin: 0,
+                        fontFamily: "'DM Mono', ui-monospace, monospace",
+                        fontSize: 11,
+                        color: 'rgb(var(--muted))',
+                      }}
+                      dir="ltr"
+                    >
+                      {l.url}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => copyLink(idx, l.url)}
+                    className="chip"
+                    style={{
+                      background:
+                        copiedIdx === idx
+                          ? 'rgb(var(--brand-wash))'
+                          : 'rgb(var(--surface-2))',
+                      color:
+                        copiedIdx === idx
+                          ? 'rgb(var(--brand-ink))'
+                          : 'rgb(var(--on-bg))',
+                      borderColor: 'transparent',
+                      height: 28,
+                    }}
+                  >
+                    <Icon name={copiedIdx === idx ? 'check' : 'content_copy'} size={13} />
+                    {copiedIdx === idx ? 'Copied' : 'Copy'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="mt-3 rounded-md bg-bad-wash px-3 py-2 text-sm text-bad">{error}</div>

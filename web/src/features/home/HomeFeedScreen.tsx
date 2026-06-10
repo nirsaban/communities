@@ -17,6 +17,7 @@ import {
 import { communityContext } from '../../lib/community-context';
 import { fmtCents, fmtEventWhen } from '../../lib/format';
 import { CommunitySwitcherSheet } from './CommunitySwitcherSheet';
+import { SuspendedCommunityScreen } from '../edge/SuspendedCommunityScreen';
 import { t } from '../../i18n';
 
 export function HomeFeedScreen() {
@@ -73,6 +74,13 @@ export function HomeFeedScreen() {
         />
       </div>
     );
+  }
+
+  // Cross-role: super admin suspended this community. Members must see the
+  // SuspendedCommunityScreen on /home too, not just /c/:cid — otherwise the
+  // feed keeps loading stale posts/events while the community is paused.
+  if (currentMembership?.community.status === 'suspended') {
+    return <SuspendedCommunityScreen communityName={currentMembership.community.name} />;
   }
 
   // Pending application state — user requested to join an "application" privacy

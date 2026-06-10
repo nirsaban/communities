@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AppBar, Screen } from '../../components/AppBar';
 import { AppButton } from '../../components/AppButton';
 import { Card } from '../../components/Card';
@@ -18,6 +19,7 @@ const RANGES: Array<{ id: Range; label: string }> = [
 ];
 
 export function FinancialDashboardScreen() {
+  const nav = useNavigate();
   const ctx = communityContext();
   const { data: mine } = useMyCommunities();
   const cid = ctx.currentCommunityId ?? mine?.[0]?.community.id;
@@ -237,58 +239,91 @@ export function FinancialDashboardScreen() {
               </span>
             </div>
             <Card className="divide-y divide-border">
-              {data.recentPayments.map((p) => (
-                <div key={p.id} className="flex items-center gap-3 px-4 py-3">
-                  <span
-                    className="grid place-items-center"
+              {data.recentPayments.map((p) => {
+                // Cross-role: from /admin/finances admins should be able to
+                // click a payment and jump to /admin/payments/:pid/refund.
+                // Previously the row was a static div, so to issue a refund
+                // the admin had to dig through the event's payments list.
+                const canRefund = p.status === 'succeeded';
+                const onRowClick = canRefund
+                  ? () => nav(`/admin/payments/${p.id}/refund`)
+                  : undefined;
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={onRowClick}
+                    disabled={!canRefund}
+                    className="flex items-center gap-3 px-4 py-3 w-full text-start"
                     style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: 11,
-                      background:
-                        p.status === 'refunded'
-                          ? 'rgb(var(--error-wash))'
-                          : 'rgb(var(--success-wash))',
-                      color:
-                        p.status === 'refunded'
-                          ? 'rgb(var(--error))'
-                          : 'rgb(var(--success))',
+                      background: 'transparent',
+                      border: 0,
+                      cursor: canRefund ? 'pointer' : 'default',
                     }}
+                    aria-label={
+                      canRefund
+                        ? `Issue refund for ${p.payer?.name ?? 'member'}`
+                        : undefined
+                    }
                   >
-                    <Icon name={p.status === 'refunded' ? 'undo' : 'payments'} size={18} />
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <div className="t-label-lg truncate">
-                      {p.payer?.name ?? p.payer?.email ?? 'Member'}
-                    </div>
-                    <div
-                      className="t-body-md truncate"
-                      style={{ margin: 0, fontSize: 11 }}
+                    <span
+                      className="grid place-items-center"
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 11,
+                        background:
+                          p.status === 'refunded'
+                            ? 'rgb(var(--error-wash))'
+                            : 'rgb(var(--success-wash))',
+                        color:
+                          p.status === 'refunded'
+                            ? 'rgb(var(--error))'
+                            : 'rgb(var(--success))',
+                      }}
                     >
-                      {p.eventTitle ?? 'Subscription'} ·{' '}
-                      {new Date(p.createdAt).toLocaleDateString()}
+                      <Icon name={p.status === 'refunded' ? 'undo' : 'payments'} size={18} />
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="t-label-lg truncate">
+                        {p.payer?.name ?? p.payer?.email ?? 'Member'}
+                      </div>
+                      <div
+                        className="t-body-md truncate"
+                        style={{ margin: 0, fontSize: 11 }}
+                      >
+                        {p.eventTitle ?? 'Subscription'} ·{' '}
+                        {new Date(p.createdAt).toLocaleDateString()}
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-end">
-                    <div className="t-label-lg">{fmtCents(p.amountCents)}</div>
-                    <Pill
-                      tone={
-                        p.status === 'succeeded'
-                          ? 'ok'
+                    <div className="text-end">
+                      <div className="t-label-lg">{fmtCents(p.amountCents)}</div>
+                      <Pill
+                        tone={
+                          p.status === 'succeeded'
+                            ? 'ok'
+                            : p.status === 'refunded'
+                            ? 'warn'
+                            : 'neutral'
+                        }
+                      >
+                        {p.status === 'succeeded'
+                          ? 'Paid'
                           : p.status === 'refunded'
-                          ? 'warn'
-                          : 'neutral'
-                      }
-                    >
-                      {p.status === 'succeeded'
-                        ? 'Paid'
-                        : p.status === 'refunded'
-                        ? 'Refunded'
-                        : p.status}
-                    </Pill>
-                  </div>
-                </div>
-              ))}
+                          ? 'Refunded'
+                          : p.status}
+                      </Pill>
+                    </div>
+                    {canRefund && (
+                      <Icon
+                        name="chevron_right"
+                        size={18}
+                        style={{ color: 'rgb(var(--muted))' }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
             </Card>
           </>
         )}
