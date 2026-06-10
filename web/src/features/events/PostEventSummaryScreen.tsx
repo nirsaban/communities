@@ -64,21 +64,28 @@ export function PostEventSummaryScreen() {
   const canSee = isManager || wasAttending || isCommunityOpen;
 
   if (!canSee) {
+    // Event hasn't started yet → no recap exists; nudge them to RSVP instead so
+    // they're automatically eligible the moment the recap goes live.
+    const upcoming = new Date(ev.startAt).getTime() > Date.now();
     return (
       <Screen>
         <AppBar back title="Recap" />
         <main className="flex-1 px-5 pb-6">
           <EmptyState
             icon="lock"
-            title="Recap is for attendees"
-            body="Once the event ends, the recap opens to the whole community."
+            title={upcoming ? 'Recap not published yet' : 'Recap is for attendees'}
+            body={
+              upcoming
+                ? "RSVP now and you'll get the recap the second the host publishes it."
+                : "The host hasn't opened this recap to the whole community yet."
+            }
             action={
               <button
                 onClick={() => nav(`/events/${eid}`)}
                 className="chip"
                 style={{ background: 'rgb(var(--brand))', color: '#fff', height: 36 }}
               >
-                Back to event
+                {upcoming ? 'RSVP to this event' : 'Open event details'}
               </button>
             }
           />

@@ -41,6 +41,13 @@ export function EventDetailScreen() {
     ) ?? false;
   const subPerk = ev.subscriptionIncluded === true;
   const effectiveFree = ev.priceCents === 0 || (subPerk && hasActiveSub);
+  const pending = rsvp.isPending || cancel.isPending;
+
+  // The mutation flips ev.myRsvp via cache invalidation, but until the refetch
+  // lands the button reads stale. Track an in-flight intent so the CTA flips
+  // instantly — gives the same haptic-feel a native app has.
+  const optimisticGoing = rsvp.isPending ? true : cancel.isPending ? false : going;
+  const optimisticWaitlist = cancel.isPending ? false : waitlist;
 
   async function onRsvp(): Promise<void> {
     if (!eid) return;
@@ -64,6 +71,20 @@ export function EventDetailScreen() {
       }
     }
   }
+
+  // CTA copy reflects what the tap will *actually* do — pay, RSVP for free,
+  // join the waitlist (capacity is hit), or cancel. Members glance at the
+  // bottom bar; ambiguity is the most reported confusion in the design audit.
+  const isFull = ev.capacity != null && (ev.rsvpStats?.remaining ?? 0) <= 0;
+  const ctaLabel = optimisticGoing
+    ? t.events.cancelRsvp
+    : optimisticWaitlist
+    ? 'Leave waitlist'
+    : isFull
+    ? t.events.joinWaitlist
+    : ev.priceCents > 0 && !effectiveFree
+    ? `${t.events.rsvpPaid} · ${fmtCents(ev.priceCents)}`
+    : t.events.rsvp;
 
   return (
     <Screen>
@@ -209,14 +230,12 @@ export function EventDetailScreen() {
         </div>
         <AppButton
           block
-          loading={rsvp.isPending || cancel.isPending}
+          loading={pending}
           onClick={onRsvp}
+          variant={optimisticGoing ? 'secondary' : 'primary'}
         >
-          {going
-            ? t.events.cancelRsvp
-            : waitlist
-            ? 'Leave waitlist'
-            : t.events.rsvp}
+          {optimisticGoing && !pending && <Icon name="check_circle" size={18} />}
+          {ctaLabel}
         </AppButton>
       </div>
     </Screen>

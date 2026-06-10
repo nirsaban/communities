@@ -48,9 +48,29 @@ export function MyRsvpsScreen() {
         )}
         {!isLoading && filtered.length === 0 && (
           <EmptyState
-            icon="event_busy"
-            title={t.events.myRsvpsEmpty}
-            body={t.events.myRsvpsEmptyBody}
+            icon={tab === 'past' ? 'history' : 'event_busy'}
+            title={
+              tab === 'past'
+                ? 'Nothing in your history yet'
+                : t.events.myRsvpsEmpty
+            }
+            body={
+              tab === 'past'
+                ? "Once you've attended events, they'll show up here."
+                : t.events.myRsvpsEmptyBody
+            }
+            action={
+              tab === 'upcoming' ? (
+                <button
+                  onClick={() => nav('/events')}
+                  className="chip"
+                  style={{ background: 'rgb(var(--brand))', color: '#fff', height: 36 }}
+                >
+                  <Icon name="explore" size={16} />
+                  Browse upcoming events
+                </button>
+              ) : undefined
+            }
           />
         )}
         <div className="space-y-3">
