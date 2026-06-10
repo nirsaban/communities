@@ -4,7 +4,7 @@
 // (All / Going / Checked in / Waitlist) · attendee rows w/ check-in box trailing
 // · "Check in all" FAB.
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { AppBar, Screen } from '../../components/AppBar';
 import { Avatar } from '../../components/Avatar';
@@ -22,6 +22,8 @@ const FILTERS: Array<{ id: Filter; label: string }> = [
   { id: 'waitlist', label: 'Waitlist' },
 ];
 
+const PAGE_SIZE = 50;
+
 export function AttendeeListScreen() {
   const { eid } = useParams<{ eid: string }>();
   const { data, isLoading } = useEventAttendees(eid);
@@ -30,11 +32,25 @@ export function AttendeeListScreen() {
   const [filter, setFilter] = useState<Filter>('all');
   const [search, setSearch] = useState('');
   const [scanOpen, setScanOpen] = useState(false);
+  // Client-side pagination. The /rsvps endpoint returns the full list today,
+  // so for 200+ attendee events we'd render 200 rows. We slice and let the EM
+  // tap "Show more" to grow the window — keeps initial scroll responsive and
+  // prevents jank when toggling check-in at the bottom of a huge list.
+  const [visibleLimit, setVisibleLimit] = useState(PAGE_SIZE);
 
   const visible = useMemo(() => filterAttendees(data ?? [], filter, search), [data, filter, search]);
   const goingCount = (data ?? []).filter((a) => a.status === 'going').length;
   const checkedInCount = (data ?? []).filter((a) => a.attendedAt).length;
+  const waitlistCount = (data ?? []).filter((a) => a.status === 'waitlist').length;
   const uncheckedGoing = (data ?? []).filter((a) => a.status === 'going' && !a.attendedAt);
+  const pageVisible = visible.slice(0, visibleLimit);
+  const hiddenCount = Math.max(0, visible.length - pageVisible.length);
+
+  // When the filter or search narrows the active list, reset the window so the
+  // user always sees results from the top.
+  useEffect(() => {
+    setVisibleLimit(PAGE_SIZE);
+  }, [filter, search]);
 
   return (
     <Screen>
@@ -77,18 +93,36 @@ export function AttendeeListScreen() {
           />
         </div>
         <div className="seg" style={{ marginBottom: 8 }} role="tablist">
-          {FILTERS.map((f) => (
-            <button
-              key={f.id}
-              type="button"
-              role="tab"
-              aria-selected={filter === f.id}
-              className={`s ${filter === f.id ? 'on' : ''}`}
-              onClick={() => setFilter(f.id)}
-            >
-              {f.label}
-            </button>
-          ))}
+          {FILTERS.map((f) => {
+            const count =
+              f.id === 'going'
+                ? uncheckedGoing.length
+                : f.id === 'checkedIn'
+                  ? checkedInCount
+                  : f.id === 'waitlist'
+                    ? waitlistCount
+                    : (data ?? []).filter((a) => a.status !== 'cancelled').length;
+            return (
+              <button
+                key={f.id}
+                type="button"
+                role="tab"
+                aria-selected={filter === f.id}
+                className={`s ${filter === f.id ? 'on' : ''}`}
+                onClick={() => setFilter(f.id)}
+              >
+                {f.label}
+                {data && (
+                  <span
+                    className="t-label-sm"
+                    style={{ marginInlineStart: 4, opacity: 0.7 }}
+                  >
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -110,7 +144,7 @@ export function AttendeeListScreen() {
         )}
 
         <div className="flex flex-col">
-          {visible.map((a) => (
+          {pageVisible.map((a) => (
             <AttendeeRow
               key={a.id}
               attendee={a}
@@ -119,6 +153,20 @@ export function AttendeeListScreen() {
             />
           ))}
         </div>
+
+        {hiddenCount > 0 && (
+          <button
+            type="button"
+            className="btn btn-secondary"
+            style={{ marginTop: 12 }}
+            onClick={() => setVisibleLimit((n) => n + PAGE_SIZE)}
+          >
+            Show {Math.min(hiddenCount, PAGE_SIZE)} more
+            <span className="t-label-sm" style={{ marginInlineStart: 6, opacity: 0.7 }}>
+              · {hiddenCount} hidden
+            </span>
+          </button>
+        )}
       </main>
 
       {uncheckedGoing.length > 0 && (
@@ -151,7 +199,11 @@ function filterAttendees(rows: Attendee[], f: Filter, search: string): Attendee[
   const term = search.trim().toLowerCase();
   return rows.filter((a) => {
     if (a.status === 'cancelled') return false;
-    if (f === 'going' && a.status !== 'going') return false;
+    // "Going" and "Checked in" are mutually exclusive: Going = RSVPed but
+    // not yet checked in, Checked in = at the door. Without this split the
+    // EM sees the same row in both tabs and can't triage who still needs to
+    // arrive vs who's already inside.
+    if (f === 'going' && (a.status !== 'going' || !!a.attendedAt)) return false;
     if (f === 'checkedIn' && !a.attendedAt) return false;
     if (f === 'waitlist' && a.status !== 'waitlist') return false;
     if (term) {

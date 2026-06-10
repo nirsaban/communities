@@ -6,6 +6,7 @@
 
 import { useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import axios from 'axios';
 import { AppBar, Screen } from '../../components/AppBar';
 import { Icon } from '../../components/Icon';
 import { extractError } from '../../lib/api';
@@ -46,21 +47,22 @@ export function MaterialsUploadScreen() {
   const [file, setFile] = useState<File | null>(null);
   const [attendeesOnly, setAttendeesOnly] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // null = no upload in flight; 0..100 = real byte progress from axios.
   const [progress, setProgress] = useState<number | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   function onPick(picked: File | null): void {
     if (!picked) return;
     setFile(picked);
+    setProgress(null);
+    setError(null);
     if (!title) setTitle(picked.name.replace(/\.[^.]+$/, ''));
-    // Simulate progress while the upload request is in-flight — multipart through axios
-    // is fast enough that we just animate to 100 client-side.
-    setProgress(0);
-    const start = Date.now();
-    const tick = window.setInterval(() => {
-      const elapsed = Date.now() - start;
-      setProgress(Math.min(95, Math.round(elapsed / 50)));
-      if (elapsed > 4800) window.clearInterval(tick);
-    }, 80);
+  }
+
+  function cancelUpload(): void {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setProgress(null);
   }
 
   async function submit(): Promise<void> {
@@ -73,16 +75,28 @@ export function MaterialsUploadScreen() {
       setError('Add a title');
       return;
     }
+    const controller = new AbortController();
+    abortRef.current = controller;
+    setProgress(0);
     try {
       await upload.mutateAsync({
         title: title.trim(),
         description: description.trim() || undefined,
         type: inferType(file),
         file,
+        signal: controller.signal,
+        onProgress: (pct) => setProgress(pct),
       });
+      abortRef.current = null;
       setProgress(100);
       nav(`/events/${eid}/materials`);
     } catch (err) {
+      abortRef.current = null;
+      // User-initiated cancel — silent; don't render as a hard error.
+      if (axios.isCancel(err) || (err as { name?: string })?.name === 'CanceledError') {
+        setProgress(null);
+        return;
+      }
       setProgress(null);
       setError(extractError(err).message);
     }
@@ -147,17 +161,33 @@ export function MaterialsUploadScreen() {
                   {sizeMb} MB · {uploading ? 'uploading…' : progress === 100 ? 'done' : 'ready'}
                 </div>
               </div>
-              <span
-                className="t-label-sm"
-                style={{ margin: 0, color: 'rgb(var(--brand-ink))' }}
-              >
-                {progress != null ? `${progress}%` : '100%'}
-              </span>
+              {uploading ? (
+                <button
+                  type="button"
+                  onClick={cancelUpload}
+                  className="ic-btn"
+                  aria-label="Cancel upload"
+                  style={{
+                    width: 28,
+                    height: 28,
+                    background: 'rgb(var(--surface-2))',
+                  }}
+                >
+                  <Icon name="close" size={14} />
+                </button>
+              ) : (
+                <span
+                  className="t-label-sm"
+                  style={{ margin: 0, color: 'rgb(var(--brand-ink))' }}
+                >
+                  {progress != null ? `${progress}%` : 'ready'}
+                </span>
+              )}
             </div>
             <div className="progress-track" style={{ height: 5 }}>
               <span
                 style={{
-                  width: `${progress ?? 100}%`,
+                  width: `${progress ?? 0}%`,
                   display: 'block',
                   height: '100%',
                   background: 'rgb(var(--brand))',

@@ -23,6 +23,12 @@ export function PublishRecapScreen() {
   const [notify, setNotify] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
+  // Two-step publish: tap "Publish recap" → confirm dialog (so the EM never
+  // accidentally pushes a notification to every attendee). Then 'published'
+  // shows an explicit success card with a "View recap" CTA instead of
+  // silently navigating away.
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [published, setPublished] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -58,15 +64,21 @@ export function PublishRecapScreen() {
     setPhotoUrls((prev) => prev.filter((_, idx) => idx !== i));
   }
 
-  async function submit(): Promise<void> {
+  function requestPublish(): void {
     setError(null);
     if (body.trim().length < 1) {
       setError('Write a recap note');
       return;
     }
+    setShowConfirm(true);
+  }
+
+  async function confirmPublish(): Promise<void> {
+    setShowConfirm(false);
+    setError(null);
     try {
       await publish.mutateAsync({ body: body.trim(), photoUrls, notify });
-      nav(`/events/${eid}/recap`);
+      setPublished(true);
     } catch (err) {
       setError(extractError(err).message);
     }
@@ -243,13 +255,147 @@ export function PublishRecapScreen() {
           <button
             type="button"
             className="btn btn-primary"
-            onClick={submit}
+            onClick={requestPublish}
             disabled={publish.isPending || body.trim().length < 1}
           >
             {publish.isPending ? 'Publishing…' : 'Publish recap'}
           </button>
         </div>
       </main>
+
+      {showConfirm && (
+        <ConfirmPublishSheet
+          attendedCount={attendedCount}
+          notify={notify}
+          onCancel={() => setShowConfirm(false)}
+          onConfirm={confirmPublish}
+          pending={publish.isPending}
+        />
+      )}
+
+      {published && (
+        <PublishedSheet
+          notified={notify}
+          onView={() => nav(`/events/${eid}/recap`)}
+          onClose={() => setPublished(false)}
+        />
+      )}
     </Screen>
+  );
+}
+
+function ConfirmPublishSheet({
+  attendedCount,
+  notify,
+  onCancel,
+  onConfirm,
+  pending,
+}: {
+  attendedCount: number;
+  notify: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+  pending: boolean;
+}) {
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0,0,0,0.5)',
+        zIndex: 50,
+        display: 'grid',
+        placeItems: 'center',
+        padding: 24,
+      }}
+      onClick={pending ? undefined : onCancel}
+    >
+      <div
+        className="card"
+        style={{ padding: 20, maxWidth: 360, width: '100%' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="t-title-md" style={{ marginBottom: 8 }}>
+          Publish recap?
+        </div>
+        <p className="t-body-md" style={{ margin: '0 0 14px' }}>
+          {notify
+            ? `This will publish the recap and send a notification to ${attendedCount} ${
+                attendedCount === 1 ? 'attendee' : 'attendees'
+              }.`
+            : 'This will publish the recap. Attendees won’t be notified.'}
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={onCancel}
+            disabled={pending}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={onConfirm}
+            disabled={pending}
+          >
+            {pending ? 'Publishing…' : 'Publish'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PublishedSheet({
+  notified,
+  onView,
+  onClose,
+}: {
+  notified: boolean;
+  onView: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0,0,0,0.5)',
+        zIndex: 50,
+        display: 'grid',
+        placeItems: 'center',
+        padding: 24,
+      }}
+      onClick={onClose}
+    >
+      <div
+        className="card"
+        style={{ padding: 22, maxWidth: 360, width: '100%' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div
+          className="flex items-center gap-2"
+          style={{ color: 'rgb(var(--success))', marginBottom: 8 }}
+        >
+          <Icon name="check_circle" size={22} />
+          <span className="t-title-md">Recap published</span>
+        </div>
+        <p className="t-body-md" style={{ margin: '0 0 14px' }}>
+          {notified
+            ? 'Attendees were notified and can read it in their inbox.'
+            : 'Recap is live for attendees in the event detail.'}
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          <button type="button" className="btn btn-secondary" onClick={onClose}>
+            Stay here
+          </button>
+          <button type="button" className="btn btn-primary" onClick={onView}>
+            View recap
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
