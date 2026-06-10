@@ -1,94 +1,92 @@
-# Production compose for the VPS — port-only, coexists with the existing
-# yogev-nginx that already owns 80/443.
-#
-# Bring up with:
-#   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
-#
-# Required env file: .env.prod (copy from infra/.env.prod.example).
-# All secrets live in that file — never commit it.
-#
-# Ports exposed on the host:
-#   3010 → api (direct access, used by the deploy script's health check)
-#   3011 → web (nginx static + /api/v1 proxy back to the api container)
-# To attach a domain, add a server block to the existing nginx pointing at
-# 3011 (web) — that container handles both the SPA and the API proxy.
-
 services:
-  mongo:
-    image: mongo:7
+  postgres:
+    image: postgres:16-alpine
+    container_name: amutot-postgres
     restart: unless-stopped
-    # Mongo is NOT exposed to the host — only the api container reaches it
-    # via the internal docker network.
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-amutot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-amutot_db}
     volumes:
-      - mongo_data:/data/db
+      - ./data/postgres:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5433:5432"
+    networks:
+      - miltech-association-net
     healthcheck:
-      test: ['CMD', 'mongosh', '--quiet', '--eval', 'db.adminCommand("ping")']
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-amutot} -d ${POSTGRES_DB:-amutot_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
-    networks:
-      - internal
 
-  api:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+  backend:
+    image: ghcr.io/nirsaban/amutot-backend:${IMAGE_TAG:-latest}
+    container_name: amutot-backend
     restart: unless-stopped
-    depends_on:
-      mongo:
-        condition: service_healthy
     environment:
       NODE_ENV: production
-      PORT: 4242
-      MONGO_URI: mongodb://mongo:27017/community
-      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?missing}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?missing}
-      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-15m}
-      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-30d}
-      CORS_ORIGINS: ${CORS_ORIGINS:?missing}
-      API_BASE_URL: ${API_BASE_URL:?missing}
-      WEB_BASE_URL: ${WEB_BASE_URL:?missing}
-      LOG_LEVEL: ${LOG_LEVEL:-info}
-      MAIL_DRIVER: ${MAIL_DRIVER:-console}
-      STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
-      UPLOAD_DIR: /app/uploads
-      # Stripe block kept for now; PayPlus branch will swap these.
-      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
-      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
-    ports:
-      # Host:Container — host port 3010 is the public-facing one (free on this
-      # VPS as of 2026-06-03), container listens on 4242 internally to match
-      # the local dev port. Change here + in .env.prod.API_BASE_URL if you reuse.
-      - '3010:4242'
-    volumes:
-      - api_uploads:/app/uploads
-    networks:
-      - internal
-
-  web:
-    build:
-      context: ./web
-      dockerfile: Dockerfile
-      args:
-        # Same-origin: the web container's nginx proxies /api/v1/* to the api
-        # service inside the internal network. Keep this relative so the same
-        # build works regardless of which domain the web ends up on.
-        VITE_API_BASE_URL: /api/v1
-    restart: unless-stopped
+      PORT: "3000"
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      GREEN_API_URL: ${GREEN_API_URL}
+      GREEN_API_INSTANCE_ID: ${GREEN_API_INSTANCE_ID}
+      GREEN_API_TOKEN: ${GREEN_API_TOKEN}
+      GREEN_API_ENABLED: ${GREEN_API_ENABLED:-true}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:admin@amutot.cloud}
+      OTP_OVERRIDE_PHONE: ${OTP_OVERRIDE_PHONE:-}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
     depends_on:
-      - api
-    ports:
-      # Host:Container — 3011 is free as of 2026-06-09. The container listens
-      # on 80 (nginx default). Attach a domain via the external nginx that
-      # owns 80/443 → upstream http://localhost:3011.
-      - '3011:80'
+      postgres:
+        condition: service_healthy
     networks:
-      - internal
+      - miltech-association-net
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:3000/api/v1/health', r => { r.statusCode === 200 ? process.exit(0) : process.exit(1) }).on('error', () => process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
-volumes:
-  mongo_data:
-  api_uploads:
+  frontend:
+    image: ghcr.io/nirsaban/amutot-frontend:${IMAGE_TAG:-latest}
+    container_name: amutot-frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      NEXT_PUBLIC_API_URL: /api/v1
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - miltech-association-net
+
+  nginx:
+    image: nginx:alpine
+    container_name: amutot-nginx
+    restart: unless-stopped
+    ports:
+      - "0.0.0.0:3100:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - miltech-association-net
+    healthcheck:
+      # Use 127.0.0.1 explicitly — nginx:alpine resolves `localhost` to IPv6
+      # first, but nginx binds IPv4 only, so the spider hits ECONNREFUSED.
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:80/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
 networks:
-  internal:
-    driver: bridge
+  miltech-association-net:
+    external: true
