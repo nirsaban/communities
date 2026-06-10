@@ -58,7 +58,18 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
 
 export const detail = asyncHandler(async (req: Request, res: Response) => {
   const event = getLoadedEvent(req);
-  const { isManager, isAttending } = await getEventById(String(event._id), req.user?._id);
+  const { isManager: isManagerByGrant, isAttending } = await getEventById(
+    String(event._id),
+    req.user?._id,
+  );
+  // Mirror the authz that `requireEventManager` applies: community admins,
+  // sub-admins, and super admins act as managers on every event in their
+  // community even when they aren't in `event.managers[]`. Without this the
+  // frontend EventManagerGate 403s an admin who just created an event.
+  const role = req.membership?.role;
+  const isAdminLike =
+    req.user?.globalRole === 'superadmin' || role === 'admin' || role === 'subadmin';
+  const isManager = isManagerByGrant || isAdminLike;
   ok(res, {
     ...event.toClientJSON(),
     viewer: { isManager, isAttending },
