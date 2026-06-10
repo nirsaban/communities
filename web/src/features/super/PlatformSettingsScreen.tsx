@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AppBar, Screen } from '../../components/AppBar';
 import { Card } from '../../components/Card';
@@ -14,6 +15,8 @@ type Settings = {
 
 export function PlatformSettingsScreen() {
   const qc = useQueryClient();
+  const nav = useNavigate();
+  const [savedToast, setSavedToast] = useState<string | null>(null);
   const { data, isLoading } = useQuery({
     queryKey: ['platform-settings'],
     queryFn: async (): Promise<Settings> => {
@@ -34,11 +37,15 @@ export function PlatformSettingsScreen() {
     if (data) setLocal(data);
   }, [data]);
 
-  function applyPatch(patch: Settings): void {
+  function applyPatch(patch: Settings, label: string): void {
     setError(null);
     const next = { ...local, ...patch };
     setLocal(next);
     update.mutate(patch, {
+      onSuccess: () => {
+        setSavedToast(label);
+        window.setTimeout(() => setSavedToast((t) => (t === label ? null : t)), 1800);
+      },
       onError: (err) => {
         setError(extractError(err).message);
         // Revert on failure
@@ -47,9 +54,12 @@ export function PlatformSettingsScreen() {
     });
   }
 
-  // Display string: when revealed we show last 4 of the actual key, else mask.
-  const maskedKey = local.stripeKeyMasked ?? '••••••••••••••••';
-  const tailHint = '4Qx2';
+  // Backend always returns a masked key (PCI: we never round-trip the secret).
+  // The "reveal" toggle used to swap one mask for another which was misleading.
+  // Now reveal shows the masked key (which contains the real last4 from
+  // backend), hidden state shows a fully obscured placeholder.
+  const backendMasked = local.stripeKeyMasked ?? '';
+  const hasKey = backendMasked.length > 0;
 
   return (
     <Screen>
@@ -63,6 +73,21 @@ export function PlatformSettingsScreen() {
 
         {!isLoading && (
           <>
+            {savedToast && (
+              <div
+                role="status"
+                aria-live="polite"
+                className="t-body-md mb-2 p-3 flex items-center gap-2"
+                style={{
+                  background: 'rgb(var(--success-wash))',
+                  color: 'rgb(var(--success))',
+                  borderRadius: 12,
+                }}
+              >
+                <Icon name="check_circle" size={18} />
+                <span>{savedToast}</span>
+              </div>
+            )}
             <div className="t-label-sm" style={{ marginBottom: 8 }}>Billing</div>
             <Card style={{ padding: 14, marginBottom: 18 }}>
               <div className="flex items-center justify-between" style={{ marginBottom: 10 }}>
@@ -70,8 +95,11 @@ export function PlatformSettingsScreen() {
                   <Icon name="credit_card" style={{ color: '#635BFF' }} />
                   <span className="t-label-lg" style={{ fontSize: 13.5 }}>Stripe</span>
                 </div>
-                <span className="status-chip sc-pub" style={{ height: 19, fontSize: 10 }}>
-                  Connected
+                <span
+                  className={`status-chip ${hasKey ? 'sc-pub' : 'sc-draft'}`}
+                  style={{ height: 19, fontSize: 10 }}
+                >
+                  {hasKey ? 'Connected' : 'Not configured'}
                 </span>
               </div>
               <div
@@ -85,18 +113,26 @@ export function PlatformSettingsScreen() {
                   fontSize: 12,
                 }}
               >
-                <span style={{ color: 'rgb(var(--muted))' }}>sk_live_</span>
                 <span className="flex-1 truncate" style={{ color: 'rgb(var(--on-bg))' }}>
-                  {reveal ? `••••••••${tailHint}` : maskedKey}
+                  {hasKey ? (reveal ? backendMasked : '••••••••••••••••') : 'No key configured'}
                 </span>
-                <button
-                  onClick={() => setReveal((v) => !v)}
-                  className="grid place-items-center"
-                  style={{ background: 'transparent', border: 0, cursor: 'pointer' }}
-                  aria-label={reveal ? 'Hide' : 'Reveal'}
-                >
-                  <Icon name={reveal ? 'visibility_off' : 'visibility'} className="text-muted" />
-                </button>
+                {hasKey && (
+                  <button
+                    onClick={() => setReveal((v) => !v)}
+                    className="grid place-items-center"
+                    style={{ background: 'transparent', border: 0, cursor: 'pointer' }}
+                    aria-label={reveal ? 'Hide key' : 'Show last 4 of key'}
+                    title={reveal ? 'Hide key' : 'Show last 4 of key'}
+                  >
+                    <Icon name={reveal ? 'visibility_off' : 'visibility'} className="text-muted" />
+                  </button>
+                )}
+              </div>
+              <div
+                className="t-body-md"
+                style={{ margin: '8px 0 0', fontSize: 11, color: 'rgb(var(--muted))' }}
+              >
+                Full secret is never exposed — only the last 4 are stored for verification.
               </div>
             </Card>
 
@@ -113,7 +149,12 @@ export function PlatformSettingsScreen() {
               <button
                 type="button"
                 className={`toggle ${local.maintenanceMode ? 'on' : ''}`}
-                onClick={() => applyPatch({ maintenanceMode: !local.maintenanceMode })}
+                onClick={() =>
+                  applyPatch(
+                    { maintenanceMode: !local.maintenanceMode },
+                    !local.maintenanceMode ? 'Maintenance mode on' : 'Maintenance mode off',
+                  )
+                }
                 aria-label="Toggle maintenance mode"
                 aria-pressed={!!local.maintenanceMode}
               >
@@ -129,7 +170,12 @@ export function PlatformSettingsScreen() {
               <button
                 type="button"
                 className={`toggle ${local.allowSignups ? 'on' : ''}`}
-                onClick={() => applyPatch({ allowSignups: !local.allowSignups })}
+                onClick={() =>
+                  applyPatch(
+                    { allowSignups: !local.allowSignups },
+                    !local.allowSignups ? 'Signups enabled' : 'Signups disabled',
+                  )
+                }
                 aria-label="Toggle signups"
                 aria-pressed={!!local.allowSignups}
               >
@@ -137,18 +183,10 @@ export function PlatformSettingsScreen() {
               </button>
             </div>
 
-            <div className="list-row">
-              <Icon name="mail" className="text-muted" />
-              <span className="flex-1 t-body-lg" style={{ fontSize: 14 }}>
-                Email templates
-              </span>
-              <Icon name="chevron_right" className="text-muted" />
-            </div>
-
             <button
-              onClick={() => (window.location.href = '/super/audit')}
+              onClick={() => nav('/super/audit')}
               className="list-row flex items-center gap-3 text-start w-full"
-              style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}
+              style={{ background: 'transparent', border: 'none', cursor: 'pointer', borderBottom: 'none' }}
             >
               <Icon name="receipt_long" className="text-muted" />
               <span className="flex-1 t-body-lg" style={{ fontSize: 14 }}>
@@ -156,14 +194,6 @@ export function PlatformSettingsScreen() {
               </span>
               <Icon name="chevron_right" className="text-muted" />
             </button>
-
-            <div className="list-row" style={{ borderBottom: 'none' }}>
-              <Icon name="gavel" className="text-muted" />
-              <span className="flex-1 t-body-lg" style={{ fontSize: 14 }}>
-                Terms &amp; policies
-              </span>
-              <Icon name="chevron_right" className="text-muted" />
-            </div>
 
             {error && (
               <div className="t-body-md mt-3 p-3" style={{ background: 'rgb(var(--error-wash))', color: 'rgb(var(--error))', borderRadius: 12 }}>

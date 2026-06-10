@@ -138,6 +138,13 @@ export function SuperCommunityDetailScreen() {
   const remove = useSuperDeleteCommunity();
   const [mode, setMode] = useState<'detail' | 'suspend' | 'delete'>('detail');
   const [error, setError] = useState<string | null>(null);
+  // Lightweight toast for destructive-action confirmation. Destructive ops
+  // change state silently otherwise — Bob needs to know it worked.
+  const [toast, setToast] = useState<string | null>(null);
+  function flashToast(msg: string): void {
+    setToast(msg);
+    window.setTimeout(() => setToast((t) => (t === msg ? null : t)), 2400);
+  }
 
   if (isLoading || !data) {
     return (
@@ -167,6 +174,7 @@ export function SuperCommunityDetailScreen() {
     try {
       await suspend.mutateAsync(cid);
       setMode('detail');
+      flashToast(`Suspended ${name}`);
       // Telemetry-style log; surfaces via audit log.
       console.info('[super] suspend reason:', reason);
     } catch (err) {
@@ -177,6 +185,7 @@ export function SuperCommunityDetailScreen() {
     if (!cid) return;
     try {
       await restore.mutateAsync(cid);
+      flashToast(`Restored ${name}`);
     } catch (err) {
       setError(extractError(err).message);
     }
@@ -185,7 +194,8 @@ export function SuperCommunityDetailScreen() {
     if (!cid) return;
     try {
       await remove.mutateAsync(cid);
-      nav('/super/communities');
+      // Pass the toast across the navigation so Bob sees confirmation on the list.
+      nav('/super/communities', { state: { toast: `Deleted ${name}` } });
     } catch (err) {
       setError(extractError(err).message);
     }
@@ -239,19 +249,26 @@ export function SuperCommunityDetailScreen() {
 
   return (
     <Screen className="dark">
-      <AppBar
-        back
-        title={name}
-        trailing={
-          <button className="ic-btn" aria-label="More">
-            <Icon name="more_vert" />
-          </button>
-        }
-      />
+      <AppBar back title={name} />
       <main className="flex-1 px-5 pb-6">
         {error && (
           <div className="t-body-md mb-3" style={{ color: 'rgb(var(--error))' }}>
             {error}
+          </div>
+        )}
+        {toast && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="t-body-md mb-3 p-3 flex items-center gap-2"
+            style={{
+              background: 'rgb(var(--success-wash))',
+              color: 'rgb(var(--success))',
+              borderRadius: 12,
+            }}
+          >
+            <Icon name="check_circle" size={18} />
+            <span>{toast}</span>
           </div>
         )}
 

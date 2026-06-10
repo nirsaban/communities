@@ -8,6 +8,75 @@ import { Input } from '../../components/Input';
 import { extractError } from '../../lib/api';
 import { useSuperCreateCommunity } from '../../lib/queries';
 
+// Provisioning UX: provide a one-click copy of the invite link. Bob's literal
+// job-to-be-done after creating a community is paste-the-link to the new admin,
+// so this is the most-used affordance on the screen.
+function CopyInviteRow({ url }: { url: string }) {
+  const [copied, setCopied] = useState(false);
+  async function doCopy(): Promise<void> {
+    try {
+      if (navigator?.clipboard) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        // Fallback for non-secure contexts (rare in dev, but possible on http://IP).
+        const ta = document.createElement('textarea');
+        ta.value = url;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      // Swallow — the link is still visible for manual copy.
+    }
+  }
+  return (
+    <div
+      className="flex items-center gap-2 mt-2 px-3"
+      style={{
+        background: 'rgb(var(--surface-2))',
+        borderRadius: 12,
+        minHeight: 44,
+        padding: '8px 12px',
+      }}
+    >
+      <Icon name="link" size={18} className="text-muted" />
+      <span
+        className="flex-1 truncate t-body-md"
+        style={{
+          margin: 0,
+          fontFamily: "'DM Mono', ui-monospace, monospace",
+          fontSize: 12,
+          color: 'rgb(var(--on-bg))',
+        }}
+        dir="ltr"
+      >
+        {url}
+      </span>
+      <button
+        type="button"
+        onClick={doCopy}
+        className="chip"
+        style={{
+          background: copied ? 'rgb(var(--success-wash))' : 'rgb(var(--surface))',
+          color: copied ? 'rgb(var(--success))' : undefined,
+          borderColor: 'transparent',
+          height: 28,
+          flexShrink: 0,
+        }}
+        aria-label={copied ? 'Copied' : 'Copy invite link'}
+      >
+        <Icon name={copied ? 'check' : 'content_copy'} size={14} />
+        {copied ? 'Copied' : 'Copy'}
+      </button>
+    </div>
+  );
+}
+
 type Category = 'religious' | 'educational' | 'professional' | 'hobby' | 'other';
 type Plan = 'standard' | 'pro' | 'free';
 
@@ -135,24 +204,22 @@ export function CreateCommunityScreen() {
           </Card>
           {result.token && (
             <Card className="p-3 mt-3">
-              <div className="t-label-sm mb-1">Invite link (for testing)</div>
-              <a
-                href={`/invite/${result.token}`}
-                target="_blank"
-                rel="noreferrer"
-                className="t-body-md block"
-                style={{
-                  margin: 0,
-                  fontFamily: 'monospace',
-                  color: 'rgb(var(--brand-ink))',
-                  wordBreak: 'break-all',
-                }}
-                dir="ltr"
-              >
-                {`${window.location.origin}/invite/${result.token}`}
-              </a>
+              <div className="t-label-sm mb-1">Admin invite link</div>
+              <CopyInviteRow url={`${window.location.origin}/invite/${result.token}`} />
               <div className="t-body-md" style={{ margin: '8px 0 0', fontSize: 11 }}>
-                Open in a new tab to test the admin's acceptance flow.
+                Share with {adminEmail} or open in a new tab to test the acceptance flow.
+              </div>
+              <div style={{ marginTop: 8 }}>
+                <a
+                  href={`/invite/${result.token}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="t-body-md inline-flex items-center gap-1"
+                  style={{ color: 'rgb(var(--brand-ink))', fontSize: 12 }}
+                >
+                  <Icon name="open_in_new" size={14} />
+                  Open in new tab
+                </a>
               </div>
             </Card>
           )}

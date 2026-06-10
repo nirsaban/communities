@@ -1,9 +1,8 @@
-import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState, useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AppBar, Screen } from '../../components/AppBar';
 import { EmptyState } from '../../components/EmptyState';
 import { Icon } from '../../components/Icon';
-import { Input } from '../../components/Input';
 import { Shimmer } from '../../components/Shimmer';
 import { useSuperCommunities } from '../../lib/queries';
 
@@ -34,14 +33,34 @@ function StatusChip({ status }: { status: 'active' | 'suspended' | 'deleted' | '
 
 export function SuperCommunitiesListScreen() {
   const nav = useNavigate();
+  const location = useLocation();
   const { data, isLoading } = useSuperCommunities();
   const [q, setQ] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
+  // Cross-screen toast: detail screen passes `state.toast` when navigating
+  // back after a delete, so confirmation lands on the list rather than getting
+  // lost on the dismounted detail.
+  const [toast, setToast] = useState<string | null>(() => {
+    const t = (location.state as { toast?: string } | null)?.toast;
+    return typeof t === 'string' ? t : null;
+  });
+  useEffect(() => {
+    if (!toast) return;
+    // Clear router state so the toast doesn't re-appear on refresh.
+    window.history.replaceState({}, '');
+    const id = window.setTimeout(() => setToast(null), 2400);
+    return () => window.clearTimeout(id);
+  }, [toast]);
 
   const filtered = useMemo(() => {
     const rows = data ?? [];
+    const needle = q.trim().toLowerCase().replace(/^\//, '');
     return rows.filter((c) => {
-      if (q && !c.name.toLowerCase().includes(q.toLowerCase())) return false;
+      if (needle) {
+        const matchesName = c.name.toLowerCase().includes(needle);
+        const matchesSlug = (c.slug ?? '').toLowerCase().includes(needle);
+        if (!matchesName && !matchesSlug) return false;
+      }
       if (filter === 'active') return c.status === 'active';
       if (filter === 'suspended') return c.status === 'suspended';
       // "New" maps to communities with < 7d createdAt — we don't have a date in the row,
@@ -55,15 +74,23 @@ export function SuperCommunitiesListScreen() {
 
   return (
     <Screen>
-      <AppBar
-        title={`Communities · ${total}`}
-        trailing={
-          <button className="ic-btn" aria-label="Filter">
-            <Icon name="tune" />
-          </button>
-        }
-      />
+      <AppBar title={`Communities · ${total}`} />
       <main className="flex-1 px-5 pb-6">
+        {toast && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="t-body-md mb-2 p-3 flex items-center gap-2"
+            style={{
+              background: 'rgb(var(--success-wash))',
+              color: 'rgb(var(--success))',
+              borderRadius: 12,
+            }}
+          >
+            <Icon name="check_circle" size={18} />
+            <span>{toast}</span>
+          </div>
+        )}
         <div
           className="flex items-center gap-2.5 px-3.5"
           style={{
@@ -78,10 +105,21 @@ export function SuperCommunitiesListScreen() {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search communities…"
+            placeholder="Search by name or /slug…"
             className="flex-1 bg-transparent border-0 outline-none text-sm"
             style={{ color: 'rgb(var(--on-bg))' }}
           />
+          {q && (
+            <button
+              type="button"
+              onClick={() => setQ('')}
+              className="grid place-items-center"
+              style={{ background: 'transparent', border: 0, cursor: 'pointer', padding: 4 }}
+              aria-label="Clear search"
+            >
+              <Icon name="close" size={18} className="text-muted" />
+            </button>
+          )}
         </div>
 
         <div className="hscroll" style={{ marginBottom: 6 }}>

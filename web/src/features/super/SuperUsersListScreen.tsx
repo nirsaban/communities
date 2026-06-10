@@ -53,14 +53,7 @@ export function SuperUsersListScreen() {
 
   return (
     <Screen>
-      <AppBar
-        title={`Users · ${fmtTotal}`}
-        trailing={
-          <button className="ic-btn" aria-label="Filter">
-            <Icon name="tune" />
-          </button>
-        }
-      />
+      <AppBar title={`Users · ${fmtTotal}`} />
       <main className="flex-1 px-5 pb-6">
         <div
           className="flex items-center gap-2.5 px-3.5"
@@ -79,8 +72,18 @@ export function SuperUsersListScreen() {
             placeholder="Search by name or email…"
             className="flex-1 bg-transparent border-0 outline-none text-sm"
             style={{ color: 'rgb(var(--on-bg))' }}
-            dir="ltr"
           />
+          {q && (
+            <button
+              type="button"
+              onClick={() => setQ('')}
+              className="grid place-items-center"
+              style={{ background: 'transparent', border: 0, cursor: 'pointer', padding: 4 }}
+              aria-label="Clear search"
+            >
+              <Icon name="close" size={18} className="text-muted" />
+            </button>
+          )}
         </div>
 
         <div className="hscroll" style={{ marginBottom: 6 }}>
