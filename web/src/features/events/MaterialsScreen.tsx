@@ -1,9 +1,10 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { AppBar, Screen } from '../../components/AppBar';
+import { AppButton } from '../../components/AppButton';
 import { EmptyState } from '../../components/EmptyState';
 import { Icon } from '../../components/Icon';
 import { Shimmer } from '../../components/Shimmer';
-import { useEvent, useEventMaterials, type Material, type MaterialType } from '../../lib/queries';
+import { useEvent, useEventMaterials, useRsvp, type Material, type MaterialType } from '../../lib/queries';
 
 function bytesLabel(n?: number): string {
   if (!n) return '';
@@ -28,6 +29,7 @@ export function MaterialsScreen() {
   const nav = useNavigate();
   const { data: ev } = useEvent(eid);
   const { data: materials, isLoading } = useEventMaterials(eid);
+  const rsvp = useRsvp();
 
   const recordings: Material[] = materials?.filter((m) => isRecording(m.type)) ?? [];
   const others: Material[] = materials?.filter((m) => !isRecording(m.type)) ?? [];
@@ -35,6 +37,13 @@ export function MaterialsScreen() {
   // PRD 08 §5: materials are an RSVPer perk. Managers always see them; others
   // must be confirmed attendees. Loading state defers the gate decision.
   const isLocked = ev != null && !ev.isManager && ev.myRsvp?.status !== 'going';
+  // If the lock is in place because Mike just hasn't RSVPed yet to a free,
+  // future event we can quick-RSVP him from here and unlock in-place.
+  const canQuickRsvp =
+    ev != null &&
+    ev.priceCents === 0 &&
+    ev.status === 'published' &&
+    new Date(ev.startAt).getTime() > Date.now();
 
   return (
     <Screen>
@@ -65,15 +74,28 @@ export function MaterialsScreen() {
           <EmptyState
             icon="lock"
             title="Materials are for attendees"
-            body="RSVP to this event to view the materials."
+            body={
+              ev?.status === 'completed'
+                ? 'Materials from this event are reserved for the people who attended.'
+                : canQuickRsvp
+                ? "Tap RSVP and the materials unlock immediately — you'll also be on the guest list."
+                : 'RSVP to this event to view the materials.'
+            }
             action={
-              <button
-                onClick={() => nav(`/events/${eid}`)}
-                className="chip"
-                style={{ background: 'rgb(var(--brand))', color: '#fff', height: 36 }}
-              >
-                Back to event
-              </button>
+              <div className="flex flex-col gap-2" style={{ width: 220 }}>
+                {canQuickRsvp && eid && (
+                  <AppButton
+                    loading={rsvp.isPending}
+                    onClick={() => rsvp.mutate(eid)}
+                  >
+                    <Icon name="event_available" size={16} />
+                    RSVP & unlock
+                  </AppButton>
+                )}
+                <AppButton variant="secondary" onClick={() => nav(`/events/${eid}`)}>
+                  Open event details
+                </AppButton>
+              </div>
             }
           />
         )}

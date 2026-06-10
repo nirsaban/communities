@@ -9,9 +9,11 @@ import {
   useMyCommunities,
   useMyManagedEvents,
   useMyRsvps,
+  useMySubscriptions,
   useCommunityInitiatives,
 } from '../../lib/queries';
 import { communityContext } from '../../lib/community-context';
+import { fmtEventWhen } from '../../lib/format';
 import { t } from '../../i18n';
 
 export function ProfileScreen() {
@@ -21,6 +23,7 @@ export function ProfileScreen() {
   const { data: mine } = useMyCommunities();
   const { data: managed } = useMyManagedEvents();
   const { data: rsvps } = useMyRsvps();
+  const { data: subs } = useMySubscriptions();
   const { data: initiatives } = useCommunityInitiatives(ctx.currentCommunityId ?? mine?.[0]?.community.id);
 
   const isAdmin = mine?.some(
@@ -28,6 +31,17 @@ export function ProfileScreen() {
   );
   const isEventManager = (managed?.length ?? 0) > 0;
   const isSuper = auth.user?.globalRole === 'superadmin';
+
+  const now = Date.now();
+  // Upcoming RSVPs are the single most-clicked profile element across mobile
+  // community apps — surface the next one front and center.
+  const upcomingRsvps = (rsvps ?? [])
+    .filter((r) => r.status === 'going' && new Date(r.event.startAt).getTime() >= now)
+    .sort((a, b) => new Date(a.event.startAt).getTime() - new Date(b.event.startAt).getTime());
+  const nextRsvp = upcomingRsvps[0];
+  const activeSub = (subs ?? []).find(
+    (s) => s.status === 'active' || s.status === 'trialing',
+  );
 
   const rsvpCount = (rsvps ?? []).length;
   const communitiesCount = (mine ?? []).length;
@@ -72,7 +86,7 @@ export function ProfileScreen() {
       />
       <main className="px-5 pb-6">
         {/* Avatar + name */}
-        <div className="flex flex-col items-center text-center" style={{ marginBottom: 18 }}>
+        <div className="flex flex-col items-center text-center" style={{ marginBottom: 14 }}>
           <Avatar name={auth.user?.name} size={80} />
           <div className="t-title-lg" style={{ margin: '12px 0 2px' }}>
             {auth.user?.name ?? '—'}
@@ -80,7 +94,60 @@ export function ProfileScreen() {
           <div className="t-body-md" style={{ margin: 0 }} dir="ltr">
             {auth.user?.email}
           </div>
+          {activeSub && (
+            <span
+              className="role-badge mt-2"
+              style={{
+                background: 'rgb(var(--brand-wash))',
+                color: 'rgb(var(--brand-ink))',
+                cursor: 'pointer',
+              }}
+              onClick={() => nav('/me/subscriptions')}
+              role="button"
+            >
+              <Icon name="workspace_premium" size={13} />
+              {activeSub.plan === 'annual' ? 'Annual' : 'Monthly'} member
+            </span>
+          )}
         </div>
+
+        {/* Next-up RSVP — the #1 thing members visit Profile to confirm */}
+        {!isSuper && nextRsvp && (
+          <button
+            onClick={() => nav(`/events/${nextRsvp.event.id}`)}
+            className="card text-start w-full"
+            style={{ padding: 14, marginBottom: 14 }}
+          >
+            <div className="flex items-center gap-2 mb-1.5">
+              <Icon
+                name="event_available"
+                size={16}
+                style={{ color: 'rgb(var(--success))' }}
+              />
+              <span
+                className="t-label-sm"
+                style={{ margin: 0, color: 'rgb(var(--success))' }}
+              >
+                Next up — you're going
+              </span>
+              {upcomingRsvps.length > 1 && (
+                <span
+                  className="t-body-md"
+                  style={{ margin: 0, marginInlineStart: 'auto', fontSize: 11 }}
+                >
+                  +{upcomingRsvps.length - 1} more
+                </span>
+              )}
+            </div>
+            <div className="t-title-md" style={{ fontSize: 15, marginBottom: 2 }}>
+              {nextRsvp.event.title}
+            </div>
+            <div className="t-body-md" style={{ margin: 0, fontSize: 12 }}>
+              {fmtEventWhen(nextRsvp.event.startAt).line}
+              {nextRsvp.event.location?.name ? ` · ${nextRsvp.event.location.name}` : ''}
+            </div>
+          </button>
+        )}
 
         {/* 3 stat cards */}
         {!isSuper && (

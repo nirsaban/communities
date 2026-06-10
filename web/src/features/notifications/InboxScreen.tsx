@@ -1,6 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppBar } from '../../components/AppBar';
+import { Chip } from '../../components/Pill';
 import { EmptyState } from '../../components/EmptyState';
 import { Icon } from '../../components/Icon';
 import { Shimmer } from '../../components/Shimmer';
@@ -10,6 +11,29 @@ import {
   useNotifications,
   type Notification,
 } from '../../lib/queries';
+
+// Buckets map every backend notification type into one of four meaningful
+// member-facing groups. Anything we don't recognize stays under "Other"
+// (the All chip still shows it).
+type FilterId = 'all' | 'events' | 'community' | 'payments';
+const TYPE_GROUP: Record<string, Exclude<FilterId, 'all'>> = {
+  event: 'events',
+  rsvp: 'events',
+  waitlist: 'events',
+  qa: 'events',
+  post: 'community',
+  initiative: 'community',
+  payment: 'payments',
+  refund: 'payments',
+  subscription: 'payments',
+};
+
+const FILTERS: Array<{ id: FilterId; label: string }> = [
+  { id: 'all', label: 'All' },
+  { id: 'events', label: 'Events' },
+  { id: 'community', label: 'Community' },
+  { id: 'payments', label: 'Payments' },
+];
 
 function fmtAgo(iso: string): string {
   const mins = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 60_000));
@@ -47,21 +71,37 @@ export function InboxScreen() {
   const markRead = useMarkNotificationRead();
   const markAll = useMarkAllNotificationsRead();
   const unread = (data ?? []).filter((n) => !n.read).length;
+  const [filter, setFilter] = useState<FilterId>('all');
 
   // Promote a single actionable waitlist notification into the announce banner.
   const actionable = (data ?? []).find(
     (n) => !n.read && (n.type === 'waitlist' || /waitlist/i.test(n.title ?? '')),
   );
 
+  // Per-group unread counts power the chip badges so members can scan how much
+  // is waiting in each bucket without opening it.
+  const groupUnread = useMemo(() => {
+    const out: Record<FilterId, number> = { all: 0, events: 0, community: 0, payments: 0 };
+    for (const n of data ?? []) {
+      if (n.read) continue;
+      out.all += 1;
+      const g = TYPE_GROUP[n.type];
+      if (g) out[g] += 1;
+    }
+    return out;
+  }, [data]);
+
   const { today, earlier } = useMemo(() => {
-    const list = (data ?? []).filter((n) => n.id !== actionable?.id);
+    const list = (data ?? [])
+      .filter((n) => n.id !== actionable?.id)
+      .filter((n) => filter === 'all' || TYPE_GROUP[n.type] === filter);
     const tToday: Notification[] = [];
     const tEarlier: Notification[] = [];
     for (const n of list) {
       (bucket(n.createdAt) === 'today' ? tToday : tEarlier).push(n);
     }
     return { today: tToday, earlier: tEarlier };
-  }, [data, actionable]);
+  }, [data, actionable, filter]);
 
   return (
     <>
@@ -87,6 +127,40 @@ export function InboxScreen() {
           )
         }
       />
+      {!isLoading && data && data.length > 0 && (
+        <div className="px-5">
+          <div className="hscroll pb-2">
+            {FILTERS.map((f) => (
+              <Chip
+                key={f.id}
+                selected={filter === f.id}
+                onClick={() => setFilter(f.id)}
+              >
+                {f.label}
+                {groupUnread[f.id] > 0 && (
+                  <span
+                    style={{
+                      marginInlineStart: 6,
+                      background: filter === f.id ? 'rgba(255,255,255,0.25)' : 'rgb(var(--brand))',
+                      color: '#fff',
+                      borderRadius: 999,
+                      padding: '0 6px',
+                      fontSize: 10,
+                      fontWeight: 700,
+                      lineHeight: '16px',
+                      minWidth: 16,
+                      display: 'inline-block',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {groupUnread[f.id]}
+                  </span>
+                )}
+              </Chip>
+            ))}
+          </div>
+        </div>
+      )}
       <main className="px-5 pb-6">
         {isLoading && (
           <div className="space-y-3">
@@ -100,6 +174,14 @@ export function InboxScreen() {
             icon="notifications_off"
             title="You're all caught up"
             body="When something happens in your communities, it lands here."
+          />
+        )}
+
+        {!isLoading && data && data.length > 0 && today.length === 0 && earlier.length === 0 && !actionable && (
+          <EmptyState
+            icon="filter_alt_off"
+            title="Nothing in this filter"
+            body="Try a different category or jump back to All."
           />
         )}
 
