@@ -88,7 +88,22 @@ export async function updateCommunity(
   if (patch.logoUrl !== undefined) community.logoUrl = patch.logoUrl;
   if (patch.coverUrl !== undefined) community.coverUrl = patch.coverUrl;
   if (patch.settings) {
-    community.settings = { ...community.settings, ...patch.settings };
+    // Assign sub-fields individually — reassigning `community.settings` to a
+    // spread of a Mongoose subdoc loses the nested `branding` subdoc and
+    // triggers `Cast to Object failed for value "undefined" at path
+    // "settings.branding"` on .save().
+    if (patch.settings.branding) {
+      community.settings.branding = {
+        ...(community.settings.branding ?? {}),
+        ...patch.settings.branding,
+      };
+    }
+    if (patch.settings.welcomeMessage !== undefined) {
+      community.settings.welcomeMessage = patch.settings.welcomeMessage;
+    }
+    if (patch.settings.rules !== undefined) {
+      community.settings.rules = patch.settings.rules;
+    }
   }
   await community.save();
   return community;
