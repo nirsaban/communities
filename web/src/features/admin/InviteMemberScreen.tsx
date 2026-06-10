@@ -22,6 +22,7 @@ export function InviteMemberScreen() {
   const cid = ctx.currentCommunityId ?? mine?.[0]?.community.id;
   const myRole = mine?.find((m) => m.community.id === cid)?.membership.role;
   const isSubAdmin = myRole === 'subadmin';
+  const community = mine?.find((m) => m.community.id === cid)?.community;
   const invite = useInviteMember(cid);
   const [mode, setMode] = useState<Mode>('single');
   const [emails, setEmails] = useState<string[]>([]);
@@ -30,13 +31,6 @@ export function InviteMemberScreen() {
   const [role, setRole] = useState<MembershipRole>('member');
   const [error, setError] = useState<string | null>(null);
   const [sentCount, setSentCount] = useState(0);
-  // Cross-role: after the backend creates each invitation it returns the
-  // single-use accept token. We surface the full /invite/<token> URL here so
-  // the admin can paste it into WhatsApp / Slack / SMS without waiting for
-  // email delivery. Without this, the admin clicks Send and has no way to
-  // re-share the link if the email never arrives.
-  const [sentLinks, setSentLinks] = useState<Array<{ email: string; url: string }>>([]);
-  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
 
   // PRD 05 §3: sub-admin can assign Event Manager but cannot promote to
   // Sub-Admin or Admin. Filter the chip list accordingly.
@@ -80,77 +74,81 @@ export function InviteMemberScreen() {
     setEmails((prev) => prev.filter((_, i) => i !== idx));
   }
 
-  function parseBulk(raw: string): string[] {
+  function parseBulkSplit(raw: string): { valid: string[]; invalid: string[] } {
     const seen = new Set<string>();
-    return raw
-      .split(/[,\n;\s]+/)
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0 && isValidEmail(s))
-      .filter((s) => {
-        if (seen.has(s.toLowerCase())) return false;
-        seen.add(s.toLowerCase());
-        return true;
-      });
+    const valid: string[] = [];
+    const invalid: string[] = [];
+    for (const piece of raw.split(/[,\n;\s]+/)) {
+      const s = piece.trim();
+      if (!s) continue;
+      if (!isValidEmail(s)) {
+        invalid.push(s);
+        continue;
+      }
+      const key = s.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      valid.push(s);
+    }
+    return { valid, invalid };
   }
 
-  const bulkEmails = useMemo(() => parseBulk(draft), [draft]);
+  const { valid: bulkEmails, invalid: bulkInvalid } = useMemo(() => parseBulkSplit(draft), [draft]);
   const effectiveEmails = mode === 'single' ? emails : bulkEmails;
 
   async function send(): Promise<void> {
-    if (mode === 'single' && draft.trim()) commitDraft();
-    const list = mode === 'single' ? emails : bulkEmails;
+    // In single mode commitDraft() updates state asynchronously, so we must
+    // build the list inline rather than rely on `emails`.
+    let list: string[];
+    if (mode === 'single') {
+      const pending = draft.trim().replace(/,$/, '');
+      const inline = pending && isValidEmail(pending) && !emails.includes(pending)
+        ? [...emails, pending]
+        : emails;
+      if (pending && !isValidEmail(pending) && emails.length === 0) {
+        setError(`"${pending}" doesn't look like an email`);
+        return;
+      }
+      commitDraft();
+      list = inline;
+    } else {
+      list = bulkEmails;
+    }
     if (list.length === 0) {
       setError('Add at least one email');
       return;
     }
     setError(null);
     setSentCount(0);
-    setSentLinks([]);
     let ok = 0;
     let firstErr: string | null = null;
-    const links: Array<{ email: string; url: string }> = [];
     for (const email of list) {
       try {
-        const r = await invite.mutateAsync({ email, role });
+        await invite.mutateAsync({ email, role });
         ok += 1;
-        const token = (r as { data?: { data?: { token?: string } } })?.data?.data?.token;
-        if (token) {
-          links.push({
-            email,
-            url: `${window.location.origin}/invite/${token}`,
-          });
-        }
+        setSentCount(ok);
       } catch (err) {
         firstErr = firstErr ?? extractError(err).message;
       }
     }
-    setSentCount(ok);
-    setSentLinks(links);
     if (firstErr && ok === 0) {
       setError(firstErr);
       return;
     }
-    // Keep the admin on this screen when we have copyable links so they can
-    // grab them. nav(-1) only fires when there's nothing useful to show.
-    if (links.length === 0) {
-      setTimeout(() => nav(-1), 1200);
+    if (firstErr) {
+      setError(`Sent ${ok} of ${list.length}. First error: ${firstErr}`);
+      return;
     }
-  }
-
-  async function copyLink(idx: number, url: string): Promise<void> {
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopiedIdx(idx);
-      setTimeout(() => setCopiedIdx((v) => (v === idx ? null : v)), 1500);
-    } catch {
-      /* clipboard blocked — ignore */
-    }
+    setTimeout(() => nav(-1), 1200);
   }
 
   const buttonLabel =
     effectiveEmails.length <= 1
       ? 'Send invite'
       : `Send ${effectiveEmails.length} invites`;
+  const joinLink = community?.slug
+    ? `commons.app/j/${community.slug.toUpperCase()}`
+    : 'commons.app/j/—';
 
   return (
     <Screen>
@@ -243,7 +241,28 @@ export function InviteMemberScreen() {
             </div>
             <div className="hint" style={{ marginTop: 4 }}>
               {bulkEmails.length} valid email{bulkEmails.length === 1 ? '' : 's'} parsed
+              {bulkInvalid.length > 0 && (
+                <span style={{ color: 'rgb(var(--error))', marginInlineStart: 8 }}>
+                  · {bulkInvalid.length} skipped (invalid)
+                </span>
+              )}
             </div>
+            {bulkInvalid.length > 0 && (
+              <div
+                className="t-body-md mt-2 p-2"
+                style={{
+                  background: 'rgb(var(--error-wash))',
+                  color: 'rgb(var(--error))',
+                  borderRadius: 8,
+                  fontSize: 11,
+                  margin: '8px 0 0',
+                }}
+                dir="ltr"
+              >
+                Skipped: {bulkInvalid.slice(0, 5).join(', ')}
+                {bulkInvalid.length > 5 ? `, … (+${bulkInvalid.length - 5} more)` : ''}
+              </div>
+            )}
           </div>
         )}
 
@@ -271,69 +290,39 @@ export function InviteMemberScreen() {
           </div>
         </div>
 
-        {/* Cross-role: once invites have been sent, render the actual
-            /invite/<token> URLs so the admin can paste them straight into
-            WhatsApp / Slack without waiting for the email to land. Each link
-            is single-use per backend invariant. */}
-        {sentLinks.length > 0 && (
-          <div className="mt-3">
-            <div className="t-label-sm mb-2 block">
-              Share links · paste anywhere
-            </div>
-            <div className="flex flex-col gap-2">
-              {sentLinks.map((l, idx) => (
-                <div
-                  key={l.url}
-                  className="card row flex items-center gap-2"
-                  style={{ padding: '10px 12px' }}
-                >
-                  <Icon name="link" size={16} className="text-muted" />
-                  <div className="flex-1 min-w-0">
-                    <div
-                      className="t-body-md truncate"
-                      style={{ margin: 0, fontSize: 11 }}
-                      dir="ltr"
-                    >
-                      {l.email}
-                    </div>
-                    <div
-                      className="t-body-md truncate"
-                      style={{
-                        margin: 0,
-                        fontFamily: "'DM Mono', ui-monospace, monospace",
-                        fontSize: 11,
-                        color: 'rgb(var(--muted))',
-                      }}
-                      dir="ltr"
-                    >
-                      {l.url}
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => copyLink(idx, l.url)}
-                    className="chip"
-                    style={{
-                      background:
-                        copiedIdx === idx
-                          ? 'rgb(var(--brand-wash))'
-                          : 'rgb(var(--surface-2))',
-                      color:
-                        copiedIdx === idx
-                          ? 'rgb(var(--brand-ink))'
-                          : 'rgb(var(--on-bg))',
-                      borderColor: 'transparent',
-                      height: 28,
-                    }}
-                  >
-                    <Icon name={copiedIdx === idx ? 'check' : 'content_copy'} size={13} />
-                    {copiedIdx === idx ? 'Copied' : 'Copy'}
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Shareable join link fallback */}
+        <div
+          className="card row mt-1 flex items-center gap-2"
+          style={{ padding: '12px 14px' }}
+        >
+          <Icon name="link" size={18} className="text-muted" />
+          <span
+            className="grow t-body-md"
+            style={{
+              margin: 0,
+              fontFamily: "'DM Mono', ui-monospace, monospace",
+              fontSize: 12,
+              color: 'rgb(var(--on-bg))',
+            }}
+            dir="ltr"
+          >
+            {joinLink}
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              if (navigator?.clipboard) navigator.clipboard.writeText(joinLink).catch(() => {});
+            }}
+            className="chip"
+            style={{
+              background: 'rgb(var(--surface-2))',
+              borderColor: 'transparent',
+              height: 28,
+            }}
+          >
+            Copy
+          </button>
+        </div>
 
         {error && (
           <div className="mt-3 rounded-md bg-bad-wash px-3 py-2 text-sm text-bad">{error}</div>

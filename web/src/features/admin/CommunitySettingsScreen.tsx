@@ -193,41 +193,30 @@ export function CommunitySettingsScreen() {
           />
         </Card>
 
-        {/* Danger zone */}
+        {/* Danger zone. These backends are not wired yet (see DangerSheet
+            onConfirm: setTopError('… not yet implemented')), so we surface
+            that up front instead of letting the admin tap through, type
+            their community name, and only THEN learn nothing happened. */}
         <div className="t-label-sm mb-2" style={{ color: 'rgb(var(--error))' }}>
           Danger zone
         </div>
         <div className="dz">
-          <button className="dz-row" onClick={() => setSheet({ kind: 'transfer', email: '' })}>
-            <Icon name="swap_horiz" size={20} className="icon-error" />
-            <div className="flex-1">
-              <div className="t-label-lg" style={{ fontSize: 13.5 }}>
-                Transfer ownership
-              </div>
-            </div>
-            <Icon name="chevron_right" size={18} style={{ color: 'rgb(var(--muted))' }} />
-          </button>
-          <button className="dz-row" onClick={() => setSheet({ kind: 'archive' })}>
-            <Icon name="archive" size={20} className="icon-error" />
-            <div className="flex-1">
-              <div className="t-label-lg" style={{ fontSize: 13.5 }}>
-                Archive community
-              </div>
-              <div className="t-body-md" style={{ margin: 0, fontSize: 11 }}>
-                Hide & freeze; reversible
-              </div>
-            </div>
-            <Icon name="chevron_right" size={18} style={{ color: 'rgb(var(--muted))' }} />
-          </button>
-          <button className="dz-row" onClick={() => setSheet({ kind: 'delete', typed: '' })}>
-            <Icon name="delete_forever" size={20} className="icon-error" />
-            <div className="flex-1">
-              <div className="t-label-lg" style={{ fontSize: 13.5, color: 'rgb(var(--error))' }}>
-                Delete community
-              </div>
-            </div>
-            <Icon name="chevron_right" size={18} style={{ color: 'rgb(var(--muted))' }} />
-          </button>
+          <DzRowComingSoon
+            icon="swap_horiz"
+            label="Transfer ownership"
+            sub="Coming soon · contact support to transfer today"
+          />
+          <DzRowComingSoon
+            icon="archive"
+            label="Archive community"
+            sub="Coming soon · hide & freeze, reversible"
+          />
+          <DzRowComingSoon
+            icon="delete_forever"
+            label="Delete community"
+            sub="Coming soon · contact support to delete"
+            errorLabel
+          />
         </div>
       </main>
 
@@ -346,6 +335,61 @@ export function CommunitySettingsScreen() {
 
 function truncate(s: string, n = 28): string {
   return s.length > n ? `${s.slice(0, n)}…` : s;
+}
+
+function DzRowComingSoon({
+  icon,
+  label,
+  sub,
+  errorLabel,
+}: {
+  icon: string;
+  label: string;
+  sub: string;
+  errorLabel?: boolean;
+}) {
+  return (
+    <div
+      className="dz-row"
+      style={{
+        cursor: 'not-allowed',
+        opacity: 0.65,
+        background: 'transparent',
+        border: 'none',
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        padding: '10px 0',
+      }}
+      aria-disabled
+    >
+      <Icon name={icon} size={20} className="icon-error" />
+      <div className="flex-1">
+        <div
+          className="t-label-lg"
+          style={{ fontSize: 13.5, color: errorLabel ? 'rgb(var(--error))' : undefined }}
+        >
+          {label}
+        </div>
+        <div className="t-body-md" style={{ margin: 0, fontSize: 11 }}>
+          {sub}
+        </div>
+      </div>
+      <span
+        className="chip"
+        style={{
+          background: 'rgb(var(--surface-2))',
+          borderColor: 'transparent',
+          height: 22,
+          fontSize: 11,
+          color: 'rgb(var(--muted))',
+        }}
+      >
+        Soon
+      </span>
+    </div>
+  );
 }
 
 function ListRow({
