@@ -88,6 +88,12 @@ export function AdminEventListScreen() {
             const isCancelled = ev.status === 'cancelled';
             const isCompleted = ev.status === 'completed';
             const isPaid = ev.priceCents > 0;
+            // Subscription-gated events also count as "not free" — a sub-admin must
+            // see them as "Paid" rather than the previous "Free" fall-through (lie)
+            // or a "Subs" pill that leaks the subscription system.
+            const isSubsGated =
+              ev.pricingType === 'subscription_only' || ev.pricingType === 'subscription';
+            const isMonetised = isPaid || isSubsGated;
             return (
               <div key={ev.id} className="card p-3.5">
                 <div
@@ -128,13 +134,18 @@ export function AdminEventListScreen() {
                     </span>
                   )}
                   <div className="flex-1" />
-                  {/* Money-blindness: sub-admin sees "Paid" badge, never the ₪ amount. */}
-                  {isPaid ? (
-                    isSubAdmin ? (
+                  {/* Money-blindness: sub-admin sees "Paid" badge for any
+                      monetised event (paid OR subscription-only), never the
+                      ₪ amount and never a "Subs" pill that would leak the
+                      subscription system. Admin sees the real ₪ amount. */}
+                  {isSubAdmin ? (
+                    isMonetised ? (
                       <PriceTag kind="paid" amount="Paid" />
                     ) : (
-                      <PriceTag kind="paid" amount={fmtCents(ev.priceCents)} />
+                      <PriceTag kind="free" />
                     )
+                  ) : isPaid ? (
+                    <PriceTag kind="paid" amount={fmtCents(ev.priceCents)} />
                   ) : (
                     <PriceTag kind="free" />
                   )}
