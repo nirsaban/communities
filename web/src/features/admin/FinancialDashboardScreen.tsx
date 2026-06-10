@@ -69,6 +69,7 @@ export function FinancialDashboardScreen() {
 
   const series = data.monthlySeries ?? [];
   const maxBar = Math.max(1, ...series.map((s) => s.revenueCents));
+  const hasAnyRevenue = series.some((s) => s.revenueCents > 0) || data.totalRevenueCents > 0;
 
   function downloadCsv(): void {
     const rows = [
@@ -124,9 +125,15 @@ export function FinancialDashboardScreen() {
               Gross revenue
             </div>
             <div className="k-num">{fmtCents(gross)}</div>
-            <div className={`k-delta ${delta >= 0 ? 'up' : 'down'}`}>
-              {delta >= 0 ? '▲' : '▼'} {Math.abs(delta)}%
-            </div>
+            {gross > 0 ? (
+              <div className={`k-delta ${delta >= 0 ? 'up' : 'down'}`}>
+                {delta >= 0 ? '▲' : '▼'} {Math.abs(delta)}%
+              </div>
+            ) : (
+              <div className="k-delta" style={{ color: 'rgb(var(--muted))' }}>
+                — no earnings yet
+              </div>
+            )}
           </Card>
           <Card className="kpi">
             <div className="k-lbl">
@@ -138,7 +145,10 @@ export function FinancialDashboardScreen() {
           </Card>
         </div>
 
-        {/* 6-month bar chart */}
+        {/* 6-month bar chart. When there is no revenue yet we replace the
+            empty bars (which read as "data missing" rather than "no money")
+            with an explicit empty state so the admin understands the
+            community simply hasn't earned anything yet. */}
         <Card className="p-4 mb-4">
           <div className="between mb-3">
             <span className="t-label-lg">Revenue · 6 months</span>
@@ -146,22 +156,39 @@ export function FinancialDashboardScreen() {
               net of fees
             </span>
           </div>
-          <div className="bars">
-            {series.map((m, i) => {
-              const isCur = i === series.length - 1;
-              const pct = Math.round((m.revenueCents / maxBar) * 100);
-              return (
-                <div key={m.month} className={`bar${isCur ? ' cur' : ''}`}>
-                  <i style={{ height: `${Math.max(2, pct)}%` }} />
-                </div>
-              );
-            })}
-          </div>
-          <div className="barlbls">
-            {series.map((m) => (
-              <span key={m.month}>{monthLabel(m.month)}</span>
-            ))}
-          </div>
+          {hasAnyRevenue ? (
+            <>
+              <div className="bars">
+                {series.map((m, i) => {
+                  const isCur = i === series.length - 1;
+                  const pct = Math.round((m.revenueCents / maxBar) * 100);
+                  return (
+                    <div key={m.month} className={`bar${isCur ? ' cur' : ''}`}>
+                      <i style={{ height: `${Math.max(2, pct)}%` }} />
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="barlbls">
+                {series.map((m) => (
+                  <span key={m.month}>{monthLabel(m.month)}</span>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div
+              className="text-center py-6"
+              style={{ color: 'rgb(var(--muted))' }}
+            >
+              <Icon name="trending_up" size={32} style={{ opacity: 0.5 }} />
+              <div className="t-label-lg mt-2" style={{ fontSize: 13 }}>
+                No revenue yet
+              </div>
+              <div className="t-body-md" style={{ margin: '4px 0 0', fontSize: 11 }}>
+                Publish a paid event or open subscriptions to start earning.
+              </div>
+            </div>
+          )}
         </Card>
 
         {/* Revenue by event */}
@@ -224,9 +251,11 @@ export function FinancialDashboardScreen() {
           </div>
         )}
 
-        <AppButton variant="secondary" onClick={downloadCsv} className="mt-3">
-          <Icon name="download" size={14} /> Export CSV
-        </AppButton>
+        {hasAnyRevenue && (
+          <AppButton variant="secondary" onClick={downloadCsv} className="mt-3">
+            <Icon name="download" size={14} /> Export CSV
+          </AppButton>
+        )}
 
         {/* Recent payments */}
         {data.recentPayments?.length > 0 && (

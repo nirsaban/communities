@@ -149,6 +149,28 @@ export function AdminWizardScreen() {
   }
 
   async function next(): Promise<void> {
+    // On the final invites step, fold any uncommitted typed email into the
+    // list and send it so the user doesn't silently lose their last entry
+    // when they tap Finish without first tapping Send.
+    if (step.id === 'firstInvites') {
+      const trimmed = inviteEmailDraft.trim();
+      if (trimmed && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed) && !inviteList.includes(trimmed)) {
+        // Capture so we don't depend on async state updates.
+        const finalList = [...inviteList, trimmed];
+        setInviteList(finalList);
+        setInviteEmailDraft('');
+        try {
+          for (const email of finalList) {
+            if (!sentEmails.includes(email)) await invite.mutateAsync({ email, role: 'member' });
+          }
+          setSentEmails((prev) => [...prev, ...finalList.filter((e) => !prev.includes(e))]);
+          setInviteList([]);
+        } catch (err) {
+          setError(extractError(err).message);
+          return;
+        }
+      }
+    }
     const ok = await saveStep();
     if (!ok) return;
     if (stepIdx === STEPS.length - 1) {
@@ -434,8 +456,21 @@ export function AdminWizardScreen() {
               Communities with an event in week one keep 3× more members.
             </p>
             <div className="space-y-2">
-              <AppButton onClick={() => nav('/admin/events/new')}>Create event & continue</AppButton>
-              <AppButton variant="ghost" onClick={next}>Skip for now</AppButton>
+              <AppButton
+                onClick={async () => {
+                  // Mark the step complete BEFORE leaving so the user is not
+                  // bounced back into the wizard on next login. If marking
+                  // fails we still navigate — the worst case is they re-see
+                  // this step, never the previous ones.
+                  await saveStep();
+                  nav('/admin/events/new');
+                }}
+              >
+                Create event & continue
+              </AppButton>
+              <AppButton variant="ghost" onClick={next}>
+                Skip for now
+              </AppButton>
             </div>
           </Card>
         )}
