@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AppBar, Screen } from '../../components/AppBar';
 import { AppButton } from '../../components/AppButton';
@@ -41,6 +42,16 @@ export function MemberDetailScreen() {
   const m = data?.find((row) => row.user.id === uid);
   const changeRole = useChangeMemberRole(cid);
   const remove = useRemoveMember(cid);
+
+  // Confirmation modal state. We guard two destructive paths:
+  //   1) Remove from community (irreversible: drops membership + RSVPs).
+  //   2) Promoting to Community Admin (grants full money + delete power).
+  // Demotions and lower-tier role changes commit immediately as before.
+  const [confirm, setConfirm] = useState<
+    | { kind: 'remove' }
+    | { kind: 'promoteAdmin'; role: MembershipRole }
+    | null
+  >(null);
 
   // PRD 05 §3: sub-admin can promote to Event Manager but not Sub-Admin or Admin.
   const ROLE_OPTIONS = [
@@ -126,7 +137,16 @@ export function MemberDetailScreen() {
             <Chip
               key={r.id}
               selected={m.role === r.id}
-              onClick={() => changeRole.mutate({ uid: m.user.id, role: r.id as MembershipRole })}
+              onClick={() => {
+                if (m.role === r.id) return;
+                // Promoting someone to Community Admin gives full money, settings
+                // and delete power. Force an explicit confirm.
+                if (r.id === 'admin' && !isSubAdmin) {
+                  setConfirm({ kind: 'promoteAdmin', role: r.id });
+                  return;
+                }
+                changeRole.mutate({ uid: m.user.id, role: r.id as MembershipRole });
+              }}
             >
               {r.label}
             </Chip>
@@ -136,13 +156,85 @@ export function MemberDetailScreen() {
         <AppButton
           variant="danger"
           loading={remove.isPending}
-          onClick={() => {
-            remove.mutate(m.user.id, { onSuccess: () => nav(-1) });
-          }}
+          onClick={() => setConfirm({ kind: 'remove' })}
         >
           Remove from community
         </AppButton>
       </main>
+
+      {confirm && (
+        <>
+          <div className="scrim" onClick={() => setConfirm(null)} />
+          <div className="dialog">
+            <div
+              className="blob"
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 18,
+                background:
+                  confirm.kind === 'remove'
+                    ? 'rgb(var(--error-wash))'
+                    : 'rgb(var(--brand-wash))',
+                color:
+                  confirm.kind === 'remove'
+                    ? 'rgb(var(--error))'
+                    : 'rgb(var(--brand-ink))',
+                margin: '0 auto 14px',
+              }}
+            >
+              <Icon
+                name={confirm.kind === 'remove' ? 'person_remove' : 'shield_person'}
+                size={28}
+              />
+            </div>
+            <div className="t-title-lg center" style={{ marginBottom: 6 }}>
+              {confirm.kind === 'remove'
+                ? `Remove ${m.user.name}?`
+                : `Make ${m.user.name} a Community Admin?`}
+            </div>
+            <p className="t-body-md center" style={{ margin: '0 0 16px' }}>
+              {confirm.kind === 'remove'
+                ? 'They lose access immediately. Their RSVPs, posts and payment history are kept but anonymized in lists.'
+                : 'They will get full access to finances, settings, branding, members and can delete the community. This can be reversed.'}
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <AppButton variant="secondary" onClick={() => setConfirm(null)}>
+                Cancel
+              </AppButton>
+              {confirm.kind === 'remove' ? (
+                <AppButton
+                  variant="danger"
+                  loading={remove.isPending}
+                  onClick={() => {
+                    remove.mutate(m.user.id, {
+                      onSuccess: () => {
+                        setConfirm(null);
+                        nav(-1);
+                      },
+                    });
+                  }}
+                >
+                  Remove
+                </AppButton>
+              ) : (
+                <AppButton
+                  variant="primary"
+                  loading={changeRole.isPending}
+                  onClick={() => {
+                    changeRole.mutate(
+                      { uid: m.user.id, role: confirm.role },
+                      { onSuccess: () => setConfirm(null) },
+                    );
+                  }}
+                >
+                  Promote
+                </AppButton>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </Screen>
   );
 }

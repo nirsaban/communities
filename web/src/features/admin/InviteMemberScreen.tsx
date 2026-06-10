@@ -74,25 +74,46 @@ export function InviteMemberScreen() {
     setEmails((prev) => prev.filter((_, i) => i !== idx));
   }
 
-  function parseBulk(raw: string): string[] {
+  function parseBulkSplit(raw: string): { valid: string[]; invalid: string[] } {
     const seen = new Set<string>();
-    return raw
-      .split(/[,\n;\s]+/)
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0 && isValidEmail(s))
-      .filter((s) => {
-        if (seen.has(s.toLowerCase())) return false;
-        seen.add(s.toLowerCase());
-        return true;
-      });
+    const valid: string[] = [];
+    const invalid: string[] = [];
+    for (const piece of raw.split(/[,\n;\s]+/)) {
+      const s = piece.trim();
+      if (!s) continue;
+      if (!isValidEmail(s)) {
+        invalid.push(s);
+        continue;
+      }
+      const key = s.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      valid.push(s);
+    }
+    return { valid, invalid };
   }
 
-  const bulkEmails = useMemo(() => parseBulk(draft), [draft]);
+  const { valid: bulkEmails, invalid: bulkInvalid } = useMemo(() => parseBulkSplit(draft), [draft]);
   const effectiveEmails = mode === 'single' ? emails : bulkEmails;
 
   async function send(): Promise<void> {
-    if (mode === 'single' && draft.trim()) commitDraft();
-    const list = mode === 'single' ? emails : bulkEmails;
+    // In single mode commitDraft() updates state asynchronously, so we must
+    // build the list inline rather than rely on `emails`.
+    let list: string[];
+    if (mode === 'single') {
+      const pending = draft.trim().replace(/,$/, '');
+      const inline = pending && isValidEmail(pending) && !emails.includes(pending)
+        ? [...emails, pending]
+        : emails;
+      if (pending && !isValidEmail(pending) && emails.length === 0) {
+        setError(`"${pending}" doesn't look like an email`);
+        return;
+      }
+      commitDraft();
+      list = inline;
+    } else {
+      list = bulkEmails;
+    }
     if (list.length === 0) {
       setError('Add at least one email');
       return;
@@ -105,13 +126,17 @@ export function InviteMemberScreen() {
       try {
         await invite.mutateAsync({ email, role });
         ok += 1;
+        setSentCount(ok);
       } catch (err) {
         firstErr = firstErr ?? extractError(err).message;
       }
     }
-    setSentCount(ok);
     if (firstErr && ok === 0) {
       setError(firstErr);
+      return;
+    }
+    if (firstErr) {
+      setError(`Sent ${ok} of ${list.length}. First error: ${firstErr}`);
       return;
     }
     setTimeout(() => nav(-1), 1200);
@@ -216,7 +241,28 @@ export function InviteMemberScreen() {
             </div>
             <div className="hint" style={{ marginTop: 4 }}>
               {bulkEmails.length} valid email{bulkEmails.length === 1 ? '' : 's'} parsed
+              {bulkInvalid.length > 0 && (
+                <span style={{ color: 'rgb(var(--error))', marginInlineStart: 8 }}>
+                  · {bulkInvalid.length} skipped (invalid)
+                </span>
+              )}
             </div>
+            {bulkInvalid.length > 0 && (
+              <div
+                className="t-body-md mt-2 p-2"
+                style={{
+                  background: 'rgb(var(--error-wash))',
+                  color: 'rgb(var(--error))',
+                  borderRadius: 8,
+                  fontSize: 11,
+                  margin: '8px 0 0',
+                }}
+                dir="ltr"
+              >
+                Skipped: {bulkInvalid.slice(0, 5).join(', ')}
+                {bulkInvalid.length > 5 ? `, … (+${bulkInvalid.length - 5} more)` : ''}
+              </div>
+            )}
           </div>
         )}
 

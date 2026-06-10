@@ -8,7 +8,7 @@
 //   border and red "Unanswered" status chip + Answer/Pin actions; resolved
 //   cards show the pinned answer block inline and a green "Resolved" chip.
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { AppBar, Screen } from '../../components/AppBar';
 import { Avatar } from '../../components/Avatar';
@@ -30,6 +30,19 @@ import {
 
 type ManagerFilter = 'open' | 'all' | 'resolved';
 
+const MGR_FILTER_STORAGE_KEY = 'em.qa.filter';
+
+function readStoredManagerFilter(): ManagerFilter {
+  if (typeof window === 'undefined') return 'open';
+  try {
+    const v = window.localStorage.getItem(MGR_FILTER_STORAGE_KEY);
+    if (v === 'open' || v === 'all' || v === 'resolved') return v;
+  } catch {
+    // localStorage unavailable (private browsing, SSR, etc) — fall through.
+  }
+  return 'open';
+}
+
 export function EventQAScreen() {
   const { eid } = useParams<{ eid: string }>();
   const { data: items, isLoading } = useEventQA(eid);
@@ -42,7 +55,19 @@ export function EventQAScreen() {
   const [draft, setDraft] = useState('');
   const [answeringId, setAnsweringId] = useState<string | null>(null);
   const [answerDraft, setAnswerDraft] = useState('');
-  const [mgrFilter, setMgrFilter] = useState<ManagerFilter>('open');
+  // Manager filter is sticky across navigations + reload — a triage workflow
+  // (filter to Open, answer one, navigate away to fact-check, come back) is
+  // useless if every return trip resets to default.
+  const [mgrFilter, setMgrFilter] = useState<ManagerFilter>(() =>
+    readStoredManagerFilter(),
+  );
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(MGR_FILTER_STORAGE_KEY, mgrFilter);
+    } catch {
+      // ignore quota / private-mode errors
+    }
+  }, [mgrFilter]);
   const isManager = ev?.isManager === true;
   // PRD 08 §5: Q&A is read-open to any authenticated viewer of the event, but
   // ask + upvote are reserved for confirmed attendees (managers always allowed).

@@ -53,7 +53,16 @@ export function IssueRefundScreen() {
     try {
       const amountCents = mode === 'partial' ? refundCents : undefined;
       await refund.mutateAsync({ pid, amountCents, reason });
-      nav('/payments/refunded');
+      // Cross-role: pass the issued amount + event title so the success screen
+      // doesn't render "₪0 returned to your Visa ···· 4242" placeholder copy,
+      // and flag actor=admin so the screen renders admin-appropriate prose
+      // instead of telling the admin their own card is being refunded.
+      const p = new URLSearchParams();
+      p.set('amount', String(mode === 'partial' ? refundCents : payment?.amountCents ?? 0));
+      if (payment?.eventTitle) p.set('event', payment.eventTitle);
+      if (payment?.payer?.name) p.set('payer', payment.payer.name);
+      p.set('actor', 'admin');
+      nav(`/payments/refunded?${p.toString()}`);
     } catch (err) {
       setError(extractError(err).message);
     }

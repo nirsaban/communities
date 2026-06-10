@@ -240,6 +240,10 @@ export function useRsvp() {
       qc.invalidateQueries({ queryKey: ['event', eid] });
       qc.invalidateQueries({ queryKey: ['my-rsvps'] });
       qc.invalidateQueries({ queryKey: ['community-events'] });
+      // Cross-role: an EM with /events/:eid/attendees open should see the new
+      // attendee as soon as the member RSVPs. Same for EM home counts.
+      qc.invalidateQueries({ queryKey: ['event-attendees', eid] });
+      qc.invalidateQueries({ queryKey: ['my-managed-events'] });
     },
   });
 }
@@ -252,6 +256,8 @@ export function useCancelRsvp() {
       qc.invalidateQueries({ queryKey: ['event', eid] });
       qc.invalidateQueries({ queryKey: ['my-rsvps'] });
       qc.invalidateQueries({ queryKey: ['community-events'] });
+      qc.invalidateQueries({ queryKey: ['event-attendees', eid] });
+      qc.invalidateQueries({ queryKey: ['my-managed-events'] });
     },
   });
 }
@@ -346,7 +352,13 @@ export function useRemoveManager(eid: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (userId: string) => api.delete(`/events/${eid}/managers/${userId}`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['event', eid] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['event', eid] });
+      // Cross-role: when an admin revokes an EM grant, the EM's /manage/events
+      // must drop the event from their list immediately. Without this, the
+      // EM keeps a stale card that 403s when tapped.
+      qc.invalidateQueries({ queryKey: ['my-managed-events'] });
+    },
   });
 }
 
@@ -401,10 +413,23 @@ export function useEventMaterials(eid: string | undefined) {
   });
 }
 
+export type UploadMaterialInput = {
+  title: string;
+  type: MaterialType;
+  description?: string;
+  file: File;
+  // Real upload progress (0..100) — wired from axios onUploadProgress so the UI
+  // can show actual byte progress instead of a fake animated bar.
+  onProgress?: (pct: number) => void;
+  // Allows the UI to abort an in-flight upload (e.g. user clicks Cancel on a
+  // 100MB file). Passed straight through to axios.
+  signal?: AbortSignal;
+};
+
 export function useUploadMaterial(eid: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (body: { title: string; type: MaterialType; description?: string; file: File }) => {
+    mutationFn: async (body: UploadMaterialInput) => {
       const form = new FormData();
       form.append('title', body.title);
       form.append('type', body.type);
@@ -412,6 +437,16 @@ export function useUploadMaterial(eid: string | undefined) {
       form.append('file', body.file);
       const r = await api.post(`/events/${eid}/materials`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
+        signal: body.signal,
+        onUploadProgress: (evt) => {
+          if (!body.onProgress) return;
+          // evt.total is undefined when the server doesn't advertise length;
+          // fall back to file size which we always know.
+          const total = evt.total ?? body.file.size;
+          if (!total) return;
+          const pct = Math.min(99, Math.round((evt.loaded / total) * 100));
+          body.onProgress(pct);
+        },
       });
       return r.data?.data;
     },
@@ -1210,9 +1245,14 @@ export function useRefundPayment() {
       const r = await api.post(`/payments/${pid}/refund`, { amountCents, reason });
       return r.data?.data;
     },
-    onSuccess: () => {
+    onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ['finances'] });
       qc.invalidateQueries({ queryKey: ['event-payments'] });
+      // Cross-role: member's /me/subscriptions history (and /me/rsvps) should
+      // show the partial_refund / refunded line as soon as admin issues it.
+      qc.invalidateQueries({ queryKey: ['payment', vars.pid] });
+      qc.invalidateQueries({ queryKey: ['my-payments'] });
+      qc.invalidateQueries({ queryKey: ['my-rsvps'] });
     },
   });
 }

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AppBar, Screen } from '../../components/AppBar';
 import { AppButton } from '../../components/AppButton';
 import { Card } from '../../components/Card';
@@ -18,6 +19,7 @@ const RANGES: Array<{ id: Range; label: string }> = [
 ];
 
 export function FinancialDashboardScreen() {
+  const nav = useNavigate();
   const ctx = communityContext();
   const { data: mine } = useMyCommunities();
   const cid = ctx.currentCommunityId ?? mine?.[0]?.community.id;
@@ -69,6 +71,7 @@ export function FinancialDashboardScreen() {
 
   const series = data.monthlySeries ?? [];
   const maxBar = Math.max(1, ...series.map((s) => s.revenueCents));
+  const hasAnyRevenue = series.some((s) => s.revenueCents > 0) || data.totalRevenueCents > 0;
 
   function downloadCsv(): void {
     const rows = [
@@ -124,9 +127,15 @@ export function FinancialDashboardScreen() {
               Gross revenue
             </div>
             <div className="k-num">{fmtCents(gross)}</div>
-            <div className={`k-delta ${delta >= 0 ? 'up' : 'down'}`}>
-              {delta >= 0 ? '▲' : '▼'} {Math.abs(delta)}%
-            </div>
+            {gross > 0 ? (
+              <div className={`k-delta ${delta >= 0 ? 'up' : 'down'}`}>
+                {delta >= 0 ? '▲' : '▼'} {Math.abs(delta)}%
+              </div>
+            ) : (
+              <div className="k-delta" style={{ color: 'rgb(var(--muted))' }}>
+                — no earnings yet
+              </div>
+            )}
           </Card>
           <Card className="kpi">
             <div className="k-lbl">
@@ -138,7 +147,10 @@ export function FinancialDashboardScreen() {
           </Card>
         </div>
 
-        {/* 6-month bar chart */}
+        {/* 6-month bar chart. When there is no revenue yet we replace the
+            empty bars (which read as "data missing" rather than "no money")
+            with an explicit empty state so the admin understands the
+            community simply hasn't earned anything yet. */}
         <Card className="p-4 mb-4">
           <div className="between mb-3">
             <span className="t-label-lg">Revenue · 6 months</span>
@@ -146,22 +158,39 @@ export function FinancialDashboardScreen() {
               net of fees
             </span>
           </div>
-          <div className="bars">
-            {series.map((m, i) => {
-              const isCur = i === series.length - 1;
-              const pct = Math.round((m.revenueCents / maxBar) * 100);
-              return (
-                <div key={m.month} className={`bar${isCur ? ' cur' : ''}`}>
-                  <i style={{ height: `${Math.max(2, pct)}%` }} />
-                </div>
-              );
-            })}
-          </div>
-          <div className="barlbls">
-            {series.map((m) => (
-              <span key={m.month}>{monthLabel(m.month)}</span>
-            ))}
-          </div>
+          {hasAnyRevenue ? (
+            <>
+              <div className="bars">
+                {series.map((m, i) => {
+                  const isCur = i === series.length - 1;
+                  const pct = Math.round((m.revenueCents / maxBar) * 100);
+                  return (
+                    <div key={m.month} className={`bar${isCur ? ' cur' : ''}`}>
+                      <i style={{ height: `${Math.max(2, pct)}%` }} />
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="barlbls">
+                {series.map((m) => (
+                  <span key={m.month}>{monthLabel(m.month)}</span>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div
+              className="text-center py-6"
+              style={{ color: 'rgb(var(--muted))' }}
+            >
+              <Icon name="trending_up" size={32} style={{ opacity: 0.5 }} />
+              <div className="t-label-lg mt-2" style={{ fontSize: 13 }}>
+                No revenue yet
+              </div>
+              <div className="t-body-md" style={{ margin: '4px 0 0', fontSize: 11 }}>
+                Publish a paid event or open subscriptions to start earning.
+              </div>
+            </div>
+          )}
         </Card>
 
         {/* Revenue by event */}
@@ -224,9 +253,11 @@ export function FinancialDashboardScreen() {
           </div>
         )}
 
-        <AppButton variant="secondary" onClick={downloadCsv} className="mt-3">
-          <Icon name="download" size={14} /> Export CSV
-        </AppButton>
+        {hasAnyRevenue && (
+          <AppButton variant="secondary" onClick={downloadCsv} className="mt-3">
+            <Icon name="download" size={14} /> Export CSV
+          </AppButton>
+        )}
 
         {/* Recent payments */}
         {data.recentPayments?.length > 0 && (
@@ -237,58 +268,91 @@ export function FinancialDashboardScreen() {
               </span>
             </div>
             <Card className="divide-y divide-border">
-              {data.recentPayments.map((p) => (
-                <div key={p.id} className="flex items-center gap-3 px-4 py-3">
-                  <span
-                    className="grid place-items-center"
+              {data.recentPayments.map((p) => {
+                // Cross-role: from /admin/finances admins should be able to
+                // click a payment and jump to /admin/payments/:pid/refund.
+                // Previously the row was a static div, so to issue a refund
+                // the admin had to dig through the event's payments list.
+                const canRefund = p.status === 'succeeded';
+                const onRowClick = canRefund
+                  ? () => nav(`/admin/payments/${p.id}/refund`)
+                  : undefined;
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={onRowClick}
+                    disabled={!canRefund}
+                    className="flex items-center gap-3 px-4 py-3 w-full text-start"
                     style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: 11,
-                      background:
-                        p.status === 'refunded'
-                          ? 'rgb(var(--error-wash))'
-                          : 'rgb(var(--success-wash))',
-                      color:
-                        p.status === 'refunded'
-                          ? 'rgb(var(--error))'
-                          : 'rgb(var(--success))',
+                      background: 'transparent',
+                      border: 0,
+                      cursor: canRefund ? 'pointer' : 'default',
                     }}
+                    aria-label={
+                      canRefund
+                        ? `Issue refund for ${p.payer?.name ?? 'member'}`
+                        : undefined
+                    }
                   >
-                    <Icon name={p.status === 'refunded' ? 'undo' : 'payments'} size={18} />
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <div className="t-label-lg truncate">
-                      {p.payer?.name ?? p.payer?.email ?? 'Member'}
-                    </div>
-                    <div
-                      className="t-body-md truncate"
-                      style={{ margin: 0, fontSize: 11 }}
+                    <span
+                      className="grid place-items-center"
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 11,
+                        background:
+                          p.status === 'refunded'
+                            ? 'rgb(var(--error-wash))'
+                            : 'rgb(var(--success-wash))',
+                        color:
+                          p.status === 'refunded'
+                            ? 'rgb(var(--error))'
+                            : 'rgb(var(--success))',
+                      }}
                     >
-                      {p.eventTitle ?? 'Subscription'} ·{' '}
-                      {new Date(p.createdAt).toLocaleDateString()}
+                      <Icon name={p.status === 'refunded' ? 'undo' : 'payments'} size={18} />
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="t-label-lg truncate">
+                        {p.payer?.name ?? p.payer?.email ?? 'Member'}
+                      </div>
+                      <div
+                        className="t-body-md truncate"
+                        style={{ margin: 0, fontSize: 11 }}
+                      >
+                        {p.eventTitle ?? 'Subscription'} ·{' '}
+                        {new Date(p.createdAt).toLocaleDateString()}
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-end">
-                    <div className="t-label-lg">{fmtCents(p.amountCents)}</div>
-                    <Pill
-                      tone={
-                        p.status === 'succeeded'
-                          ? 'ok'
+                    <div className="text-end">
+                      <div className="t-label-lg">{fmtCents(p.amountCents)}</div>
+                      <Pill
+                        tone={
+                          p.status === 'succeeded'
+                            ? 'ok'
+                            : p.status === 'refunded'
+                            ? 'warn'
+                            : 'neutral'
+                        }
+                      >
+                        {p.status === 'succeeded'
+                          ? 'Paid'
                           : p.status === 'refunded'
-                          ? 'warn'
-                          : 'neutral'
-                      }
-                    >
-                      {p.status === 'succeeded'
-                        ? 'Paid'
-                        : p.status === 'refunded'
-                        ? 'Refunded'
-                        : p.status}
-                    </Pill>
-                  </div>
-                </div>
-              ))}
+                          ? 'Refunded'
+                          : p.status}
+                      </Pill>
+                    </div>
+                    {canRefund && (
+                      <Icon
+                        name="chevron_right"
+                        size={18}
+                        style={{ color: 'rgb(var(--muted))' }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
             </Card>
           </>
         )}

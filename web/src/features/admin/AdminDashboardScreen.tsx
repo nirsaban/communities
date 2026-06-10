@@ -98,6 +98,33 @@ export function AdminDashboardScreen() {
       </div>
 
       <main className="flex-1 px-5 pb-6 overflow-y-auto">
+        {/* Cross-role: when super admin suspends this community, the admin must
+            see why every write action is rejected. Without this banner the
+            admin gets opaque 403s on settings/invites/event-create. */}
+        {community?.status === 'suspended' && (
+          <Card
+            className="mb-3 p-3 flex items-start gap-2.5"
+            style={{
+              background: 'rgb(var(--warning-wash))',
+              borderColor: 'rgb(var(--warning))',
+            }}
+          >
+            <Icon
+              name="pause_circle"
+              size={20}
+              style={{ color: 'rgb(var(--warning))', marginTop: 2 }}
+            />
+            <div className="flex-1">
+              <div className="t-label-lg">Community paused by platform</div>
+              <p className="t-body-md" style={{ margin: '2px 0 0', fontSize: 12 }}>
+                A super admin has temporarily suspended this community. Member
+                actions, new events and most settings are blocked until it's
+                restored. Reach out to platform support if this is unexpected.
+              </p>
+            </div>
+          </Card>
+        )}
+
         <div className="row mb-3.5 flex items-center gap-2.5" style={{ marginTop: 4 }}>
           <div className="t-display-md" style={{ fontSize: 24 }}>
             Overview
@@ -248,13 +275,13 @@ export function AdminDashboardScreen() {
           </span>
           <span className="flex-1">
             <span className="t-label-lg block" style={{ color: '#fff' }}>
-              New event
+              {isSubAdmin ? 'New free event' : 'New event'}
             </span>
             <span
               className="t-body-md block"
               style={{ color: 'rgba(255,255,255,0.85)', margin: 0, fontSize: 11 }}
             >
-              Plan, price, publish
+              {isSubAdmin ? 'Plan & publish' : 'Plan, price, publish'}
             </span>
           </span>
           <Icon name="arrow_forward" />
@@ -304,10 +331,16 @@ export function AdminDashboardScreen() {
                             {isSubAdmin ? 'Paid' : fmtCents(e.priceCents)}
                           </span>
                         ) : isSub ? (
-                          <span className="price-tag pt-sub">
-                            <Icon name="workspace_premium" size={11} />
-                            Subs
-                          </span>
+                          // Sub-admin must not see subscription affordances —
+                          // collapse to a neutral "Paid" pill (no workspace_premium icon).
+                          isSubAdmin ? (
+                            <span className="price-tag pt-paid">Paid</span>
+                          ) : (
+                            <span className="price-tag pt-sub">
+                              <Icon name="workspace_premium" size={11} />
+                              Subs
+                            </span>
+                          )
                         ) : (
                           <span className="price-tag pt-free">
                             <Icon name="check" size={11} />
