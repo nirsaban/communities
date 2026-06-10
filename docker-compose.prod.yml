@@ -17,6 +17,13 @@ services:
   mongo:
     image: mongo:7
     restart: unless-stopped
+    # Run as a single-node replica set so Mongo transactions
+    # (session.withTransaction) work — required by acceptInvitation,
+    # event/recurring/post/initiative/payment services. On first boot the
+    # replica set must be initiated once:
+    #   docker exec communities-mongo-1 mongosh --quiet --eval \
+    #     'rs.initiate({_id:"rs0", members:[{_id:0, host:"mongo:27017"}]})'
+    command: ['mongod', '--replSet', 'rs0', '--bind_ip_all']
     # Mongo is NOT exposed to the host — only the api container reaches it
     # via the internal docker network.
     volumes:
@@ -40,7 +47,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 4242
-      MONGO_URI: mongodb://mongo:27017/community
+      MONGO_URI: mongodb://mongo:27017/community?replicaSet=rs0&directConnection=true
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?missing}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?missing}
       JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-15m}
