@@ -59,6 +59,7 @@ export function errorHandler(
       userId: req.user?._id ? String(req.user._id) : undefined,
       code: appErr.code,
       message: appErr.message,
+      ...(appErr.details !== undefined ? { details: appErr.details } : {}),
     });
   }
 
