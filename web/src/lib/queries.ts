@@ -413,10 +413,23 @@ export function useEventMaterials(eid: string | undefined) {
   });
 }
 
+export type UploadMaterialInput = {
+  title: string;
+  type: MaterialType;
+  description?: string;
+  file: File;
+  // Real upload progress (0..100) — wired from axios onUploadProgress so the UI
+  // can show actual byte progress instead of a fake animated bar.
+  onProgress?: (pct: number) => void;
+  // Allows the UI to abort an in-flight upload (e.g. user clicks Cancel on a
+  // 100MB file). Passed straight through to axios.
+  signal?: AbortSignal;
+};
+
 export function useUploadMaterial(eid: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (body: { title: string; type: MaterialType; description?: string; file: File }) => {
+    mutationFn: async (body: UploadMaterialInput) => {
       const form = new FormData();
       form.append('title', body.title);
       form.append('type', body.type);
@@ -424,6 +437,16 @@ export function useUploadMaterial(eid: string | undefined) {
       form.append('file', body.file);
       const r = await api.post(`/events/${eid}/materials`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
+        signal: body.signal,
+        onUploadProgress: (evt) => {
+          if (!body.onProgress) return;
+          // evt.total is undefined when the server doesn't advertise length;
+          // fall back to file size which we always know.
+          const total = evt.total ?? body.file.size;
+          if (!total) return;
+          const pct = Math.min(99, Math.round((evt.loaded / total) * 100));
+          body.onProgress(pct);
+        },
       });
       return r.data?.data;
     },
