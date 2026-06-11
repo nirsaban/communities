@@ -31,6 +31,11 @@ export function InviteMemberScreen() {
   const [role, setRole] = useState<MembershipRole>('member');
   const [error, setError] = useState<string | null>(null);
   const [sentCount, setSentCount] = useState(0);
+  // After the backend creates each invitation it returns the single-use accept
+  // token. Surface the full /invite/<token> URL so the admin can paste it into
+  // WhatsApp / Slack / SMS without waiting for email delivery.
+  const [sentLinks, setSentLinks] = useState<Array<{ email: string; url: string }>>([]);
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
 
   // PRD 05 §3: sub-admin can assign Event Manager but cannot promote to
   // Sub-Admin or Admin. Filter the chip list accordingly.
@@ -120,17 +125,24 @@ export function InviteMemberScreen() {
     }
     setError(null);
     setSentCount(0);
+    setSentLinks([]);
     let ok = 0;
     let firstErr: string | null = null;
+    const links: Array<{ email: string; url: string }> = [];
     for (const email of list) {
       try {
-        await invite.mutateAsync({ email, role });
+        const r = await invite.mutateAsync({ email, role });
         ok += 1;
         setSentCount(ok);
+        const token = (r as { data?: { data?: { token?: string } } })?.data?.data?.token;
+        if (token) {
+          links.push({ email, url: `${window.location.origin}/invite/${token}` });
+        }
       } catch (err) {
         firstErr = firstErr ?? extractError(err).message;
       }
     }
+    setSentLinks(links);
     if (firstErr && ok === 0) {
       setError(firstErr);
       return;
@@ -139,7 +151,21 @@ export function InviteMemberScreen() {
       setError(`Sent ${ok} of ${list.length}. First error: ${firstErr}`);
       return;
     }
-    setTimeout(() => nav(-1), 1200);
+    // Keep admin on screen when we have copyable links; only nav back when
+    // there's nothing useful to show.
+    if (links.length === 0) {
+      setTimeout(() => nav(-1), 1200);
+    }
+  }
+
+  async function copyInviteLink(idx: number, url: string): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedIdx(idx);
+      setTimeout(() => setCopiedIdx((v) => (v === idx ? null : v)), 1500);
+    } catch {
+      /* clipboard blocked — ignore */
+    }
   }
 
   const buttonLabel =
@@ -330,6 +356,55 @@ export function InviteMemberScreen() {
         {sentCount > 0 && (
           <div className="mt-3 rounded-md bg-ok-wash px-3 py-2 text-sm text-ok">
             Sent {sentCount} invite{sentCount === 1 ? '' : 's'}
+          </div>
+        )}
+        {sentLinks.length > 0 && (
+          <div className="mt-3">
+            <div className="t-caption-md mb-2 text-muted">
+              Share these links directly (WhatsApp, SMS, etc.) — the email may take a minute.
+            </div>
+            <div className="flex flex-col gap-2">
+              {sentLinks.map((l, i) => (
+                <div
+                  key={l.url}
+                  className="card row flex items-center gap-2"
+                  style={{ padding: '10px 12px' }}
+                >
+                  <Icon name="link" size={16} className="text-muted" />
+                  <div className="grow" style={{ minWidth: 0 }}>
+                    <div className="t-caption-md text-muted" dir="ltr">
+                      {l.email}
+                    </div>
+                    <div
+                      className="t-body-md"
+                      style={{
+                        fontFamily: "'DM Mono', ui-monospace, monospace",
+                        fontSize: 11,
+                        color: 'rgb(var(--on-bg))',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                      dir="ltr"
+                    >
+                      {l.url}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => copyInviteLink(i, l.url)}
+                    className="chip"
+                    style={{
+                      background: 'rgb(var(--surface-2))',
+                      borderColor: 'transparent',
+                      height: 28,
+                    }}
+                  >
+                    {copiedIdx === i ? 'Copied' : 'Copy'}
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
