@@ -83,6 +83,16 @@ export function InvitationAcceptScreen() {
       }
       const r = await api.post(`/invitations/${token}/accept`, body);
       const data = r.data?.data ?? {};
+      // For admin invitees, drop a localStorage breadcrumb so the wizard's
+      // first step can surface a one-time "Welcome, you're the admin of X"
+      // banner. Cleared after the admin dismisses or moves on.
+      if (peek.role === 'admin' && peek.community?.id) {
+        try {
+          localStorage.setItem(`seenAdminWelcomeFor_${peek.community.id}`, 'pending');
+        } catch {
+          // localStorage may be disabled (privacy modes); banner just won't show.
+        }
+      }
       // Anonymous accept returns tokens; logged-in accept returns null tokens
       // because the caller already has a session.
       if (data.tokens && data.user) {

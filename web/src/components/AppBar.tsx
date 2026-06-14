@@ -4,6 +4,11 @@ import { Icon } from './Icon';
 
 type Props = {
   title?: string;
+  // Optional second line under the title — used for event-identity anchoring on
+  // deep screens (Attendees / Broadcast / Materials / Recap / Q&A). Keeps the
+  // page title generic ("Attendees · 12") while always showing which event the
+  // EM is currently inside.
+  subtitle?: string;
   back?: boolean;
   onBack?: () => void;
   leading?: React.ReactNode;
@@ -12,7 +17,16 @@ type Props = {
   transparent?: boolean;
 };
 
-export function AppBar({ title, back, onBack, leading, trailing, showTitle = true, transparent }: Props) {
+export function AppBar({
+  title,
+  subtitle,
+  back,
+  onBack,
+  leading,
+  trailing,
+  showTitle = true,
+  transparent,
+}: Props) {
   const nav = useNavigate();
   return (
     <header
@@ -31,7 +45,17 @@ export function AppBar({ title, back, onBack, leading, trailing, showTitle = tru
       )}
       {leading}
       {showTitle && title && (
-        <h1 className="flex-1 truncate text-base font-semibold text-ink">{title}</h1>
+        <div className="flex-1 min-w-0">
+          <h1 className="truncate text-base font-semibold text-ink leading-tight">{title}</h1>
+          {subtitle && (
+            <div
+              className="truncate t-body-md"
+              style={{ margin: 0, fontSize: 11.5, lineHeight: 1.2 }}
+            >
+              {subtitle}
+            </div>
+          )}
+        </div>
       )}
       {!showTitle && <div className="flex-1" />}
       {trailing}

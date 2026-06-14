@@ -1,8 +1,8 @@
 // 43 · Materials upload — Event Manager add-file screen
 // Design: commuinites_design/Batch C · 43 · Materials upload
-// Layout: back · large dashed file drop zone (pdf/mp4/ppt) · upload progress card
-// · Title field · Description textarea · "Attendees only" toggle row · "Add to event"
-// primary button pinned at bottom.
+// Layout: back · large dashed file drop zone (pdf/mp4/ppt/image/audio/slides)
+// · upload progress card · Title field · Description textarea · "Visible to:"
+// toggle row · "Add to event" primary button pinned at bottom.
 
 import { useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -10,7 +10,8 @@ import axios from 'axios';
 import { AppBar, Screen } from '../../components/AppBar';
 import { Icon } from '../../components/Icon';
 import { extractError } from '../../lib/api';
-import { useUploadMaterial, type MaterialType } from '../../lib/queries';
+import { fmtEventWhen } from '../../lib/format';
+import { useEvent, useUploadMaterial, type MaterialType } from '../../lib/queries';
 
 function inferType(file: File): MaterialType {
   const m = file.type.toLowerCase();
@@ -36,38 +37,71 @@ function iconForType(t: MaterialType): { name: string; tone: string } {
   return { name: 'attach_file', tone: 'rgb(var(--on-bg-2))' };
 }
 
+type QueuedFile = {
+  id: string;
+  file: File;
+  status: 'queued' | 'uploading' | 'done' | 'error' | 'cancelled';
+  progress: number;
+  error?: string;
+};
+
 export function MaterialsUploadScreen() {
   const { eid } = useParams<{ eid: string }>();
   const nav = useNavigate();
+  const { data: ev } = useEvent(eid);
   const upload = useUploadMaterial(eid);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Multi-file workflow: workshop runners typically bring slides + handout +
+  // recording. Each row gets its own per-file progress + cancel. Title field
+  // is shared (used for the first file only; the rest inherit the filename so
+  // we don't lose the per-file identity).
+  const [queue, setQueue] = useState<QueuedFile[]>([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [file, setFile] = useState<File | null>(null);
   const [attendeesOnly, setAttendeesOnly] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // null = no upload in flight; 0..100 = real byte progress from axios.
-  const [progress, setProgress] = useState<number | null>(null);
-  const abortRef = useRef<AbortController | null>(null);
+  const abortRefs = useRef<Map<string, AbortController>>(new Map());
 
-  function onPick(picked: File | null): void {
-    if (!picked) return;
-    setFile(picked);
-    setProgress(null);
-    setError(null);
-    if (!title) setTitle(picked.name.replace(/\.[^.]+$/, ''));
+  function makeId(): string {
+    return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   }
 
-  function cancelUpload(): void {
-    abortRef.current?.abort();
-    abortRef.current = null;
-    setProgress(null);
+  function onPick(picked: FileList | null): void {
+    if (!picked || picked.length === 0) return;
+    const added: QueuedFile[] = Array.from(picked).map((file) => ({
+      id: makeId(),
+      file,
+      status: 'queued',
+      progress: 0,
+    }));
+    setQueue((prev) => [...prev, ...added]);
+    setError(null);
+    // Auto-fill title from the first newly added file if blank.
+    if (!title && added[0]) {
+      setTitle(added[0].file.name.replace(/\.[^.]+$/, ''));
+    }
+    // Reset the input so the same file can be picked again later if needed.
+    if (inputRef.current) inputRef.current.value = '';
+  }
+
+  function removeFile(id: string): void {
+    const ctrl = abortRefs.current.get(id);
+    if (ctrl) {
+      ctrl.abort();
+      abortRefs.current.delete(id);
+    }
+    setQueue((prev) => prev.filter((q) => q.id !== id));
+  }
+
+  function patchQueue(id: string, patch: Partial<QueuedFile>): void {
+    setQueue((prev) => prev.map((q) => (q.id === id ? { ...q, ...patch } : q)));
   }
 
   async function submit(): Promise<void> {
     setError(null);
-    if (!file) {
+    const pending = queue.filter((q) => q.status === 'queued' || q.status === 'error');
+    if (pending.length === 0) {
       setError('Pick a file first');
       return;
     }
@@ -75,41 +109,64 @@ export function MaterialsUploadScreen() {
       setError('Add a title');
       return;
     }
-    const controller = new AbortController();
-    abortRef.current = controller;
-    setProgress(0);
-    try {
-      await upload.mutateAsync({
-        title: title.trim(),
-        description: description.trim() || undefined,
-        type: inferType(file),
-        file,
-        signal: controller.signal,
-        onProgress: (pct) => setProgress(pct),
-      });
-      abortRef.current = null;
-      setProgress(100);
-      nav(`/events/${eid}/materials`);
-    } catch (err) {
-      abortRef.current = null;
-      // User-initiated cancel — silent; don't render as a hard error.
-      if (axios.isCancel(err) || (err as { name?: string })?.name === 'CanceledError') {
-        setProgress(null);
-        return;
+
+    // Upload files sequentially so progress bars don't fight each other and so
+    // the backend isn't hit with N concurrent multipart streams.
+    let firstErr: string | null = null;
+    for (let i = 0; i < pending.length; i++) {
+      const q = pending[i];
+      const controller = new AbortController();
+      abortRefs.current.set(q.id, controller);
+      patchQueue(q.id, { status: 'uploading', progress: 0, error: undefined });
+      const fileTitle =
+        i === 0
+          ? title.trim()
+          : `${title.trim()} · ${q.file.name.replace(/\.[^.]+$/, '')}`;
+      try {
+        await upload.mutateAsync({
+          title: fileTitle,
+          description: description.trim() || undefined,
+          type: inferType(q.file),
+          file: q.file,
+          signal: controller.signal,
+          onProgress: (pct) => patchQueue(q.id, { progress: pct }),
+        });
+        abortRefs.current.delete(q.id);
+        patchQueue(q.id, { status: 'done', progress: 100 });
+      } catch (err) {
+        abortRefs.current.delete(q.id);
+        if (axios.isCancel(err) || (err as { name?: string })?.name === 'CanceledError') {
+          patchQueue(q.id, { status: 'cancelled', progress: 0 });
+          continue;
+        }
+        const msg = extractError(err).message;
+        patchQueue(q.id, { status: 'error', error: msg, progress: 0 });
+        if (!firstErr) firstErr = msg;
       }
-      setProgress(null);
-      setError(extractError(err).message);
     }
+
+    if (firstErr) {
+      setError(firstErr);
+      return;
+    }
+    // The EM was navigated to /events/:eid/materials before — that route is
+    // available to all authenticated members (wrap, not wrapEM), so this is
+    // valid for an Event Manager. Land them there to confirm the upload.
+    nav(`/events/${eid}/materials`);
   }
 
-  const t = file ? inferType(file) : 'other';
-  const icon = iconForType(t);
-  const sizeMb = file ? (file.size / 1024 / 1024).toFixed(1) : null;
-  const uploading = progress != null && progress < 100;
+  const hasQueue = queue.length > 0;
+  const uploadingAny = queue.some((q) => q.status === 'uploading');
+  const submitDisabled =
+    upload.isPending ||
+    uploadingAny ||
+    queue.filter((q) => q.status === 'queued' || q.status === 'error').length === 0;
+
+  const subtitle = ev ? `${ev.title} · ${fmtEventWhen(ev.startAt).line}` : undefined;
 
   return (
     <Screen>
-      <AppBar back title="Add material" />
+      <AppBar back title="Add material" subtitle={subtitle} />
       <main className="flex flex-1 flex-col px-5 pb-6">
         {error && (
           <div className="t-body-md mb-3" style={{ color: 'rgb(var(--error))' }}>
@@ -135,67 +192,125 @@ export function MaterialsUploadScreen() {
           }}
         >
           <Icon name="upload_file" size={34} className="muted" />
-          <span className="lbl">tap to choose a file · pdf, mp4, ppt</span>
+          <span className="lbl">
+            tap to choose files · pdf, slides, video, audio, images
+          </span>
         </button>
         <input
           ref={inputRef}
           type="file"
+          multiple
           className="hidden"
-          onChange={(e) => onPick(e.target.files?.[0] ?? null)}
+          onChange={(e) => onPick(e.target.files)}
           accept="video/*,audio/*,application/pdf,image/*,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
         />
 
-        {/* UploadProgressCard */}
-        {file && (
-          <div className="card" style={{ padding: 12, marginBottom: 16 }}>
-            <div
-              className="row"
-              style={{ display: 'flex', gap: 11, marginBottom: 8, alignItems: 'center' }}
-            >
-              <Icon name={icon.name} size={20} style={{ color: icon.tone }} />
-              <div className="grow flex-1 min-w-0">
-                <div className="t-label-lg truncate" style={{ fontSize: 13 }}>
-                  {file.name}
+        {/* UploadProgressCards (per file) */}
+        {hasQueue && (
+          <div className="space-y-2" style={{ marginBottom: 16 }}>
+            {queue.map((q) => {
+              const t = inferType(q.file);
+              const icon = iconForType(t);
+              const sizeMb = (q.file.size / 1024 / 1024).toFixed(1);
+              const uploading = q.status === 'uploading';
+              const done = q.status === 'done';
+              const errored = q.status === 'error';
+              const cancelled = q.status === 'cancelled';
+              const statusLabel = uploading
+                ? 'uploading…'
+                : done
+                  ? 'done'
+                  : errored
+                    ? q.error ?? 'failed'
+                    : cancelled
+                      ? 'cancelled'
+                      : 'ready';
+              return (
+                <div key={q.id} className="card" style={{ padding: 12 }}>
+                  <div
+                    className="row"
+                    style={{
+                      display: 'flex',
+                      gap: 11,
+                      marginBottom: 8,
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Icon name={icon.name} size={20} style={{ color: icon.tone }} />
+                    <div className="grow flex-1 min-w-0">
+                      <div
+                        className="t-label-lg truncate"
+                        style={{ fontSize: 13 }}
+                      >
+                        {q.file.name}
+                      </div>
+                      <div
+                        className="t-body-md"
+                        style={{
+                          margin: 0,
+                          fontSize: 11,
+                          color: errored
+                            ? 'rgb(var(--error))'
+                            : 'rgb(var(--muted))',
+                        }}
+                      >
+                        {sizeMb} MB · {statusLabel}
+                      </div>
+                    </div>
+                    {uploading ? (
+                      <button
+                        type="button"
+                        onClick={() => removeFile(q.id)}
+                        className="ic-btn"
+                        aria-label="Cancel upload"
+                        style={{
+                          width: 28,
+                          height: 28,
+                          background: 'rgb(var(--surface-2))',
+                        }}
+                      >
+                        <Icon name="close" size={14} />
+                      </button>
+                    ) : done ? (
+                      <span
+                        className="t-label-sm"
+                        style={{ margin: 0, color: 'rgb(var(--success))' }}
+                      >
+                        ✓
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => removeFile(q.id)}
+                        className="ic-btn"
+                        aria-label="Remove file"
+                        style={{
+                          width: 28,
+                          height: 28,
+                          background: 'rgb(var(--surface-2))',
+                        }}
+                      >
+                        <Icon name="close" size={14} />
+                      </button>
+                    )}
+                  </div>
+                  <div className="progress-track" style={{ height: 5 }}>
+                    <span
+                      style={{
+                        width: `${q.progress}%`,
+                        display: 'block',
+                        height: '100%',
+                        background: errored
+                          ? 'rgb(var(--error))'
+                          : 'rgb(var(--brand))',
+                        borderRadius: 9,
+                        transition: 'width 0.2s linear',
+                      }}
+                    />
+                  </div>
                 </div>
-                <div className="t-body-md" style={{ margin: 0, fontSize: 11 }}>
-                  {sizeMb} MB · {uploading ? 'uploading…' : progress === 100 ? 'done' : 'ready'}
-                </div>
-              </div>
-              {uploading ? (
-                <button
-                  type="button"
-                  onClick={cancelUpload}
-                  className="ic-btn"
-                  aria-label="Cancel upload"
-                  style={{
-                    width: 28,
-                    height: 28,
-                    background: 'rgb(var(--surface-2))',
-                  }}
-                >
-                  <Icon name="close" size={14} />
-                </button>
-              ) : (
-                <span
-                  className="t-label-sm"
-                  style={{ margin: 0, color: 'rgb(var(--brand-ink))' }}
-                >
-                  {progress != null ? `${progress}%` : 'ready'}
-                </span>
-              )}
-            </div>
-            <div className="progress-track" style={{ height: 5 }}>
-              <span
-                style={{
-                  width: `${progress ?? 0}%`,
-                  display: 'block',
-                  height: '100%',
-                  background: 'rgb(var(--brand))',
-                  borderRadius: 9,
-                  transition: 'width 0.2s linear',
-                }}
-              />
-            </div>
+              );
+            })}
           </div>
         )}
 
@@ -235,7 +350,7 @@ export function MaterialsUploadScreen() {
           </div>
         </div>
 
-        {/* AttendeesOnlyToggle */}
+        {/* VisibilityToggle — explicit label pair so the EM knows exactly who can see */}
         <button
           type="button"
           className="list-row"
@@ -243,10 +358,18 @@ export function MaterialsUploadScreen() {
           aria-pressed={attendeesOnly}
           style={{ background: 'transparent', border: 0, width: '100%', cursor: 'pointer' }}
         >
-          <Icon name="lock" className="muted" />
-          <span className="grow t-body-lg flex-1 text-start" style={{ fontSize: 14 }}>
-            Attendees only
-          </span>
+          <Icon
+            name={attendeesOnly ? 'lock' : 'public'}
+            className="muted"
+          />
+          <div className="grow flex-1 text-start">
+            <div className="t-body-lg" style={{ margin: 0, fontSize: 14 }}>
+              Visible to
+            </div>
+            <div className="t-body-md" style={{ margin: 0, fontSize: 11 }}>
+              {attendeesOnly ? 'Attendees only' : 'Anyone with the link'}
+            </div>
+          </div>
           <span className={`toggle ${attendeesOnly ? 'on' : 'off'}`}>
             <span />
           </span>
@@ -258,9 +381,13 @@ export function MaterialsUploadScreen() {
             type="button"
             className="btn btn-primary"
             onClick={submit}
-            disabled={upload.isPending || !file}
+            disabled={submitDisabled}
           >
-            {upload.isPending ? 'Uploading…' : 'Add to event'}
+            {uploadingAny
+              ? 'Uploading…'
+              : queue.length > 1
+                ? `Add ${queue.filter((q) => q.status !== 'done').length} to event`
+                : 'Add to event'}
           </button>
         </div>
       </main>

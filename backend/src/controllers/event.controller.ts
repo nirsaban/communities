@@ -23,6 +23,7 @@ import { auditFromReq } from '../services/audit.service';
 import { startEventCheckout } from '../services/payment.service';
 import { getLoadedEvent } from '../middleware/eventScope';
 import { EventRSVP } from '../models/EventRSVP';
+import { fanOut, getNotificationService } from '../services/notification.service';
 import env from '../config/env';
 
 export const upload = multer({
@@ -173,6 +174,23 @@ export const addManager = asyncHandler(async (req: Request, res: Response) => {
     targetId: event._id,
     metadata: { userId: req.body.userId },
   });
+  // Cross-role visibility: the new EM should learn about the assignment without
+  // having to check the manage tab. Deep-link goes to the event command center.
+  try {
+    await getNotificationService().send({
+      userId: req.body.userId,
+      communityId: event.communityId,
+      type: 'role.event_manager.assigned',
+      title: `You're managing ${event.title}`,
+      body: 'Open the command center to set up check-in, recap and broadcast.',
+      payload: {
+        eventId: String(event._id),
+        deepLink: `/events/${String(event._id)}/command`,
+      },
+    });
+  } catch {
+    // Notification fan-out is best-effort; assignment itself succeeded.
+  }
   ok(res, event.toClientJSON());
 });
 
@@ -270,12 +288,42 @@ export const publishRecap = asyncHandler(async (req: Request, res: Response) => 
     publishedAt: new Date(),
   };
   await event.save();
+  const notify = !!req.body?.notify;
+  let notified = 0;
+  if (notify) {
+    // Fan-out: only attendees with a `going` RSVP who actually showed up
+    // (`attendedAt` non-null) get the recap notification. Deep-link goes to
+    // the recap screen so members can see what the host wrote in one tap.
+    const attended = await EventRSVP.find({
+      eventId: event._id,
+      status: 'going',
+      attendedAt: { $exists: true, $ne: null },
+    })
+      .select('userId')
+      .lean();
+    if (attended.length > 0) {
+      const result = await fanOut(
+        attended.map((r) => ({
+          userId: r.userId,
+          communityId: event.communityId,
+          type: 'recap.published',
+          title: `Recap is up: ${event.title}`,
+          body: 'See photos and the host’s notes from the event.',
+          payload: {
+            eventId: String(event._id),
+            deepLink: `/events/${String(event._id)}/recap`,
+          },
+        })),
+      );
+      notified = result.delivered;
+    }
+  }
   await auditFromReq(req, {
     action: 'event.recap.publish',
     communityId: event.communityId,
     targetType: 'event',
     targetId: event._id,
-    metadata: { notify: !!req.body?.notify, photos: photoUrls.length },
+    metadata: { notify, photos: photoUrls.length, notified },
   });
-  ok(res, event.toClientJSON());
+  ok(res, event.toClientJSON(), { notified });
 });

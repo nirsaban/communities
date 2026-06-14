@@ -13,6 +13,7 @@ import { Initiative } from '../models/Initiative';
 import { User } from '../models/User';
 import { Notification } from '../models/Notification';
 import { Subscription } from '../models/Subscription';
+import { getNotificationService } from '../services/notification.service';
 
 function communityIdFromReq(req: Request): mongoose.Types.ObjectId {
   if (!req.membership) throw AppError.unauthorized();
@@ -239,6 +240,21 @@ export const approveMember = asyncHandler(async (req: Request, res: Response) =>
     targetType: 'membership',
     targetId: m._id,
   });
+  // HomeFeed promises "we'll send a heads-up" — emit the notification so the
+  // applicant lands on /home when they tap.
+  try {
+    const community = await Community.findById(cid).select('name').lean();
+    await getNotificationService().send({
+      userId: m.userId,
+      communityId: cid,
+      type: 'application.approved',
+      title: community?.name ? `Welcome to ${community.name}` : 'Application approved',
+      body: 'Your request to join was approved. Tap to explore the community.',
+      payload: { communityId: String(cid), deepLink: '/home' },
+    });
+  } catch {
+    // Best-effort.
+  }
   ok(res, m.toClientJSON());
 });
 
@@ -248,13 +264,36 @@ export const rejectMember = asyncHandler(async (req: Request, res: Response) => 
   if (!mongoose.Types.ObjectId.isValid(req.params.uid)) {
     throw AppError.notFound('Member not found');
   }
-  await Membership.deleteOne({ communityId: cid, userId: req.params.uid, status: 'pending' });
+  const result = await Membership.deleteOne({
+    communityId: cid,
+    userId: req.params.uid,
+    status: 'pending',
+  });
   await auditFromReq(req, {
     action: 'member.reject',
     communityId: cid,
     targetType: 'user',
     targetId: req.params.uid,
   });
+  // Notify the applicant — deep-link goes back to /discover so they can keep
+  // browsing other communities rather than land on a community they can't see.
+  if (result.deletedCount > 0) {
+    try {
+      const community = await Community.findById(cid).select('name').lean();
+      await getNotificationService().send({
+        userId: req.params.uid,
+        communityId: cid,
+        type: 'application.rejected',
+        title: community?.name
+          ? `Application to ${community.name}`
+          : 'Application update',
+        body: 'Your join request wasn’t approved this time. Explore other communities.',
+        payload: { communityId: String(cid), deepLink: '/discover' },
+      });
+    } catch {
+      // Best-effort.
+    }
+  }
   noContent(res);
 });
 

@@ -19,6 +19,8 @@ import {
   softDeleteCommunity,
 } from '../services/community.service';
 import { auditFromReq } from '../services/audit.service';
+import { fanOut } from '../services/notification.service';
+import env from '../config/env';
 
 // In-memory platform settings — never persisted. Demo-only stand-in for a real
 // PlatformSettings model. Production lives behind feature flags or config service.
@@ -59,18 +61,25 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
     targetId: community._id,
     metadata: { initialAdminEmail: req.body.initialAdminEmail },
   });
-  created(res, {
-    community: community.toClientJSON(),
-    invitation: {
-      id: String(invitation._id),
-      email: invitation.email,
-      role: invitation.role,
-      expiresAt: invitation.expiresAt,
-      // Dev convenience: surface the token in the API response.
-      // In production this should be removed; the email carries the token.
-      token: invitation.token,
+  // Demo-honest signal: when MAIL_DRIVER is 'console' the operator has to
+  // hand-deliver the invite link because no email actually went out. The web
+  // CreateCommunity screen branches on this to swap the success copy.
+  created(
+    res,
+    {
+      community: community.toClientJSON(),
+      invitation: {
+        id: String(invitation._id),
+        email: invitation.email,
+        role: invitation.role,
+        expiresAt: invitation.expiresAt,
+        // Dev convenience: surface the token in the API response.
+        // In production this should be removed; the email carries the token.
+        token: invitation.token,
+      },
     },
-  });
+    { mailDriver: env.MAIL_DRIVER },
+  );
 });
 
 export const detail = asyncHandler(async (req: Request, res: Response) => {
@@ -120,7 +129,8 @@ export const suspend = asyncHandler(async (req: Request, res: Response) => {
     targetType: 'community',
     targetId: community._id,
   });
-  ok(res, updated.toClientJSON());
+  const notified = await notifyMembership(community._id, community.name, 'suspended');
+  ok(res, updated.toClientJSON(), { notified });
 });
 
 export const restore = asyncHandler(async (req: Request, res: Response) => {
@@ -132,8 +142,42 @@ export const restore = asyncHandler(async (req: Request, res: Response) => {
     targetType: 'community',
     targetId: community._id,
   });
-  ok(res, updated.toClientJSON());
+  const notified = await notifyMembership(community._id, community.name, 'restored');
+  ok(res, updated.toClientJSON(), { notified });
 });
+
+// Fan a community.suspended / community.restored notification to every active
+// member. Best-effort — we never block the suspend/restore call on this.
+async function notifyMembership(
+  cid: mongoose.Types.ObjectId,
+  name: string,
+  kind: 'suspended' | 'restored',
+): Promise<number> {
+  try {
+    const memberships = await Membership.find({ communityId: cid, status: 'active' })
+      .select('userId')
+      .lean();
+    if (memberships.length === 0) return 0;
+    const inputs = memberships.map((m) => ({
+      userId: m.userId,
+      communityId: cid,
+      type: kind === 'suspended' ? 'community.suspended' : 'community.restored',
+      title:
+        kind === 'suspended'
+          ? `${name} is temporarily paused`
+          : `${name} is back`,
+      body:
+        kind === 'suspended'
+          ? 'Most actions are blocked while the platform reviews this community. Your membership is safe.'
+          : 'Access is restored. Events, posts and payments are back to normal.',
+      payload: { communityId: String(cid), deepLink: `/c/${String(cid)}` },
+    }));
+    const { delivered } = await fanOut(inputs);
+    return delivered;
+  } catch {
+    return 0;
+  }
+}
 
 export const remove = asyncHandler(async (req: Request, res: Response) => {
   const community = await loadById(req);

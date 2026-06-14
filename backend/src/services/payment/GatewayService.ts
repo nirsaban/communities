@@ -295,24 +295,42 @@ export async function issueRefund(
   await payment.save();
 
   let rsvp: IEventRSVP | null = null;
+  // Full refund cancels the RSVP. Partial refunds leave the ticket alive.
   if (payment.status === 'refunded' && payment.eventId) {
     rsvp = await EventRSVP.findOne({ eventId: payment.eventId, userId: payment.userId });
     if (rsvp) {
       rsvp.status = 'cancelled';
       rsvp.paymentStatus = 'refunded';
       await rsvp.save();
+    }
+  }
+
+  // Always emit a refund.received notification — full or partial. The payload
+  // carries amountCents so the member can see what was returned. Partial
+  // refunds previously fell through silently, leaving members unaware their
+  // card was credited.
+  if (payment.status === 'refunded' || payment.status === 'partial_refund') {
+    const isFull = payment.status === 'refunded';
+    try {
       await getNotificationService().send({
-        userId: rsvp.userId,
+        userId: payment.userId,
         communityId: payment.communityId,
         type: 'refund.received',
-        title: 'התשלום הוחזר',
-        body: 'בקשת ההחזר אושרה והכרטיס שלך זוכה.',
+        title: isFull ? 'התשלום הוחזר' : 'החזר חלקי בוצע',
+        body: isFull
+          ? 'בקשת ההחזר אושרה והכרטיס שלך זוכה.'
+          : 'חלק מהתשלום הוחזר. בדוק את פירוט החיובים.',
         payload: {
           paymentId: String(payment._id),
-          eventId: String(payment.eventId),
+          eventId: payment.eventId ? String(payment.eventId) : null,
           amountCents: refundCents,
+          totalRefundedCents: payment.refundedAmountCents,
+          partial: !isFull,
+          deepLink: '/me/payments',
         },
       });
+    } catch {
+      // Best-effort — refund still succeeded at the gateway.
     }
   }
   return { payment, rsvp };

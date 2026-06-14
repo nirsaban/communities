@@ -1,8 +1,8 @@
 // 42 · Attendee list — Event Manager check-in screen
 // Design: commuinites_design/Batch C · 42 · Attendee list
-// Layout: back + "Attendees · N" + QR scan button · search field · segmented
-// (All / Going / Checked in / Waitlist) · attendee rows w/ check-in box trailing
-// · "Check in all" FAB.
+// Layout: back + "Attendees · N" + event-name subtitle · search field · segmented
+// (All / Arriving / Checked in / Waitlist) · attendee rows w/ check-in box trailing
+// · "Check in all" FAB (with confirm sheet).
 
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -11,13 +11,20 @@ import { Avatar } from '../../components/Avatar';
 import { EmptyState } from '../../components/EmptyState';
 import { Icon } from '../../components/Icon';
 import { Shimmer } from '../../components/Shimmer';
-import { useCheckInAll, useCheckInRsvp, useEventAttendees, type Attendee } from '../../lib/queries';
+import { fmtEventWhen } from '../../lib/format';
+import {
+  useCheckInAll,
+  useCheckInRsvp,
+  useEvent,
+  useEventAttendees,
+  type Attendee,
+} from '../../lib/queries';
 
-type Filter = 'all' | 'going' | 'checkedIn' | 'waitlist';
+type Filter = 'all' | 'arriving' | 'checkedIn' | 'waitlist';
 
 const FILTERS: Array<{ id: Filter; label: string }> = [
   { id: 'all', label: 'All' },
-  { id: 'going', label: 'Going' },
+  { id: 'arriving', label: 'Arriving' },
   { id: 'checkedIn', label: 'Checked in' },
   { id: 'waitlist', label: 'Waitlist' },
 ];
@@ -26,12 +33,13 @@ const PAGE_SIZE = 50;
 
 export function AttendeeListScreen() {
   const { eid } = useParams<{ eid: string }>();
+  const { data: ev } = useEvent(eid);
   const { data, isLoading } = useEventAttendees(eid);
   const checkIn = useCheckInRsvp(eid);
   const checkInAll = useCheckInAll(eid);
   const [filter, setFilter] = useState<Filter>('all');
   const [search, setSearch] = useState('');
-  const [scanOpen, setScanOpen] = useState(false);
+  const [confirmAll, setConfirmAll] = useState(false);
   // Client-side pagination. The /rsvps endpoint returns the full list today,
   // so for 200+ attendee events we'd render 200 rows. We slice and let the EM
   // tap "Show more" to grow the window — keeps initial scroll responsive and
@@ -52,22 +60,13 @@ export function AttendeeListScreen() {
     setVisibleLimit(PAGE_SIZE);
   }, [filter, search]);
 
+  const subtitle = ev
+    ? `${ev.title} · ${fmtEventWhen(ev.startAt).line}`
+    : undefined;
+
   return (
     <Screen>
-      <AppBar
-        back
-        title={`Attendees · ${goingCount}`}
-        trailing={
-          <button
-            type="button"
-            className="ic-btn"
-            onClick={() => setScanOpen(true)}
-            aria-label="QR scan"
-          >
-            <Icon name="qr_code_scanner" />
-          </button>
-        }
-      />
+      <AppBar back title={`Attendees · ${goingCount}`} subtitle={subtitle} />
 
       <div className="px-5">
         <div
@@ -95,7 +94,7 @@ export function AttendeeListScreen() {
         <div className="seg" style={{ marginBottom: 8 }} role="tablist">
           {FILTERS.map((f) => {
             const count =
-              f.id === 'going'
+              f.id === 'arriving'
                 ? uncheckedGoing.length
                 : f.id === 'checkedIn'
                   ? checkedInCount
@@ -173,7 +172,7 @@ export function AttendeeListScreen() {
         <button
           type="button"
           className="fab"
-          onClick={() => checkInAll.mutate()}
+          onClick={() => setConfirmAll(true)}
           disabled={checkInAll.isPending}
         >
           <Icon name="how_to_reg" size={20} />
@@ -181,15 +180,24 @@ export function AttendeeListScreen() {
         </button>
       )}
 
-      {scanOpen && (
-        <ScanSheet onClose={() => setScanOpen(false)} />
+      {confirmAll && (
+        <ConfirmCheckInAllSheet
+          count={uncheckedGoing.length}
+          pending={checkInAll.isPending}
+          onCancel={() => setConfirmAll(false)}
+          onConfirm={() => {
+            checkInAll.mutate(undefined, {
+              onSettled: () => setConfirmAll(false),
+            });
+          }}
+        />
       )}
     </Screen>
   );
 }
 
 function emptyTitleFor(f: Filter): string {
-  if (f === 'going') return 'No attendees going yet';
+  if (f === 'arriving') return 'Everyone going is checked in';
   if (f === 'checkedIn') return 'No one is checked in';
   if (f === 'waitlist') return 'Waitlist is empty';
   return 'No attendees yet';
@@ -199,11 +207,11 @@ function filterAttendees(rows: Attendee[], f: Filter, search: string): Attendee[
   const term = search.trim().toLowerCase();
   return rows.filter((a) => {
     if (a.status === 'cancelled') return false;
-    // "Going" and "Checked in" are mutually exclusive: Going = RSVPed but
+    // "Arriving" and "Checked in" are mutually exclusive: Arriving = RSVPed but
     // not yet checked in, Checked in = at the door. Without this split the
     // EM sees the same row in both tabs and can't triage who still needs to
     // arrive vs who's already inside.
-    if (f === 'going' && (a.status !== 'going' || !!a.attendedAt)) return false;
+    if (f === 'arriving' && (a.status !== 'going' || !!a.attendedAt)) return false;
     if (f === 'checkedIn' && !a.attendedAt) return false;
     if (f === 'waitlist' && a.status !== 'waitlist') return false;
     if (term) {
@@ -275,7 +283,17 @@ function describeMeta(a: Attendee): string {
   return `RSVP'd ${months} mo ago`;
 }
 
-function ScanSheet({ onClose }: { onClose: () => void }) {
+function ConfirmCheckInAllSheet({
+  count,
+  pending,
+  onCancel,
+  onConfirm,
+}: {
+  count: number;
+  pending: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
   return (
     <div
       style={{
@@ -287,29 +305,38 @@ function ScanSheet({ onClose }: { onClose: () => void }) {
         placeItems: 'center',
         padding: 24,
       }}
-      onClick={onClose}
+      onClick={pending ? undefined : onCancel}
     >
       <div
         className="card"
-        style={{ padding: 24, maxWidth: 340, width: '100%' }}
+        style={{ padding: 20, maxWidth: 340, width: '100%' }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center gap-2 mb-3">
-          <Icon name="qr_code_scanner" size={22} />
-          <span className="t-title-md">Scan to check in</span>
+        <div className="t-title-md" style={{ marginBottom: 6 }}>
+          Check in {count} {count === 1 ? 'attendee' : 'attendees'}?
         </div>
-        <div
-          className="imgph"
-          style={{ height: 200, borderRadius: 14, marginBottom: 16 }}
-        >
-          <span className="lbl">camera preview</span>
-        </div>
-        <p className="t-body-md" style={{ margin: 0, marginBottom: 16 }}>
-          Point at an attendee's ticket QR. We check them in instantly.
+        <p className="t-body-md" style={{ margin: '0 0 14px' }}>
+          Marks everyone currently arriving as checked in. You can uncheck
+          individuals after.
         </p>
-        <button type="button" className="btn btn-secondary" onClick={onClose}>
-          Close
-        </button>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={onCancel}
+            disabled={pending}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={onConfirm}
+            disabled={pending}
+          >
+            {pending ? 'Checking in…' : 'Check in all'}
+          </button>
+        </div>
       </div>
     </div>
   );

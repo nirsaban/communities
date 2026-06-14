@@ -7,6 +7,11 @@ type Props = {
   communityName?: string;
 };
 
+// Full-page lockout for the narrow case where the viewer has NO active
+// membership context to render the banner against (e.g., an unauthenticated
+// deep link or a soft-deleted membership). Authenticated, interactive
+// surfaces now show the persistent SuspendedCommunity banner from RoleShell
+// instead — see web/src/components/RoleShell.tsx.
 export function SuspendedCommunityScreen({ communityName }: Props) {
   const nav = useNavigate();
   return (

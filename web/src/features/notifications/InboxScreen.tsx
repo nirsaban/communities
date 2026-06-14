@@ -12,27 +12,59 @@ import {
   type Notification,
 } from '../../lib/queries';
 
-// Buckets map every backend notification type into one of four meaningful
-// member-facing groups. Anything we don't recognize stays under "Other"
-// (the All chip still shows it).
-type FilterId = 'all' | 'events' | 'community' | 'payments';
-const TYPE_GROUP: Record<string, Exclude<FilterId, 'all'>> = {
-  event: 'events',
-  rsvp: 'events',
-  waitlist: 'events',
-  qa: 'events',
-  post: 'community',
-  initiative: 'community',
-  payment: 'payments',
-  refund: 'payments',
-  subscription: 'payments',
-};
+// Buckets map every backend notification type into one of a small set of
+// member-facing groups. Backend types are dotted (`subscription.cancelled`,
+// `refund.received`, `role.event_manager.assigned`), so we match on the
+// leading namespace via prefix-matching. Future notification types under an
+// existing namespace need no client change.
+type FilterId =
+  | 'all'
+  | 'events'
+  | 'community'
+  | 'payments'
+  | 'role'
+  | 'application'
+  | 'recap';
+
+// Namespace → bucket. A type matches if `type === namespace` OR
+// `type.startsWith(namespace + '.')` (or the snake_case `_` variant for
+// legacy single-key types like `event_broadcast`).
+const NAMESPACE_BUCKETS: Array<[string, Exclude<FilterId, 'all'>]> = [
+  ['event', 'events'],
+  ['event_broadcast', 'events'],
+  ['rsvp', 'events'],
+  ['waitlist', 'events'],
+  ['qa', 'events'],
+  ['recap', 'recap'],
+  ['post', 'community'],
+  ['initiative', 'community'],
+  ['community', 'community'],
+  ['payment', 'payments'],
+  ['refund', 'payments'],
+  ['subscription', 'payments'],
+  ['role', 'role'],
+  ['application', 'application'],
+  ['member', 'application'], // legacy `member.application.*` aliases
+];
+
+function bucketForType(type: string): Exclude<FilterId, 'all'> | null {
+  const t = String(type ?? '');
+  for (const [ns, bucket] of NAMESPACE_BUCKETS) {
+    if (t === ns) return bucket;
+    if (t.startsWith(ns + '.')) return bucket;
+    if (t.startsWith(ns + '_')) return bucket;
+  }
+  return null;
+}
 
 const FILTERS: Array<{ id: FilterId; label: string }> = [
   { id: 'all', label: 'All' },
   { id: 'events', label: 'Events' },
+  { id: 'recap', label: 'Recaps' },
   { id: 'community', label: 'Community' },
   { id: 'payments', label: 'Payments' },
+  { id: 'application', label: 'Apps' },
+  { id: 'role', label: 'Roles' },
 ];
 
 function fmtAgo(iso: string): string {
@@ -44,16 +76,40 @@ function fmtAgo(iso: string): string {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-const TYPE_ICON: Record<string, { icon: string; bg: string; color: string }> = {
-  event: { icon: 'event', bg: 'rgb(var(--surface-2))', color: 'rgb(var(--on-bg-2))' },
-  rsvp: { icon: 'event_available', bg: 'rgb(var(--success-wash))', color: 'rgb(var(--success))' },
-  qa: { icon: 'forum', bg: 'rgb(var(--brand-wash))', color: 'rgb(var(--brand-ink))' },
-  post: { icon: 'forum', bg: 'rgb(var(--brand-wash))', color: 'rgb(var(--brand-ink))' },
-  initiative: { icon: 'favorite', bg: 'rgb(var(--success-wash))', color: 'rgb(var(--success))' },
-  payment: { icon: 'receipt_long', bg: 'rgb(var(--surface-2))', color: 'rgb(var(--on-bg-2))' },
-  waitlist: { icon: 'bolt', bg: 'rgb(var(--warning-wash))', color: 'rgb(var(--warning))' },
-  info: { icon: 'info', bg: 'rgb(var(--surface-2))', color: 'rgb(var(--on-bg-2))' },
+// Icon table keyed by namespace (same prefix logic as buckets). Anything we
+// don't know falls back to `info`.
+type IconMeta = { icon: string; bg: string; color: string };
+const NAMESPACE_ICONS: Array<[string, IconMeta]> = [
+  ['event', { icon: 'event', bg: 'rgb(var(--surface-2))', color: 'rgb(var(--on-bg-2))' }],
+  ['event_broadcast', { icon: 'campaign', bg: 'rgb(var(--brand-wash))', color: 'rgb(var(--brand-ink))' }],
+  ['rsvp', { icon: 'event_available', bg: 'rgb(var(--success-wash))', color: 'rgb(var(--success))' }],
+  ['waitlist', { icon: 'bolt', bg: 'rgb(var(--warning-wash))', color: 'rgb(var(--warning))' }],
+  ['qa', { icon: 'forum', bg: 'rgb(var(--brand-wash))', color: 'rgb(var(--brand-ink))' }],
+  ['recap', { icon: 'photo_library', bg: 'rgb(var(--brand-wash))', color: 'rgb(var(--brand-ink))' }],
+  ['post', { icon: 'forum', bg: 'rgb(var(--brand-wash))', color: 'rgb(var(--brand-ink))' }],
+  ['initiative', { icon: 'favorite', bg: 'rgb(var(--success-wash))', color: 'rgb(var(--success))' }],
+  ['community', { icon: 'diversity_3', bg: 'rgb(var(--warning-wash))', color: 'rgb(var(--warning))' }],
+  ['payment', { icon: 'receipt_long', bg: 'rgb(var(--surface-2))', color: 'rgb(var(--on-bg-2))' }],
+  ['refund', { icon: 'currency_exchange', bg: 'rgb(var(--success-wash))', color: 'rgb(var(--success))' }],
+  ['subscription', { icon: 'workspace_premium', bg: 'rgb(var(--brand-wash))', color: 'rgb(var(--brand-ink))' }],
+  ['role', { icon: 'admin_panel_settings', bg: 'rgb(var(--brand-wash))', color: 'rgb(var(--brand-ink))' }],
+  ['application', { icon: 'how_to_reg', bg: 'rgb(var(--success-wash))', color: 'rgb(var(--success))' }],
+  ['member', { icon: 'how_to_reg', bg: 'rgb(var(--success-wash))', color: 'rgb(var(--success))' }],
+];
+const INFO_ICON: IconMeta = {
+  icon: 'info',
+  bg: 'rgb(var(--surface-2))',
+  color: 'rgb(var(--on-bg-2))',
 };
+function iconForType(type: string): IconMeta {
+  const t = String(type ?? '');
+  for (const [ns, meta] of NAMESPACE_ICONS) {
+    if (t === ns) return meta;
+    if (t.startsWith(ns + '.')) return meta;
+    if (t.startsWith(ns + '_')) return meta;
+  }
+  return INFO_ICON;
+}
 
 function bucket(iso: string): 'today' | 'earlier' {
   const created = new Date(iso);
@@ -81,11 +137,19 @@ export function InboxScreen() {
   // Per-group unread counts power the chip badges so members can scan how much
   // is waiting in each bucket without opening it.
   const groupUnread = useMemo(() => {
-    const out: Record<FilterId, number> = { all: 0, events: 0, community: 0, payments: 0 };
+    const out: Record<FilterId, number> = {
+      all: 0,
+      events: 0,
+      community: 0,
+      payments: 0,
+      role: 0,
+      application: 0,
+      recap: 0,
+    };
     for (const n of data ?? []) {
       if (n.read) continue;
       out.all += 1;
-      const g = TYPE_GROUP[n.type];
+      const g = bucketForType(n.type);
       if (g) out[g] += 1;
     }
     return out;
@@ -94,7 +158,7 @@ export function InboxScreen() {
   const { today, earlier } = useMemo(() => {
     const list = (data ?? [])
       .filter((n) => n.id !== actionable?.id)
-      .filter((n) => filter === 'all' || TYPE_GROUP[n.type] === filter);
+      .filter((n) => filter === 'all' || bucketForType(n.type) === filter);
     const tToday: Notification[] = [];
     const tEarlier: Notification[] = [];
     for (const n of list) {
@@ -242,7 +306,7 @@ export function InboxScreen() {
 }
 
 function NotificationRow({ n, onTap }: { n: Notification; onTap: () => void }) {
-  const meta = TYPE_ICON[n.type] ?? TYPE_ICON.info;
+  const meta = iconForType(n.type);
   return (
     <button onClick={onTap} className="notif text-start w-full">
       <span className="ic" style={{ background: meta.bg, color: meta.color }}>

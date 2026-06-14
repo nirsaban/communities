@@ -28,12 +28,16 @@ export function CancelSubscriptionScreen() {
       })
     : null;
 
+  const [done, setDone] = useState(false);
+
   async function confirm(): Promise<void> {
     if (!sid) return;
     setError(null);
     try {
       await cancel.mutateAsync(sid);
-      nav('/me/subscriptions');
+      // Show the success card before bouncing back so the member has visual
+      // proof the cancel went through. Mirrors /payments/success.
+      setDone(true);
     } catch (err) {
       setError(extractError(err).message);
     }
@@ -46,6 +50,69 @@ export function CancelSubscriptionScreen() {
         <div className="flex flex-1 items-center justify-center">
           <LoadingDots />
         </div>
+      </Screen>
+    );
+  }
+
+  if (done) {
+    return (
+      <Screen>
+        <AppBar
+          title="Cancellation scheduled"
+          trailing={
+            <button
+              onClick={() => nav('/me/subscriptions')}
+              className="ic-btn"
+              aria-label="Close"
+            >
+              <Icon name="close" />
+            </button>
+          }
+        />
+        <main className="flex flex-1 flex-col items-center px-5 pb-6 text-center">
+          <div
+            className="blob mt-6"
+            style={{
+              background: 'rgb(var(--success-wash))',
+              color: 'rgb(var(--success))',
+            }}
+          >
+            <Icon name="check_circle" size={46} />
+          </div>
+          <h1 className="t-display-md mt-5 mb-1.5">Cancellation scheduled</h1>
+          <p
+            className="t-body-lg"
+            style={{ color: 'rgb(var(--muted))', margin: '0 0 20px' }}
+          >
+            {endDate ? (
+              <>
+                You keep your member benefits until{' '}
+                <b style={{ color: 'rgb(var(--on-bg))' }}>{endDate}</b>. No further
+                charges after that.
+              </>
+            ) : (
+              'You keep your member benefits through the end of the current period. No further charges after that.'
+            )}
+          </p>
+          {communityName && (
+            <Card className="w-full p-3.5 text-start" style={{ marginBottom: 16 }}>
+              <div className="t-label-sm" style={{ marginBottom: 4 }}>
+                Community
+              </div>
+              <div className="t-label-lg">{communityName}</div>
+            </Card>
+          )}
+          <div className="w-full mt-auto" style={{ paddingBottom: 24 }}>
+            <div className="flex flex-col gap-2.5">
+              <AppButton onClick={() => nav('/me/subscriptions')}>
+                Back to subscriptions
+              </AppButton>
+              <AppButton variant="secondary" onClick={() => nav('/home')}>
+                Go to home
+              </AppButton>
+            </div>
+          </div>
+        </main>
       </Screen>
     );
   }

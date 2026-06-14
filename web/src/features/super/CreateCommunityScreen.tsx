@@ -147,7 +147,11 @@ export function CreateCommunityScreen() {
   // invitation pipeline; keep the value local so the design works end-to-end.
   const [plan, setPlan] = useState<Plan>('standard');
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ token?: string; communityId?: string } | null>(null);
+  const [result, setResult] = useState<{
+    token?: string;
+    communityId?: string;
+    mailDriver?: string | null;
+  } | null>(null);
 
   async function submit(): Promise<void> {
     setError(null);
@@ -166,13 +170,21 @@ export function CreateCommunityScreen() {
         privacy: 'invite_only',
         initialAdminEmail: adminEmail.trim(),
       });
-      setResult({ token: r.invitation?.token, communityId: r.community.id });
+      setResult({
+        token: r.invitation?.token,
+        communityId: r.community.id,
+        mailDriver: r.mailDriver,
+      });
     } catch (err) {
       setError(extractError(err).message);
     }
   }
 
   if (result) {
+    // Demo-honest: when the backend reports MAIL_DRIVER === 'console' nothing
+    // was actually emailed; surface the copy-the-link affordance as the
+    // primary outcome. Production drivers keep the "we sent an invite" tone.
+    const stubbed = result.mailDriver === 'console';
     return (
       <Screen className="dark">
         <AppBar
@@ -199,15 +211,37 @@ export function CreateCommunityScreen() {
             </span>
             <h2 className="t-title-md mb-1">Community created</h2>
             <p className="t-body-md" style={{ margin: 0 }}>
-              We sent an admin invite to {adminEmail}
+              {stubbed
+                ? `Email delivery is stubbed in this environment. Copy the invite link below and send it to ${adminEmail}.`
+                : `We sent an admin invite to ${adminEmail}.`}
             </p>
+            {stubbed && (
+              <div
+                className="mt-3 inline-flex items-center gap-1"
+                style={{
+                  background: 'rgb(var(--warning-wash))',
+                  color: 'rgb(var(--warning))',
+                  borderRadius: 999,
+                  padding: '4px 10px',
+                  fontSize: 11,
+                  fontWeight: 600,
+                }}
+              >
+                <Icon name="science" size={12} />
+                MAIL_DRIVER = console
+              </div>
+            )}
           </Card>
           {result.token && (
             <Card className="p-3 mt-3">
-              <div className="t-label-sm mb-1">Admin invite link</div>
+              <div className="t-label-sm mb-1">
+                {stubbed ? 'Copy this link to the new admin' : 'Admin invite link'}
+              </div>
               <CopyInviteRow url={`${window.location.origin}/invite/${result.token}`} />
               <div className="t-body-md" style={{ margin: '8px 0 0', fontSize: 11 }}>
-                Share with {adminEmail} or open in a new tab to test the acceptance flow.
+                {stubbed
+                  ? `No email was sent. Paste this link into your channel of choice (Slack, WhatsApp, etc.) so ${adminEmail} can accept.`
+                  : `Share with ${adminEmail} or open in a new tab to test the acceptance flow.`}
               </div>
               <div style={{ marginTop: 8 }}>
                 <a

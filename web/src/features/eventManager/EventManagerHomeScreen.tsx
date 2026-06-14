@@ -3,8 +3,9 @@
 // Surfaces only events the manager is assigned to (or admin/subadmin manages).
 // Upcoming/Past segmented control + EventManageCard with RSVP/waitlist counts.
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AppBar, Screen } from '../../components/AppBar';
 import { EmptyState } from '../../components/EmptyState';
 import { Icon } from '../../components/Icon';
 import { Shimmer } from '../../components/Shimmer';
@@ -15,6 +16,8 @@ import { Avatar } from '../../components/Avatar';
 
 type Bucket = 'upcoming' | 'past';
 
+const JUMP_SHORTCUT_KEY = 'em.home.jumpDismissed';
+
 export function EventManagerHomeScreen() {
   const nav = useNavigate();
   const auth = useAuth();
@@ -24,43 +27,65 @@ export function EventManagerHomeScreen() {
   const items = useMemo(() => data ?? [], [data]);
   const activeCount = items.filter((e) => e.status === 'published').length;
 
+  // If the EM only manages a single upcoming event, surface a "Jump to command
+  // center" shortcut on first paint — they're almost always heading there
+  // anyway. Dismissable per-session so we don't nag.
+  const [jumpDismissed, setJumpDismissed] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return window.sessionStorage.getItem(JUMP_SHORTCUT_KEY) === '1';
+    } catch {
+      return false;
+    }
+  });
+  useEffect(() => {
+    if (!jumpDismissed) return;
+    try {
+      window.sessionStorage.setItem(JUMP_SHORTCUT_KEY, '1');
+    } catch {
+      /* ignore */
+    }
+  }, [jumpDismissed]);
+
+  const showJumpShortcut =
+    bucket === 'upcoming' && !jumpDismissed && items.length === 1;
+  const soleEventId = showJumpShortcut ? items[0].id : null;
+
   return (
-    <div className="flex min-h-full flex-col bg-bg">
-      <header
-        className="feed-head safe-top"
-        style={{ padding: '8px 16px 12px' }}
-      >
-        <div className="grow">
-          <div className="t-display-md" style={{ fontSize: 24 }}>
-            My events
+    <Screen>
+      <AppBar
+        title="My events"
+        subtitle={
+          bucket === 'upcoming'
+            ? `Event Manager · ${activeCount} active`
+            : 'Event Manager · past events'
+        }
+        trailing={
+          <div style={{ position: 'relative' }}>
+            <Avatar name={auth.user?.name} size={36} />
+            <span
+              className="role-dot"
+              aria-label="Event Manager"
+              style={{
+                position: 'absolute',
+                bottom: -2,
+                right: -2,
+                width: 16,
+                height: 16,
+                borderRadius: 999,
+                background: '#9A6B12',
+                border: '2px solid rgb(var(--bg))',
+                display: 'grid',
+                placeItems: 'center',
+                color: '#fff',
+              }}
+              title="Event Manager"
+            >
+              <Icon name="event" size={10} />
+            </span>
           </div>
-          <div className="t-body-md" style={{ margin: 0 }}>
-            Assigned to you · {activeCount} active
-          </div>
-        </div>
-        <div style={{ position: 'relative' }}>
-          <Avatar name={auth.user?.name} size={40} />
-          <span
-            className="role-dot"
-            style={{
-              position: 'absolute',
-              bottom: -2,
-              right: -2,
-              width: 18,
-              height: 18,
-              borderRadius: 999,
-              background: '#9A6B12',
-              border: '2px solid rgb(var(--bg))',
-              display: 'grid',
-              placeItems: 'center',
-              color: '#fff',
-            }}
-            title="Event Manager"
-          >
-            <Icon name="event" size={11} />
-          </span>
-        </div>
-      </header>
+        }
+      />
 
       <div className="px-5">
         <div className="seg" style={{ marginBottom: 14 }} role="tablist">
@@ -86,6 +111,54 @@ export function EventManagerHomeScreen() {
       </div>
 
       <main className="flex-1 px-5 pb-6">
+        {showJumpShortcut && soleEventId && (
+          <div
+            className="card"
+            style={{
+              padding: 12,
+              marginBottom: 14,
+              background: 'rgb(var(--brand-wash))',
+              borderColor: 'rgb(var(--brand-wash))',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+            }}
+          >
+            <Icon
+              name="bolt"
+              size={20}
+              style={{ color: 'rgb(var(--brand-ink))' }}
+            />
+            <div className="grow flex-1 min-w-0">
+              <div className="t-label-lg" style={{ fontSize: 13 }}>
+                Jump to command center
+              </div>
+              <div
+                className="t-body-md truncate"
+                style={{ margin: 0, fontSize: 11 }}
+              >
+                {items[0].title}
+              </div>
+            </div>
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={() => nav(`/events/${soleEventId}/command`)}
+            >
+              Open
+            </button>
+            <button
+              type="button"
+              className="ic-btn"
+              onClick={() => setJumpDismissed(true)}
+              aria-label="Dismiss shortcut"
+              style={{ width: 28, height: 28 }}
+            >
+              <Icon name="close" size={14} />
+            </button>
+          </div>
+        )}
+
         {isLoading && (
           <div className="space-y-3">
             <Shimmer style={{ height: 92, borderRadius: 12 }} />
@@ -112,7 +185,7 @@ export function EventManagerHomeScreen() {
           ))}
         </div>
       </main>
-    </div>
+    </Screen>
   );
 }
 
@@ -153,8 +226,19 @@ function EventManageCard({ ev, onClick }: { ev: EventCard; onClick: () => void }
           </>
         )}
         <span className="grow" style={{ flex: 1 }} />
-        <span className="t-label-sm" style={{ margin: 0, color: 'rgb(var(--brand-ink))' }}>
-          Manage →
+        <span
+          className="chip"
+          style={{
+            background: 'rgb(var(--brand))',
+            color: '#fff',
+            borderColor: 'transparent',
+            height: 28,
+            fontSize: 12,
+            fontWeight: 600,
+          }}
+        >
+          Manage
+          <Icon name="chevron_right" size={16} />
         </span>
       </div>
     </button>

@@ -454,6 +454,43 @@ export function useUploadMaterial(eid: string | undefined) {
   });
 }
 
+// Recap photos reuse the same /events/:eid/materials multipart endpoint that
+// MaterialsUpload uses — backend already wires Cloudinary there, so there's no
+// reason to maintain a parallel media upload path just for recaps. We tag the
+// upload with type 'image' and an internal title so it doesn't pollute the
+// public Materials list UI (managers can filter image-type-only out of that
+// screen if they care, but the recap photo URL ends up in `summary.photoUrls`
+// either way).
+export function useUploadRecapPhoto(eid: string | undefined) {
+  return useMutation({
+    mutationFn: async (input: {
+      file: File;
+      onProgress?: (pct: number) => void;
+      signal?: AbortSignal;
+    }): Promise<{ fileUrl: string }> => {
+      const form = new FormData();
+      const baseName = input.file.name.replace(/\.[^.]+$/, '') || 'recap-photo';
+      form.append('title', `Recap · ${baseName}`);
+      form.append('type', 'image');
+      form.append('file', input.file);
+      const r = await api.post(`/events/${eid}/materials`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        signal: input.signal,
+        onUploadProgress: (evt) => {
+          if (!input.onProgress) return;
+          const total = evt.total ?? input.file.size;
+          if (!total) return;
+          const pct = Math.min(99, Math.round((evt.loaded / total) * 100));
+          input.onProgress(pct);
+        },
+      });
+      const data = r.data?.data ?? {};
+      const url = String(data.fileUrl ?? data.url ?? '');
+      return { fileUrl: url };
+    },
+  });
+}
+
 // ===== Q&A =====
 
 // Q&A model uses: upvoted (bool), pinned (bool), resolved (bool), answer.body, answer.answeredByUserId.
@@ -468,6 +505,11 @@ export type QAItem = {
   resolved: boolean;
   answer?: { body: string; answeredByUserId: string; answeredAt: string };
   authorId: string;
+  // Real asker name + photo, populated by the QA list controller. May be null
+  // for legacy rows or members whose account was deleted — UI falls back to
+  // a generic label only in that case.
+  authorName?: string | null;
+  authorPhotoUrl?: string | null;
   createdAt: string;
 };
 
@@ -495,6 +537,8 @@ export function useEventQA(eid: string | undefined) {
               }
             : undefined,
           authorId: String(q.userId ?? ''),
+          authorName: (q.authorName as string | null | undefined) ?? null,
+          authorPhotoUrl: (q.authorPhotoUrl as string | null | undefined) ?? null,
           createdAt: String(q.createdAt ?? ''),
         };
       });

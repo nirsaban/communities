@@ -17,7 +17,7 @@ This folder holds the per-role implementation agents for the community SaaS. Eac
 
 | Role | Email | Password |
 |---|---|---|
-| Super admin | `bob@example.com` | `BobPass123!` |
+| Super admin | `bob@example.com` | !` |
 | Community admin | `alice-admin@example.com` | `RolePass123!` |
 | Sub-admin | `sam-subadmin@example.com` | `RolePass123!` |
 | Event manager | `eve-em@example.com` | `RolePass123!` |
