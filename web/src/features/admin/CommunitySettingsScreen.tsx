@@ -111,7 +111,7 @@ export function CommunitySettingsScreen() {
   return (
     <Screen>
       <AppBar back title="Community settings" />
-      <main className="flex-1 px-5 pb-6 overflow-y-auto">
+      <main className="flex-1 px-5 pb-6 overflow-y-auto content-sm lg:px-8">
         {topError && (
           <div className="t-body-md mb-3" style={{ color: 'rgb(var(--error))' }}>
             {topError}

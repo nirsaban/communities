@@ -50,7 +50,7 @@ export function EmailVerificationScreen() {
   return (
     <Screen>
       <AppBar back showTitle={false} />
-      <main className="flex flex-1 flex-col items-center px-5 pb-10 text-center">
+      <main className="flex flex-1 flex-col items-center px-5 pb-10 text-center content-sm lg:px-8">
         <div className="blob mt-5">
           <Icon name="mark_email_unread" size={44} />
         </div>

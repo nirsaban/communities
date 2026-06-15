@@ -20,7 +20,7 @@ export function OfflineScreen() {
   return (
     <Screen>
       <AppBar title="Offline" />
-      <main className="flex flex-1 flex-col items-center justify-center px-6 text-center">
+      <main className="flex flex-1 flex-col items-center justify-center px-6 text-center content-sm lg:px-8">
         <span
           className="grid place-items-center mb-4"
           style={{

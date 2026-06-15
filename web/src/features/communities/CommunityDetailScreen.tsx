@@ -71,7 +71,7 @@ export function CommunityDetailScreen() {
           </button>
         </div>
       </div>
-      <main className="flex-1 px-5 pt-5">
+      <main className="flex-1 px-5 pt-5 content-md lg:px-8">
         <div className="flex items-start gap-3">
           <div
             className="flex h-16 w-16 items-center justify-center text-brand-on shadow-low"

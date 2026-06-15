@@ -179,7 +179,7 @@ export function InviteMemberScreen() {
   return (
     <Screen>
       <AppBar back title="Invite members" />
-      <main className="flex flex-1 flex-col px-5 pb-6">
+      <main className="flex flex-1 flex-col px-5 pb-6 content-sm lg:px-8">
         <div className="seg mb-4">
           {(['single', 'bulk'] as Mode[]).map((m) => (
             <button

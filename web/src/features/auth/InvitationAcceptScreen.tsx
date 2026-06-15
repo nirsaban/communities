@@ -131,7 +131,7 @@ export function InvitationAcceptScreen() {
     return (
       <Screen>
         <AppBar showTitle={false} />
-        <main className="flex flex-1 flex-col items-center justify-center text-center px-6">
+        <main className="flex flex-1 flex-col items-center justify-center text-center px-6 content-sm lg:px-8">
           <div className="blob mb-4" style={{ background: 'rgb(var(--error-wash))', color: 'rgb(var(--error))' }}>
             <Icon name="link_off" size={44} />
           </div>
@@ -149,7 +149,7 @@ export function InvitationAcceptScreen() {
     return (
       <Screen>
         <AppBar showTitle={false} />
-        <main className="flex flex-1 flex-col items-center justify-center text-center px-6">
+        <main className="flex flex-1 flex-col items-center justify-center text-center px-6 content-sm lg:px-8">
           <div className="blob mb-4">
             <Icon name="check_circle" size={44} />
           </div>
@@ -168,7 +168,7 @@ export function InvitationAcceptScreen() {
     return (
       <Screen>
         <AppBar showTitle={false} />
-        <main className="flex flex-1 flex-col items-center justify-center text-center px-6">
+        <main className="flex flex-1 flex-col items-center justify-center text-center px-6 content-sm lg:px-8">
           <div className="blob mb-4" style={{ background: 'rgb(var(--warning-wash))', color: 'rgb(var(--warning))' }}>
             <Icon name="hourglass_disabled" size={44} />
           </div>
@@ -187,7 +187,7 @@ export function InvitationAcceptScreen() {
   return (
     <Screen>
       <AppBar showTitle={false} />
-      <main className="flex flex-1 flex-col px-5 pb-8">
+      <main className="flex flex-1 flex-col px-5 pb-8 content-sm lg:px-8">
         <div className="flex items-center gap-3 mb-5">
           <Avatar name={peek.community.name} src={peek.community.logoUrl} size={56} />
           <div>

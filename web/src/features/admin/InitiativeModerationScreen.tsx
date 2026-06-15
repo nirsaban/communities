@@ -70,7 +70,7 @@ export function InitiativeModerationScreen() {
         back
         title={isLoading ? 'Initiatives' : `Initiatives · ${pending.length} pending`}
       />
-      <main className="flex-1 px-5 pb-6">
+      <main className="flex-1 px-5 pb-6 content-wide lg:px-8">
         {isLoading && (
           <div className="flex flex-1 items-center justify-center py-12">
             <LoadingDots />

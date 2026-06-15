@@ -39,7 +39,7 @@ export function ForgotPasswordScreen() {
   return (
     <Screen>
       <AppBar back showTitle={false} />
-      <main className="flex flex-1 flex-col px-5 pb-10">
+      <main className="flex flex-1 flex-col px-5 pb-10 content-sm lg:px-8">
         <div className="blob mb-5">
           <Icon name="lock_reset" size={44} />
         </div>

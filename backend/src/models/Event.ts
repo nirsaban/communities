@@ -186,6 +186,9 @@ eventSchema.methods.toClientJSON = function toClientJSON(this: IEvent) {
     capacity: this.capacity,
     speakers: this.speakers,
     pricing: this.pricing,
+    // Mirror the perk flag to the top level so clients (web EventDetail) can read
+    // `subscriptionIncluded` directly to drive the subscriber pay-bar swap.
+    subscriptionIncluded: this.pricing?.subscriptionIncluded ?? false,
     status: this.status,
     visibility: this.visibility,
     managers: (this.managers || []).map(String),

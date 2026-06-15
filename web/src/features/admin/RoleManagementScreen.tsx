@@ -94,7 +94,7 @@ export function RoleManagementScreen() {
   return (
     <Screen>
       <AppBar back title="Roles & permissions" />
-      <main className="flex-1 px-5 pb-6 overflow-y-auto">
+      <main className="flex-1 px-5 pb-6 overflow-y-auto content-wide lg:px-8">
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}

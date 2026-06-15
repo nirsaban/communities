@@ -53,7 +53,7 @@ export function ResetPasswordScreen() {
   return (
     <Screen>
       <AppBar back showTitle={false} />
-      <main className="flex-1 px-5 pb-10">
+      <main className="flex-1 px-5 pb-10 content-sm lg:px-8">
         <h1 className="t-display-md mb-2">Choose a new password</h1>
         <p className="t-body-lg mb-6" style={{ color: 'rgb(var(--muted))' }}>
           {t.auth.passwordHelper}

@@ -66,7 +66,7 @@ export function LoginScreen() {
   return (
     <Screen>
       <AppBar back showTitle={false} />
-      <main className={`flex-1 px-5 pb-10 ${shake ? 'animate-shake' : ''}`}>
+      <main className={`flex-1 px-5 pb-10 ${shake ? 'animate-shake' : ''} content-sm lg:px-8`}>
         <h1 className="t-display-lg mb-1.5">
           Welcome<br />back.
         </h1>

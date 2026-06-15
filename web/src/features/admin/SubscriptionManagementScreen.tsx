@@ -74,7 +74,7 @@ export function SubscriptionManagementScreen() {
   return (
     <Screen>
       <AppBar back title="Subscriptions" />
-      <main className="flex-1 px-5 pb-6">
+      <main className="flex-1 px-5 pb-6 content-sm lg:px-8">
         <div className="grid2 mb-4 grid grid-cols-2 gap-2.5">
           <Card className="kpi">
             <div className="k-lbl">

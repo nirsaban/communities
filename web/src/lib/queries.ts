@@ -386,7 +386,18 @@ export function useCheckout() {
   return useMutation({
     mutationFn: async (eid: string): Promise<CheckoutResponse> => {
       const r = await api.post(`/events/${eid}/checkout`);
-      return r.data?.data;
+      // Backend (payment.controller.checkout) returns { paymentUrl, paymentId }
+      // — the PayPlus hosted-page URL. Older code read `sessionUrl`, which the
+      // API never returned, so the redirect link was always undefined.
+      const data = (r.data?.data ?? {}) as {
+        paymentUrl?: string;
+        sessionUrl?: string;
+        paymentId?: string;
+      };
+      return {
+        sessionUrl: data.paymentUrl ?? data.sessionUrl ?? '',
+        paymentId: data.paymentId ?? '',
+      };
     },
   });
 }
@@ -1307,9 +1318,14 @@ export function useMySubscriptions() {
 
 export function useSubscribeToCommunity(cid: string | undefined) {
   return useMutation({
+    // Backend (payment.controller.subscribe) responds with
+    // { paymentUrl, subscriptionId } — the PayPlus hosted-page URL. Map it to
+    // the sessionUrl the caller redirects to. (Older code read `sessionUrl`,
+    // which the API never returned, so the redirect went to "undefined".)
     mutationFn: async (plan: 'monthly' | 'annual') => {
       const r = await api.post(`/communities/${cid}/subscribe`, { plan });
-      return r.data?.data as { sessionUrl: string };
+      const data = r.data?.data as { paymentUrl?: string; sessionUrl?: string };
+      return { sessionUrl: data?.paymentUrl ?? data?.sessionUrl ?? '' };
     },
   });
 }
@@ -1735,7 +1751,13 @@ export function useSuperSuspendCommunity() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (cid: string) => api.post(`/super/communities/${cid}/suspend`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['super-communities'] }),
+    onSuccess: (_data, cid) => {
+      qc.invalidateQueries({ queryKey: ['super-communities'] });
+      // Detail screen reads ['super-community-detail', cid]; without this the
+      // status chip + action buttons stay on the stale (active) state after a
+      // suspend, so Restore never appears until a manual reload.
+      qc.invalidateQueries({ queryKey: ['super-community-detail', cid] });
+    },
   });
 }
 
@@ -1743,6 +1765,9 @@ export function useSuperRestoreCommunity() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (cid: string) => api.post(`/super/communities/${cid}/restore`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['super-communities'] }),
+    onSuccess: (_data, cid) => {
+      qc.invalidateQueries({ queryKey: ['super-communities'] });
+      qc.invalidateQueries({ queryKey: ['super-community-detail', cid] });
+    },
   });
 }

@@ -16,10 +16,19 @@ const standardOptions: Partial<Options> = {
   skip: () => env.isTest,
 };
 
+// Loopback requests from the local dev box (the role-walk demo logs in as 5
+// roles back-to-back, plus repeated agent/curl probes) would otherwise blow
+// through the 10-per-15-min auth cap and self-lock for 15 minutes. Skip the
+// auth limiter for loopback IPs in development only — production keeps the full
+// per-IP limit.
+const isLoopback = (ip?: string): boolean =>
+  ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
+
 export const authLimiter = rateLimit({
   windowMs: env.RATE_LIMIT_AUTH_WINDOW_MS,
   limit: env.RATE_LIMIT_AUTH_MAX,
   ...standardOptions,
+  skip: (req) => env.isTest || (env.isDev && isLoopback(req.ip)),
 });
 
 export const readLimiter = rateLimit({

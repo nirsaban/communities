@@ -128,7 +128,11 @@ export const getPayment = asyncHandler(async (req: Request, res: Response) => {
       communityId: payment.communityId,
       status: 'active',
     });
-    if (!m || (m.role !== 'admin' && m.role !== 'subadmin')) {
+    // Money-blindness (invariant #3): sub-admins must never see payment amounts.
+    // `blockSubAdminFromFinancial` is a no-op on this route (no `:cid`, so no
+    // membership is loaded), so the role gate is enforced here against the
+    // payment's own community.
+    if (!m || m.role !== 'admin') {
       throw AppError.unauthorized('Not allowed');
     }
   }

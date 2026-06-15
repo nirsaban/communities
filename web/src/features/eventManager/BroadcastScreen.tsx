@@ -122,7 +122,7 @@ export function BroadcastScreen() {
         }
       />
 
-      <main className="flex flex-1 flex-col px-5 pb-6">
+      <main className="flex flex-1 flex-col px-5 pb-6 content-md lg:px-8">
         {/* RecipientRow — split into recipient counts + event anchor */}
         <div
           className="list-row"

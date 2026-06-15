@@ -63,7 +63,7 @@ export function MaterialsScreen() {
           ) : undefined
         }
       />
-      <main className="flex-1 px-5 pb-6">
+      <main className="flex-1 px-5 pb-6 content-md lg:px-8">
         {ev && (
           <p className="t-body-md mt-0.5 mb-4">
             {ev.title}

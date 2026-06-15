@@ -151,7 +151,7 @@ export function EventQAScreen() {
         </div>
       )}
 
-      <main className="flex-1 px-5 pb-2">
+      <main className="flex-1 px-5 pb-2 content-md lg:px-8">
         {!isManager && <QAHowItWorks empty={!isLoading && filtered.length === 0} />}
 
         {isLoading && (

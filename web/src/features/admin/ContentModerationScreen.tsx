@@ -51,7 +51,7 @@ export function ContentModerationScreen() {
   return (
     <Screen>
       <AppBar back title={isLoading ? 'Moderation' : `Moderation · ${count}`} />
-      <main className="flex-1 px-5 pb-6">
+      <main className="flex-1 px-5 pb-6 content-wide lg:px-8">
         <div className="flex gap-2 mb-3">
           {(Object.keys(FILTER_LABELS) as Filter[]).map((f) => (
             <button

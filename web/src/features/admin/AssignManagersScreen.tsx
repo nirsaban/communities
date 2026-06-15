@@ -91,7 +91,7 @@ export function AssignManagersScreen() {
   return (
     <Screen>
       <AppBar back title="Assign Event Manager" />
-      <main className="flex-1 px-5 pb-6">
+      <main className="flex-1 px-5 pb-6 content-wide lg:px-8">
         {eventTitle && (
           <p
             className="t-body-md"

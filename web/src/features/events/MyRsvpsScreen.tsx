@@ -39,7 +39,7 @@ export function MyRsvpsScreen() {
           ))}
         </div>
       </div>
-      <main className="px-5 pb-6">
+      <main className="px-5 pb-6 content-md lg:px-8">
         {isLoading && (
           <div className="space-y-3">
             <EventCardSkeleton />

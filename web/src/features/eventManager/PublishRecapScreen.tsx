@@ -140,7 +140,7 @@ export function PublishRecapScreen() {
   return (
     <Screen>
       <AppBar back title="Publish recap" subtitle={subtitle} />
-      <main className="flex flex-1 flex-col px-5 pb-6">
+      <main className="flex flex-1 flex-col px-5 pb-6 content-md lg:px-8">
         {/* AttendanceKPI — dropped the permanent "Rating —" placeholder; we'll
             add it back once member feedback collection lands. */}
         <div className="row" style={{ display: 'flex', gap: 11, marginBottom: 16 }}>

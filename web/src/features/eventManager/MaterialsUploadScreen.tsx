@@ -167,7 +167,7 @@ export function MaterialsUploadScreen() {
   return (
     <Screen>
       <AppBar back title="Add material" subtitle={subtitle} />
-      <main className="flex flex-1 flex-col px-5 pb-6">
+      <main className="flex flex-1 flex-col px-5 pb-6 content-md lg:px-8">
         {error && (
           <div className="t-body-md mb-3" style={{ color: 'rgb(var(--error))' }}>
             {error}

@@ -43,7 +43,7 @@ export function GoogleCallbackScreen() {
   return (
     <Screen>
       <AppBar showTitle={false} />
-      <main className="flex flex-1 flex-col items-center justify-center px-6 text-center">
+      <main className="flex flex-1 flex-col items-center justify-center px-6 text-center content-sm lg:px-8">
         {!error && (
           <>
             <div

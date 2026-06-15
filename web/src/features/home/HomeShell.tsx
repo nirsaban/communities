@@ -8,7 +8,7 @@ export function HomeShell() {
     <div className="flex min-h-full bg-bg">
       <SideNav />
       <div className="flex min-h-full flex-1 flex-col">
-        <div className="flex-1 pb-2">
+        <div className="flex-1 pb-20 lg:pb-2">
           <Outlet />
         </div>
         <BottomNav />

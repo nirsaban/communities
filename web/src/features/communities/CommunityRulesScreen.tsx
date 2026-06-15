@@ -38,7 +38,7 @@ export function CommunityRulesScreen() {
   return (
     <Screen>
       <AppBar back />
-      <main className="flex flex-1 flex-col px-5 pb-10">
+      <main className="flex flex-1 flex-col px-5 pb-10 content-sm lg:px-8">
         <h1 className="t-display-md mb-1 mt-1">Community guidelines</h1>
         <p className="t-body-lg" style={{ color: 'rgb(var(--muted))', margin: 0 }}>
           {community?.name}

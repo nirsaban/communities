@@ -146,7 +146,7 @@ export function EditPricingScreen() {
           </button>
         }
       />
-      <main className="flex-1 px-5 pb-6 overflow-y-auto">
+      <main className="flex-1 px-5 pb-6 overflow-y-auto content-sm lg:px-8">
         {title && (
           <p className="t-body-md mb-3" style={{ margin: 0 }}>
             {title}

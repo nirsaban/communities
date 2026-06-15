@@ -14,7 +14,12 @@ const ROLE_USER_PASSWORD = 'RolePass123!';
 const ROLE_USERS: Array<{ email: string; name: string; role: CommunityRole }> = [
   { email: 'alice-admin@example.com', name: 'Alice Admin', role: 'admin' },
   { email: 'sam-subadmin@example.com', name: 'Sam Subadmin', role: 'subadmin' },
-  { email: 'eve-em@example.com', name: 'Eve Manager', role: 'event_manager' },
+  // Per PRD 06 §4: Event Manager is NOT a community-wide role. Eve is a plain
+  // member whose manager powers come solely from Event.managers[] (assigned to
+  // one upcoming event below). Seeding her as `member` keeps the per-event
+  // grant the only thing that unlocks her command center — exactly what the EM
+  // scoping walk must verify.
+  { email: 'eve-em@example.com', name: 'Eve Manager', role: 'member' },
   { email: 'mike-member@example.com', name: 'Mike Member', role: 'member' },
 ];
 
@@ -243,6 +248,21 @@ async function main(): Promise<void> {
       // Auto-subscribe Mike so the subscriber-side walk has real state.
       const mike = await User.findOne({ email: 'mike-member@example.com' });
       if (mike) {
+        // Stamp onboarding so the OnboardingGate doesn't bounce a returning,
+        // already-active member back into /onboard/interests on every login.
+        // The interests step is a first-login nicety; Mike completed it long
+        // ago in demo terms. Without this the entire member walk is blocked.
+        const onboardingPatch: Record<string, Date> = {};
+        if (!mike.onboarding?.profileCompletedAt) {
+          onboardingPatch['onboarding.profileCompletedAt'] = new Date();
+        }
+        if (!mike.onboarding?.interestsCompletedAt) {
+          onboardingPatch['onboarding.interestsCompletedAt'] = new Date();
+        }
+        if (Object.keys(onboardingPatch).length > 0 && !args.dry) {
+          await User.updateOne({ _id: mike._id }, { $set: onboardingPatch });
+          console.log(`✓ Mike onboarding stamped (${Object.keys(onboardingPatch).join(', ')})`);
+        }
         const existingSub = await Subscription.findOne({
           userId: mike._id,
           communityId: anchor.communityId,
@@ -252,12 +272,13 @@ async function main(): Promise<void> {
             await Subscription.create({
               userId: mike._id,
               communityId: anchor.communityId,
+              gateway: 'payplus',
               plan: 'monthly',
               status: 'active',
               cancelAtPeriodEnd: false,
               currentPeriodStart: new Date(),
               currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-              stripeSubscriptionId: `sub_demo_mike_${Date.now()}`,
+              gatewaySubscriptionId: `sub_demo_mike_${Date.now()}`,
             });
           }
           console.log('✓ Mike auto-subscribed (monthly, active)');

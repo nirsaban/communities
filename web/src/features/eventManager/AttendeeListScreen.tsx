@@ -125,7 +125,7 @@ export function AttendeeListScreen() {
         </div>
       </div>
 
-      <main className="flex-1 px-5 pb-32">
+      <main className="flex-1 px-5 pb-32 content-md lg:px-8">
         {isLoading && (
           <div className="space-y-2">
             <Shimmer style={{ height: 56 }} />

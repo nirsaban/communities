@@ -256,7 +256,7 @@ export function AdminWizardScreen() {
         </h1>
       </div>
 
-      <main className="flex-1 px-5 pb-6">
+      <main className="flex-1 px-5 pb-6 content-sm lg:px-8">
         {error && (
           <div className="t-body-md mb-3" style={{ color: 'rgb(var(--error))' }}>
             {error}

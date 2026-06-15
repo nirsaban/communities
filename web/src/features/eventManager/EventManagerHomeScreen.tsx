@@ -110,7 +110,7 @@ export function EventManagerHomeScreen() {
         </div>
       </div>
 
-      <main className="flex-1 px-5 pb-6">
+      <main className="flex-1 px-5 pb-6 content-md lg:px-8">
         {showJumpShortcut && soleEventId && (
           <div
             className="card"

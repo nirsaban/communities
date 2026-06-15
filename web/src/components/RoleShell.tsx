@@ -41,7 +41,7 @@ export function RoleShell() {
         {suspended && (
           <SuspendedCommunityBanner name={community?.name ?? 'This community'} />
         )}
-        <div className="flex-1 pb-2">
+        <div className="flex-1 pb-20 lg:pb-2">
           <Outlet />
         </div>
         <BottomNav />
