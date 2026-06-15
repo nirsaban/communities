@@ -91,7 +91,7 @@ export function MemberListScreen() {
           </AppButton>
         }
       />
-      <main className="flex-1 px-5 pb-6">
+      <main className="flex-1 px-5 pb-6 content-wide lg:px-8">
         <Input
           value={q}
           onChange={(e) => setQ(e.target.value)}

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { AppBar, Screen } from '../../components/AppBar';
 import { Avatar } from '../../components/Avatar';
 import { Card } from '../../components/Card';
@@ -5,8 +6,10 @@ import { EmptyState } from '../../components/EmptyState';
 import { Icon } from '../../components/Icon';
 import { LoadingDots } from '../../components/LoadingDots';
 import { communityContext } from '../../lib/community-context';
+import { fmtCents } from '../../lib/format';
 import {
   useAttendanceAnalytics,
+  useFinances,
   useGrowthAnalytics,
   useMostActive,
   useMyCommunities,
@@ -25,8 +28,47 @@ export function SubAdminAnalyticsScreen() {
   const attendance = useAttendanceAnalytics(cid);
   const growth = useGrowthAnalytics(cid);
   const active = useMostActive(cid);
+  // Admin-only — sub-admin path skips the query so the request never fires.
+  const finances = useFinances(isSubAdmin ? undefined : cid);
 
   const loading = attendance.isLoading || growth.isLoading || active.isLoading;
+
+  // §6.4 — derived finance metrics: month/year projections + per-event
+  // averages. All client-side so this lands without a backend round-trip.
+  const financeKpis = useMemo(() => {
+    if (!finances.data) return null;
+    const f = finances.data;
+    const now = new Date();
+    const dayOfMonth = now.getDate();
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const monthProjectedCents = Math.round(
+      (f.revenueThisMonth / Math.max(1, dayOfMonth)) * daysInMonth,
+    );
+    // Year projection: sum of monthlySeries to date + (avg-of-last-3-months × remaining months).
+    const ms = f.monthlySeries ?? [];
+    const ytd = ms.reduce((sum, r) => sum + (r.revenueCents ?? 0), 0);
+    const last3 = ms.slice(-3);
+    const last3Avg =
+      last3.length > 0
+        ? last3.reduce((s, r) => s + r.revenueCents, 0) / last3.length
+        : 0;
+    const monthsRemaining = Math.max(0, 12 - (now.getMonth() + 1));
+    const yearProjectedCents = Math.round(ytd + last3Avg * monthsRemaining);
+
+    const perEvent = attendance.data?.perEvent ?? [];
+    const eventsCount = perEvent.length || f.revenueByEvent.length;
+    const totalEventRev = f.revenueByEvent.reduce((s, r) => s + r.revenueCents, 0);
+    const avgRevPerEventCents = eventsCount > 0 ? Math.round(totalEventRev / eventsCount) : 0;
+    const totalAttended = perEvent.reduce((s, r) => s + r.attended, 0);
+    const avgAttendance = perEvent.length > 0 ? Math.round(totalAttended / perEvent.length) : 0;
+
+    return {
+      monthProjectedCents,
+      yearProjectedCents,
+      avgRevPerEventCents,
+      avgAttendance,
+    };
+  }, [finances.data, attendance.data]);
 
   // Build a 6-event bar chart from `perEvent` (most recent first → reverse so
   // the rightmost bar is the most recent).
@@ -36,7 +78,7 @@ export function SubAdminAnalyticsScreen() {
   return (
     <Screen>
       <AppBar back title="Analytics" />
-      <main className="flex-1 px-5 pb-6">
+      <main className="flex-1 px-5 pb-6 content-wide lg:px-8">
         {/* Sub-admin: hard guard banner. Admin: a soft pointer to /admin/finances
             so the screen isn't ambiguous about where the money lives. */}
         {isSubAdmin ? (
@@ -104,6 +146,142 @@ export function SubAdminAnalyticsScreen() {
                 )}
               </Card>
             </div>
+
+            {/* Member growth: joined / left in last 90d. */}
+            {growth.data && (
+              <div className="grid grid-cols-3 gap-2.5 mb-4">
+                <Card className="kpi">
+                  <div className="k-lbl">
+                    <Icon name="person_add" size={13} />
+                    Joined · 90d
+                  </div>
+                  <div className="k-num font-display">{growth.data.joined90d}</div>
+                </Card>
+                <Card className="kpi">
+                  <div className="k-lbl">
+                    <Icon name="person_remove" size={13} />
+                    Left · 90d
+                  </div>
+                  <div className="k-num font-display">{growth.data.left90d}</div>
+                </Card>
+                <Card className="kpi">
+                  <div className="k-lbl">
+                    <Icon name="hub" size={13} />
+                    Net · 90d
+                  </div>
+                  <div
+                    className="k-num font-display"
+                    style={{
+                      color:
+                        growth.data.net90d > 0
+                          ? 'rgb(var(--success))'
+                          : growth.data.net90d < 0
+                            ? 'rgb(var(--error))'
+                            : undefined,
+                    }}
+                  >
+                    {growth.data.net90d > 0 ? '+' : ''}
+                    {growth.data.net90d}
+                  </div>
+                </Card>
+              </div>
+            )}
+
+            {/* Finance section — admin only. */}
+            {!isSubAdmin && finances.data && financeKpis && (
+              <>
+                <div className="section-header" style={{ marginBottom: 8 }}>
+                  <span className="sh-title" style={{ fontSize: 16 }}>
+                    Finance
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2.5 mb-3">
+                  <Card className="kpi">
+                    <div className="k-lbl">
+                      <Icon name="payments" size={13} />
+                      Revenue · this month
+                    </div>
+                    <div className="k-num font-display">
+                      {fmtCents(finances.data.revenueThisMonth)}
+                    </div>
+                  </Card>
+                  <Card className="kpi">
+                    <div className="k-lbl">
+                      <Icon name="savings" size={13} />
+                      Revenue · lifetime
+                    </div>
+                    <div className="k-num font-display">
+                      {fmtCents(finances.data.totalRevenueCents)}
+                    </div>
+                  </Card>
+                </div>
+                <div className="grid grid-cols-2 gap-2.5 mb-3">
+                  <Card className="kpi">
+                    <div className="k-lbl">
+                      <Icon name="query_stats" size={13} />
+                      Month projection
+                    </div>
+                    <div className="k-num font-display">
+                      {fmtCents(financeKpis.monthProjectedCents)}
+                    </div>
+                    <div
+                      className="t-body-md"
+                      style={{ margin: 0, fontSize: 10.5, color: 'rgb(var(--muted))' }}
+                    >
+                      pace × days in month
+                    </div>
+                  </Card>
+                  <Card className="kpi">
+                    <div className="k-lbl">
+                      <Icon name="trending_up" size={13} />
+                      Year projection
+                    </div>
+                    <div className="k-num font-display">
+                      {fmtCents(financeKpis.yearProjectedCents)}
+                    </div>
+                    <div
+                      className="t-body-md"
+                      style={{ margin: 0, fontSize: 10.5, color: 'rgb(var(--muted))' }}
+                    >
+                      YTD + 3-mo avg × remaining
+                    </div>
+                  </Card>
+                </div>
+                <div className="grid grid-cols-3 gap-2.5 mb-4">
+                  <Card className="kpi">
+                    <div className="k-lbl">
+                      <Icon name="event" size={13} />
+                      Avg revenue / event
+                    </div>
+                    <div className="k-num font-display">
+                      {fmtCents(financeKpis.avgRevPerEventCents)}
+                    </div>
+                  </Card>
+                  <Card className="kpi">
+                    <div className="k-lbl">
+                      <Icon name="how_to_reg" size={13} />
+                      Avg attendance / event
+                    </div>
+                    <div className="k-num font-display">{financeKpis.avgAttendance}</div>
+                  </Card>
+                  <Card className="kpi">
+                    <div className="k-lbl">
+                      <Icon name="autorenew" size={13} />
+                      MRR
+                    </div>
+                    <div className="k-num font-display">
+                      {fmtCents(finances.data.mrrCents)}
+                    </div>
+                    <div
+                      className="t-body-md"
+                      style={{ margin: 0, fontSize: 10.5, color: 'rgb(var(--muted))' }}
+                    >
+                      {finances.data.activeSubscriptions} active subs
+                    </div>
+                  </Card>
+                </div>
+              </>
+            )}
 
             {/* Weekly attendance bar chart card. */}
             <Card className="p-4 mb-4" style={{ padding: 16 }}>

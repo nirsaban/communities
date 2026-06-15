@@ -64,21 +64,41 @@
     overscroll-behavior-y: contain;
   }
 
-  /* Responsive cap: on tablets/desktops, cap the app to phone width and frame
-     it. Keeps the UI legible without redesigning every screen for wide
-     layouts. Mobile (<480) renders edge-to-edge. */
-  @media (min-width: 481px) {
-    #root {
-      max-width: 480px;
-      margin: 0 auto;
-      min-height: 100vh;
-      box-shadow: 0 0 0 1px rgb(var(--border)), 0 16px 48px rgb(0 0 0 / 0.12);
-      background: rgb(var(--bg));
-    }
-    body {
-      background: rgb(var(--surface-2));
-    }
+  /* §1.1 responsiveness guard — block any accidental horizontal overflow
+     across the whole app. Long titles / URLs / locale strings can otherwise
+     push the viewport sideways at small widths. Per-element scroll containers
+     (`.hscroll`, the events calendar grid, the home rail) override this with
+     `overflow-x: auto` locally where they need it. */
+  html, body { overflow-x: hidden; }
+  #root { overflow-x: clip; }
+  img, video, svg, canvas { max-width: 100%; height: auto; }
+  /* Ensure long unbroken strings (URLs, hashtags, hebrew/RTL runs) wrap
+     inside their container rather than overflow. */
+  p, h1, h2, h3, h4, .t-body-lg, .t-body-md, .t-title-lg, .t-title-md, .t-label-lg, .t-label-sm {
+    overflow-wrap: anywhere;
   }
+
+  /* Desktop layout — the old build capped #root at 480px on every viewport
+     ≥481, framing the whole app as a centered phone. We've torn that out: now
+     the app fills the viewport at every size and individual screens use
+     content max-width tokens to keep prose readable.
+
+     Layout tokens (used by .content-wide / .content-narrow inside screens):
+       --max-content:    1280px   wide list pages (Home, Events, Admin)
+       --max-content-md: 880px    detail pages (Event, Post, Initiative, Member)
+       --max-content-sm: 520px    forms (Edit Profile, Onboarding, Auth) */
+  :root {
+    --max-content: 1280px;
+    --max-content-md: 880px;
+    --max-content-sm: 520px;
+    --side-nav-width: 240px;
+  }
+  body {
+    background: rgb(var(--bg));
+  }
+  .content-wide { max-width: var(--max-content); margin-inline: auto; width: 100%; }
+  .content-md { max-width: var(--max-content-md); margin-inline: auto; width: 100%; }
+  .content-sm { max-width: var(--max-content-sm); margin-inline: auto; width: 100%; }
   .font-display { font-family: 'DM Serif Display', serif; letter-spacing: -0.01em; }
 
   .ms, .msr {

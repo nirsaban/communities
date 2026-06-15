@@ -45,6 +45,26 @@ export function defaultPrivacyPreferences(): IPrivacyPreferences {
   };
 }
 
+// Networking + personal fields surfaced on /profile per §3.10 of the brief.
+// These power member-to-member networking (job/company), recommendation
+// signals, and optional in-profile contact links. All fields are optional and
+// public-by-default within the community (gated by IPrivacyPreferences).
+export interface IUserProfile {
+  jobTitle?: string;
+  profession?: string;
+  company?: string;
+  livingLocation?: string;
+  relationshipStatus?: 'single' | 'in_relationship' | 'married' | 'other';
+  socials?: {
+    instagram?: string;
+    x?: string;
+    linkedin?: string;
+    facebook?: string;
+    tiktok?: string;
+    website?: string;
+  };
+}
+
 export interface IUser extends Document {
   _id: Types.ObjectId;
   email: string;
@@ -53,6 +73,7 @@ export interface IUser extends Document {
   photoUrl?: string;
   bio?: string;
   interests: string[];
+  profile?: IUserProfile;
   notificationPreferences?: INotificationPreferences;
   privacy?: IPrivacyPreferences;
   globalRole: GlobalRole;
@@ -78,6 +99,7 @@ export interface SafeUser {
   photoUrl?: string;
   bio?: string;
   interests: string[];
+  profile?: IUserProfile;
   globalRole: GlobalRole;
   status: UserStatus;
   emailVerifiedAt?: Date;
@@ -92,6 +114,33 @@ const onboardingSchema = new Schema<IUserOnboarding>(
     appOnboardingCompletedAt: Date,
     profileCompletedAt: Date,
     interestsCompletedAt: Date,
+  },
+  { _id: false },
+);
+
+const socialsSchema = new Schema(
+  {
+    instagram: String,
+    x: String,
+    linkedin: String,
+    facebook: String,
+    tiktok: String,
+    website: String,
+  },
+  { _id: false },
+);
+
+const profileSchema = new Schema<IUserProfile>(
+  {
+    jobTitle: { type: String, trim: true, maxlength: 100 },
+    profession: { type: String, trim: true, maxlength: 100 },
+    company: { type: String, trim: true, maxlength: 120 },
+    livingLocation: { type: String, trim: true, maxlength: 120 },
+    relationshipStatus: {
+      type: String,
+      enum: ['single', 'in_relationship', 'married', 'other'],
+    },
+    socials: { type: socialsSchema, default: undefined },
   },
   { _id: false },
 );
@@ -146,6 +195,7 @@ const userSchema = new Schema<IUser>(
     photoUrl: String,
     bio: String,
     interests: { type: [String], default: [] },
+    profile: { type: profileSchema, default: undefined },
     notificationPreferences: { type: notificationPreferencesSchema, default: undefined },
     privacy: { type: privacySchema, default: undefined },
     globalRole: { type: String, enum: ['user', 'superadmin'], default: 'user', index: true },
@@ -170,6 +220,7 @@ userSchema.methods.toSafeJSON = function toSafeJSON(this: IUser): SafeUser {
     photoUrl: this.photoUrl,
     bio: this.bio,
     interests: this.interests,
+    profile: this.profile,
     globalRole: this.globalRole,
     status: this.status,
     emailVerifiedAt: this.emailVerifiedAt,

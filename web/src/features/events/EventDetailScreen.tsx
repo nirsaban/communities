@@ -166,24 +166,89 @@ export function EventDetailScreen() {
           )}
 
           {ev.description && (
-            <>
+            <div className="event-detail-section" style={{ animationDelay: '60ms' }}>
               <div className="t-label-sm" style={{ margin: '16px 0 8px' }}>
                 {t.events.aboutTitle}
               </div>
-              <p className="t-body-lg" style={{ margin: 0 }}>
+              <p className="t-body-lg" style={{ margin: 0, whiteSpace: 'pre-line' }}>
                 {ev.description}
               </p>
-            </>
+            </div>
+          )}
+
+          {ev.capacity != null && (
+            <div className="event-detail-section mt-5" style={{ animationDelay: '120ms' }}>
+              <div className="t-label-sm" style={{ marginBottom: 6 }}>
+                Capacity
+              </div>
+              <div
+                style={{
+                  height: 8,
+                  borderRadius: 999,
+                  background: 'rgb(var(--border-2))',
+                  overflow: 'hidden',
+                }}
+              >
+                <div
+                  style={{
+                    height: '100%',
+                    width: `${Math.min(100, Math.round((ev.rsvpStats.going / Math.max(1, ev.capacity)) * 100))}%`,
+                    background:
+                      (ev.rsvpStats.remaining ?? 0) <= 5
+                        ? 'rgb(var(--warning))'
+                        : 'rgb(var(--brand))',
+                    transition: 'width 320ms ease',
+                  }}
+                />
+              </div>
+              <div
+                className="t-body-md"
+                style={{ margin: '6px 0 0', fontSize: 11.5, color: 'rgb(var(--muted))' }}
+              >
+                {ev.rsvpStats.going} / {ev.capacity} going
+                {ev.rsvpStats.remaining != null
+                  ? ` · ${ev.rsvpStats.remaining} spots left`
+                  : ''}
+              </div>
+            </div>
           )}
 
           {ev.rsvpStats && (
-            <div className="mt-5 flex gap-2">
+            <div
+              className="event-detail-section mt-5 flex gap-2 flex-wrap"
+              style={{ animationDelay: '180ms' }}
+            >
               <Pill tone="ok">{t.app.nGoing(ev.rsvpStats.going)}</Pill>
               {ev.rsvpStats.waitlist > 0 && (
                 <Pill tone="warn">Waitlist: {ev.rsvpStats.waitlist}</Pill>
               )}
+              {ev.priceCents > 0 && !effectiveFree && (
+                <Pill tone="neutral">
+                  <Icon name="payments" size={13} /> {fmtCents(ev.priceCents)}
+                </Pill>
+              )}
+              {effectiveFree && ev.priceCents > 0 && (
+                <Pill tone="ok">
+                  <Icon name="workspace_premium" size={13} /> Included
+                </Pill>
+              )}
+              {ev.isManager && (
+                <Pill tone="neutral">
+                  <Icon name="shield_person" size={13} /> You manage
+                </Pill>
+              )}
             </div>
           )}
+          <style>{`
+            .event-detail-section {
+              opacity: 0;
+              transform: translateY(8px);
+              animation: ev-detail-in 360ms ease-out forwards;
+            }
+            @keyframes ev-detail-in {
+              to { opacity: 1; transform: translateY(0); }
+            }
+          `}</style>
         </div>
       </div>
 

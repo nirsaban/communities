@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AppBar } from '../../components/AppBar';
 import { EmptyState } from '../../components/EmptyState';
 import { Icon } from '../../components/Icon';
+import { Input } from '../../components/Input';
 import { Chip } from '../../components/Pill';
 import { EventCardSkeleton } from '../../components/Shimmer';
 import { useCommunityEvents, useMyCommunities, type EventCard as EventCardData } from '../../lib/queries';
@@ -12,6 +13,7 @@ import { t } from '../../i18n';
 
 type Tab = 'upcoming' | 'past' | 'all';
 type View = 'list' | 'calendar';
+type Sort = 'date-asc' | 'date-desc' | 'popularity';
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
@@ -44,12 +46,33 @@ export function EventsListScreen() {
   const view: View = params.get('view') === 'calendar' ? 'calendar' : 'list';
   const [tab, setTab] = useState<Tab>('upcoming');
   const [filterFree, setFilterFree] = useState(false);
+  const [query, setQuery] = useState('');
+  const [sort, setSort] = useState<Sort>(tab === 'past' ? 'date-desc' : 'date-asc');
   const { data: events, isLoading } = useCommunityEvents(
     cid,
     tab === 'past' ? 'completed' : tab === 'upcoming' ? 'published' : undefined,
   );
 
-  const filtered = (events ?? []).filter((e) => (filterFree ? e.priceCents === 0 : true));
+  const filtered = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    let list = (events ?? []).filter((e) => (filterFree ? e.priceCents === 0 : true));
+    if (needle) {
+      list = list.filter(
+        (e) =>
+          e.title.toLowerCase().includes(needle) ||
+          (e.location?.name ?? '').toLowerCase().includes(needle),
+      );
+    }
+    const popularity = (e: EventCardData) =>
+      (e.rsvpStats?.going ?? 0) * 2 + (e.rsvpStats?.waitlist ?? 0);
+    list = [...list].sort((a, b) => {
+      if (sort === 'popularity') return popularity(b) - popularity(a);
+      const ta = new Date(a.startAt).getTime();
+      const tb = new Date(b.startAt).getTime();
+      return sort === 'date-asc' ? ta - tb : tb - ta;
+    });
+    return list;
+  }, [events, filterFree, query, sort]);
 
   const setView = (v: View) => {
     const next = new URLSearchParams(params);
@@ -95,21 +118,48 @@ export function EventsListScreen() {
           ))}
         </div>
         {view === 'list' && (
-          <div className="hscroll pb-2">
-            <Chip selected={!filterFree} onClick={() => setFilterFree(false)}>
-              {t.events.filterAll}
-            </Chip>
-            <Chip selected={filterFree} onClick={() => setFilterFree(true)}>
-              <span className="msr" style={{ fontSize: 16 }}>payments</span>
-              {t.events.filterFree}
-            </Chip>
-            <Chip>This week</Chip>
-          </div>
+          <>
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by title or location"
+              leadingIcon="search"
+            />
+            <div className="hscroll pb-2">
+              <Chip selected={!filterFree} onClick={() => setFilterFree(false)}>
+                {t.events.filterAll}
+              </Chip>
+              <Chip selected={filterFree} onClick={() => setFilterFree(true)}>
+                <span className="msr" style={{ fontSize: 16 }}>
+                  payments
+                </span>
+                {t.events.filterFree}
+              </Chip>
+              <Chip
+                selected={sort === 'date-asc'}
+                onClick={() => setSort('date-asc')}
+              >
+                <Icon name="north" size={13} /> Date
+              </Chip>
+              <Chip
+                selected={sort === 'date-desc'}
+                onClick={() => setSort('date-desc')}
+              >
+                <Icon name="south" size={13} /> Date
+              </Chip>
+              <Chip
+                selected={sort === 'popularity'}
+                onClick={() => setSort('popularity')}
+              >
+                <Icon name="trending_up" size={13} /> Popular
+              </Chip>
+            </div>
+          </>
         )}
       </div>
-      <main className="px-5 pb-6">
+      <main className="px-5 pb-6 content-wide lg:px-8">
         {isLoading && (
-          <div className="space-y-3">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             <EventCardSkeleton />
             <EventCardSkeleton />
             <EventCardSkeleton />
@@ -125,8 +175,9 @@ export function EventsListScreen() {
         )}
 
         {!isLoading && view === 'list' && filtered.length > 0 && (
-          <div className="space-y-3">
+          <>
             <div className="t-label-sm mb-1 mt-1">{t.events.thisWeek}</div>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {filtered.map((ev) => {
               const w = fmtEventWhen(ev.startAt);
               const remaining = ev.rsvpStats?.remaining;
@@ -187,7 +238,8 @@ export function EventsListScreen() {
                 </button>
               );
             })}
-          </div>
+            </div>
+          </>
         )}
 
         {!isLoading && view === 'calendar' && (

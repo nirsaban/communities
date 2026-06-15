@@ -25,6 +25,11 @@ export interface IInitiative extends Document {
   supporterCount: number;
   commentCount: number;
   targetDate?: Date;
+  goal?: string;
+  tags?: string[];
+  membersNeeded?: number;
+  budgetNote?: string;
+  rulesAcceptedAt?: Date;
   reviewedBy?: Types.ObjectId;
   reviewedAt?: Date;
   rejectionReason?: string;
@@ -57,6 +62,11 @@ const initiativeSchema = new Schema<IInitiative>(
     supporterCount: { type: Number, default: 0 },
     commentCount: { type: Number, default: 0 },
     targetDate: Date,
+    goal: { type: String, maxlength: 300 },
+    tags: { type: [String], default: [] },
+    membersNeeded: { type: Number, min: 0, max: 10_000 },
+    budgetNote: { type: String, maxlength: 500 },
+    rulesAcceptedAt: Date,
     reviewedBy: { type: Schema.Types.ObjectId, ref: 'User' },
     reviewedAt: Date,
     rejectionReason: String,
@@ -88,6 +98,10 @@ initiativeSchema.methods.toClientJSON = function toClientJSON(this: IInitiative,
     commentCount: this.commentCount,
     contributorIds: this.contributors.map(String),
     targetDate: this.targetDate,
+    goal: this.goal,
+    tags: this.tags,
+    membersNeeded: this.membersNeeded,
+    budgetNote: this.budgetNote,
     completedAt: this.completedAt,
     completionSummary: this.completionSummary,
     rejectionReason: this.rejectionReason,

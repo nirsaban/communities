@@ -97,7 +97,7 @@ export function AdminDashboardScreen() {
         </button>
       </div>
 
-      <main className="flex-1 px-5 pb-6 overflow-y-auto">
+      <main className="flex-1 px-5 pb-6 overflow-y-auto content-wide lg:px-8">
         {/* Cross-role: when super admin suspends this community, the admin must
             see why every write action is rejected. Without this banner the
             admin gets opaque 403s on settings/invites/event-create. */}

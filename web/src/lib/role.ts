@@ -51,7 +51,16 @@ export function landingPathForRole(resolved: ResolvedRole): string {
 // /manage/events even though their Membership.role is still 'member'
 // (per PRD 06 §4: per-event grant via Event.managers[]).
 export async function landingPathAfterAuth(user: User): Promise<string> {
-  if (!user?.name) return '/onboard/profile';
+  // First-login gates (PRD 10 §2.2): profile must be completed, then
+  // interests (≥3 selected). Once both are stamped, fall through to the
+  // role-based landing. Email-signup sets `name` at register time, so we
+  // also accept a non-empty name as a legacy completion signal for users
+  // who registered before profileCompletedAt was tracked.
+  const profileDone = !!user?.onboarding?.profileCompletedAt || !!user?.name;
+  if (!profileDone) return '/onboard/profile';
+  const interestsDone =
+    !!user?.onboarding?.interestsCompletedAt || (user?.interests?.length ?? 0) >= 3;
+  if (!interestsDone && user.globalRole !== 'superadmin') return '/onboard/interests';
   if (user.globalRole === 'superadmin') return '/super';
   try {
     const [cRes, eRes] = await Promise.all([

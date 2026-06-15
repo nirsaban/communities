@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { AppBar } from '../../components/AppBar';
 import { Card } from '../../components/Card';
 import { Icon } from '../../components/Icon';
-import { Pill } from '../../components/Pill';
 import { Input } from '../../components/Input';
 import { EmptyState } from '../../components/EmptyState';
 import { Shimmer } from '../../components/Shimmer';
 import { AppButton } from '../../components/AppButton';
+import { useToast } from '../../components/Toast';
 import { useDiscoverCommunities, useJoinCommunity, useRequestJoin } from '../../lib/queries';
+import { extractError } from '../../lib/api';
 import { t } from '../../i18n';
 
 export function DiscoverScreen() {
@@ -17,11 +18,28 @@ export function DiscoverScreen() {
   const join = useJoinCommunity();
   const request = useRequestJoin();
   const nav = useNavigate();
+  const toast = useToast();
+
+  function handleAction(community: { id: string; name: string; privacy: string }): void {
+    const isPublic = community.privacy === 'public';
+    const m = isPublic ? join : request;
+    m.mutate(community.id, {
+      onSuccess: () => {
+        if (isPublic) {
+          toast.success(`Joined ${community.name}`);
+          nav(`/c/${community.id}/welcome`);
+        } else {
+          toast.info(`Request sent to ${community.name} — waiting for admin approval`, 3200);
+        }
+      },
+      onError: (err) => toast.error(extractError(err).message),
+    });
+  }
 
   return (
     <>
       <AppBar title={t.discover.title} />
-      <main className="px-5 pb-6">
+      <main className="px-5 pb-6 content-wide lg:px-8">
         <Input
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -48,7 +66,7 @@ export function DiscoverScreen() {
         )}
 
         {data && data.length > 0 && (
-          <div className="space-y-3">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {data.map((c) => {
               const isPublic = c.privacy === 'public';
               const m = isPublic ? join : request;
@@ -83,7 +101,7 @@ export function DiscoverScreen() {
                     loading={pending}
                     onClick={(e) => {
                       e.stopPropagation();
-                      m.mutate(c.id);
+                      handleAction(c);
                     }}
                   >
                     {isPublic ? t.discover.join : t.discover.request}

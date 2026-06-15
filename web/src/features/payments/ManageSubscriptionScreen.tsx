@@ -11,6 +11,7 @@ const STATUS_LABEL: Record<string, string> = {
   trialing: 'Trial',
   past_due: 'Past due',
   canceled: 'Canceled',
+  cancelled: 'Cancelled',
   incomplete: 'Incomplete',
 };
 
@@ -19,6 +20,7 @@ const STATUS_CLASS: Record<string, string> = {
   trialing: 'sc-pub',
   past_due: 'sc-cancel',
   canceled: 'sc-done',
+  cancelled: 'sc-done',
   incomplete: 'sc-cancel',
 };
 
@@ -34,7 +36,7 @@ export function ManageSubscriptionScreen() {
   return (
     <Screen>
       <AppBar back title="My membership" />
-      <main className="flex flex-1 flex-col px-5 pb-6">
+      <main className="flex flex-1 flex-col px-5 pb-6 content-md lg:px-8">
         {isLoading && (
           <div className="flex flex-1 items-center justify-center py-12">
             <LoadingDots />

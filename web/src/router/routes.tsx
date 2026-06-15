@@ -11,6 +11,7 @@ import { ForgotPasswordScreen } from '../features/auth/ForgotPasswordScreen';
 import { ResetPasswordScreen } from '../features/auth/ResetPasswordScreen';
 import { EmailVerificationScreen } from '../features/auth/EmailVerificationScreen';
 import { InvitationAcceptScreen } from '../features/auth/InvitationAcceptScreen';
+import { GoogleCallbackScreen } from '../features/auth/GoogleCallbackScreen';
 import { OnboardingCarouselScreen } from '../features/onboarding/OnboardingCarouselScreen';
 import { ProfileSetupScreen } from '../features/onboarding/ProfileSetupScreen';
 import { InterestsSelectorScreen } from '../features/onboarding/InterestsSelectorScreen';
@@ -88,9 +89,32 @@ import { PlatformSettingsScreen } from '../features/super/PlatformSettingsScreen
 import { SuperAuditScreen } from '../features/super/SuperAuditScreen';
 import { RoleShell } from '../components/RoleShell';
 
+function CommunitySubrouteFallback() {
+  const { cid } = useParams<{ cid: string }>();
+  return <Navigate to={cid ? `/c/${cid}` : '/home'} replace />;
+}
+
 function Protected({ children }: { children: React.ReactNode }) {
   const auth = useAuth();
   if (!auth.accessToken) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
+
+// PRD 10 §2.2 — first-login users must finish /onboard/profile (and then
+// /onboard/interests) before any authenticated surface renders. A protected
+// route wrapped in this gate redirects unfinished users out instead of
+// letting them deep-link past the onboarding flow.
+function OnboardingGate({ children }: { children: React.ReactNode }) {
+  const auth = useAuth();
+  if (!auth.accessToken) return <Navigate to="/login" replace />;
+  const u = auth.user;
+  const profileDone = !!u?.onboarding?.profileCompletedAt || !!u?.name;
+  if (!profileDone) return <Navigate to="/onboard/profile" replace />;
+  const interestsDone =
+    !!u?.onboarding?.interestsCompletedAt || (u?.interests?.length ?? 0) >= 3;
+  if (!interestsDone && u?.globalRole !== 'superadmin') {
+    return <Navigate to="/onboard/interests" replace />;
+  }
   return <>{children}</>;
 }
 
@@ -176,6 +200,7 @@ export function AppRoutes() {
       <Route path="/reset" element={<ResetPasswordScreen />} />
       <Route path="/verify" element={<EmailVerificationScreen />} />
       <Route path="/invite/:token" element={<InvitationAcceptScreen />} />
+      <Route path="/auth/google/callback" element={<GoogleCallbackScreen />} />
 
       <Route path="/onboard/profile" element={wrap(<ProfileSetupScreen />)} />
       <Route path="/onboard/interests" element={wrap(<InterestsSelectorScreen />)} />
@@ -183,6 +208,11 @@ export function AppRoutes() {
       <Route path="/c/:cid" element={wrap(<CommunityDetailScreen />)} />
       <Route path="/c/:cid/welcome" element={wrap(<CommunityWelcomeScreen />)} />
       <Route path="/c/:cid/rules" element={wrap(<CommunityRulesScreen />)} />
+      {/* Defensive: any unknown /c/:cid/* path (including the historical
+          /c/:cid/undefined navigation bug) falls back to the community
+          overview rather than the global 404. Keep this AFTER all known
+          /c/:cid/* routes so it only catches the leftovers. */}
+      <Route path="/c/:cid/*" element={<CommunitySubrouteFallback />} />
 
       <Route path="/events/:eid" element={wrap(<EventDetailScreen />)} />
       <Route path="/events/:eid/confirmed" element={wrap(<RsvpConfirmationScreen />)} />
@@ -254,7 +284,7 @@ export function AppRoutes() {
         <Route path="/super/users/:uid" element={wrapSuper(<SuperUserDetailScreen />)} />
       </Route>
 
-      <Route element={wrap(<HomeShell />)}>
+      <Route element={<OnboardingGate><HomeShell /></OnboardingGate>}>
         <Route path="/home" element={<HomeFeedScreen />} />
         <Route path="/discover" element={<DiscoverScreen />} />
         <Route path="/events" element={<EventsListScreen />} />

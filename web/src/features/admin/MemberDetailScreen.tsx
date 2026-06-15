@@ -10,10 +10,13 @@ import {
   useChangeMemberRole,
   useCommunityMembers,
   useMyCommunities,
+  useNotifyMember,
   useRemoveMember,
   type MembershipRole,
 } from '../../lib/queries';
 import { communityContext } from '../../lib/community-context';
+import { useToast } from '../../components/Toast';
+import { extractError } from '../../lib/api';
 
 const ROLE_MAP: Record<string, RoleKind> = {
   admin: 'admin',
@@ -42,6 +45,12 @@ export function MemberDetailScreen() {
   const m = data?.find((row) => row.user.id === uid);
   const changeRole = useChangeMemberRole(cid);
   const remove = useRemoveMember(cid);
+  const notify = useNotifyMember(cid);
+  const toast = useToast();
+
+  const [notifyOpen, setNotifyOpen] = useState(false);
+  const [notifyTitle, setNotifyTitle] = useState('');
+  const [notifyBody, setNotifyBody] = useState('');
 
   // Confirmation modal state. We guard two destructive paths:
   //   1) Remove from community (irreversible: drops membership + RSVPs).
@@ -77,7 +86,7 @@ export function MemberDetailScreen() {
   return (
     <Screen>
       <AppBar back title="Member" />
-      <main className="flex-1 px-5 pb-6">
+      <main className="flex-1 px-5 pb-6 content-md lg:px-8">
         {/* Centered profile card — design unit 49. */}
         <div className="flex flex-col items-center text-center mb-4">
           <Avatar name={m.user.name} size={64} />
@@ -154,6 +163,19 @@ export function MemberDetailScreen() {
         </div>
 
         <AppButton
+          variant="secondary"
+          onClick={() => {
+            setNotifyTitle('');
+            setNotifyBody('');
+            setNotifyOpen(true);
+          }}
+          style={{ marginBottom: 10 }}
+        >
+          <Icon name="send" size={18} />
+          Send a notification
+        </AppButton>
+
+        <AppButton
           variant="danger"
           loading={remove.isPending}
           onClick={() => setConfirm({ kind: 'remove' })}
@@ -161,6 +183,78 @@ export function MemberDetailScreen() {
           Remove from community
         </AppButton>
       </main>
+
+      {notifyOpen && (
+        <>
+          <div className="scrim" onClick={() => setNotifyOpen(false)} />
+          <div className="dialog">
+            <div className="t-title-lg" style={{ marginBottom: 8 }}>
+              Notify {m.user.name}
+            </div>
+            <p className="t-body-md" style={{ margin: '0 0 12px' }}>
+              They'll see this in their inbox as a notification from the
+              community.
+            </p>
+            <div className="field">
+              <label>Title</label>
+              <div className="control">
+                <input
+                  value={notifyTitle}
+                  onChange={(e) => setNotifyTitle(e.target.value)}
+                  placeholder="Quick heads-up"
+                  className="grow w-full bg-transparent text-sm text-ink placeholder:text-muted focus:outline-none"
+                  maxLength={120}
+                />
+              </div>
+            </div>
+            <div className="field">
+              <label>Message (optional)</label>
+              <div
+                className="control"
+                style={{ alignItems: 'stretch', padding: 10, minHeight: 90 }}
+              >
+                <textarea
+                  value={notifyBody}
+                  onChange={(e) => setNotifyBody(e.target.value)}
+                  rows={3}
+                  maxLength={1000}
+                  placeholder="Add a short note"
+                  className="grow w-full bg-transparent text-sm text-ink placeholder:text-muted focus:outline-none resize-none"
+                />
+              </div>
+              <div className="hint">{notifyBody.length}/1000</div>
+            </div>
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              <AppButton variant="secondary" onClick={() => setNotifyOpen(false)}>
+                Cancel
+              </AppButton>
+              <AppButton
+                variant="primary"
+                loading={notify.isPending}
+                disabled={!notifyTitle.trim() || notify.isPending}
+                onClick={() => {
+                  notify.mutate(
+                    {
+                      uid: m.user.id,
+                      title: notifyTitle.trim(),
+                      body: notifyBody.trim() || undefined,
+                    },
+                    {
+                      onSuccess: () => {
+                        toast.success(`Notification sent to ${m.user.name}`);
+                        setNotifyOpen(false);
+                      },
+                      onError: (err) => toast.error(extractError(err).message),
+                    },
+                  );
+                }}
+              >
+                Send
+              </AppButton>
+            </div>
+          </div>
+        </>
+      )}
 
       {confirm && (
         <>

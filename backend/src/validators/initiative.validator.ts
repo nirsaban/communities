@@ -8,6 +8,18 @@ export const createInitiativeSchema = z.object({
   category: z.enum(['event', 'volunteer', 'product', 'social', 'other']).default('other'),
   coverImageUrl: z.string().url().optional(),
   targetDate: z.coerce.date().optional(),
+  // §3.9 — extra fields that members fill in when proposing an initiative.
+  // Goal is the descriptive headline ("collect 200 books"). Tags are free
+  // labels ("youth", "outdoors"). membersNeeded is the rough count of
+  // contributors expected. budgetNote is descriptive only — v1 has no
+  // initiative payment wiring (PRD 11 §12).
+  goal: z.string().max(300).optional(),
+  tags: z.array(z.string().max(40)).max(20).optional(),
+  membersNeeded: z.number().int().min(0).max(10_000).optional(),
+  budgetNote: z.string().max(500).optional(),
+  rulesAccepted: z.boolean().optional(),
+  // When status: 'draft' the initiative is saved without entering review.
+  status: z.enum(['draft', 'submitted']).optional(),
 });
 
 export const updateInitiativeSchema = z

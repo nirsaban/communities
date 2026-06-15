@@ -42,6 +42,21 @@ const envSchema = z.object({
   UPLOAD_DIR: z.string().default('./uploads'),
   MAX_UPLOAD_BYTES: z.coerce.number().int().positive().default(524_288_000),
 
+  // Cloudinary — only required when STORAGE_DRIVER=cloudinary. Picking the
+  // driver without the keys throws at storage-init time (see storage.service.ts)
+  // so misconfiguration fails fast instead of silently falling back to local.
+  CLOUDINARY_CLOUD_NAME: z.string().optional(),
+  CLOUDINARY_API_KEY: z.string().optional(),
+  CLOUDINARY_API_SECRET: z.string().optional(),
+  CLOUDINARY_UPLOAD_FOLDER: z.string().default('communities'),
+
+  // Google OAuth (§1.3). All three must be present to enable the
+  // /auth/google flow; if any is missing the controller short-circuits with
+  // a clear "Google sign-in is not configured" error.
+  GOOGLE_OAUTH_CLIENT_ID: z.string().optional(),
+  GOOGLE_OAUTH_CLIENT_SECRET: z.string().optional(),
+  GOOGLE_OAUTH_REDIRECT_URI: z.string().optional(),
+
   // PayPlus (Israeli gateway, platform-managed v1). API_KEY/SECRET_KEY/WEBHOOK_SECRET are
   // optional in dev to keep `npm run dev` working without creds — the PayPlusClient falls
   // back to a stdout-logging sandbox client when SANDBOX_MODE=true. In production they

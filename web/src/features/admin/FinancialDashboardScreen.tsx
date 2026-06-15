@@ -104,7 +104,7 @@ export function FinancialDashboardScreen() {
           </button>
         }
       />
-      <main className="flex-1 px-5 pb-6 overflow-y-auto">
+      <main className="flex-1 px-5 pb-6 overflow-y-auto content-wide lg:px-8">
         {/* Range segmented control */}
         <div className="seg mb-4">
           {RANGES.map((r) => (

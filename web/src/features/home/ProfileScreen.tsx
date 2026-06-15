@@ -84,7 +84,7 @@ export function ProfileScreen() {
           </button>
         }
       />
-      <main className="px-5 pb-6">
+      <main className="px-5 pb-6 content-md lg:px-8">
         {/* Avatar + name */}
         <div className="flex flex-col items-center text-center" style={{ marginBottom: 14 }}>
           <Avatar name={auth.user?.name} size={80} />

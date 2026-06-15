@@ -81,11 +81,17 @@ export async function createInitiative(
   author: IUser,
   input: CreateInitiativeInput,
 ): Promise<IInitiative> {
+  // §3.9 — accept the extended payload (goal/tags/membersNeeded/budgetNote/
+  // rulesAccepted) and honour an explicit `status` of 'draft' | 'submitted'
+  // from the form's save-vs-submit choice. Default remains 'draft' so callers
+  // that omit `status` get the existing behaviour.
+  const { status, rulesAccepted, ...rest } = input;
   return Initiative.create({
-    ...input,
+    ...rest,
     communityId: community._id,
     authorId: author._id,
-    status: 'draft',
+    status: status === 'submitted' ? 'submitted' : 'draft',
+    rulesAcceptedAt: rulesAccepted ? new Date() : undefined,
   });
 }
 

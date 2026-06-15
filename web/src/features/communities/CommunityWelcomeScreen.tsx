@@ -46,7 +46,7 @@ export function CommunityWelcomeScreen() {
         </div>
 
         <div className="mt-auto w-full pt-6">
-          <AppButton onClick={() => nav(`/c/${cid}/rules`)}>{t.app.continue}</AppButton>
+          <AppButton onClick={() => cid && nav(`/c/${cid}/rules`)}>{t.app.continue}</AppButton>
         </div>
       </main>
     </Screen>

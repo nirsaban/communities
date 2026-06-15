@@ -26,9 +26,9 @@ export function CommunitySwitcherSheet({ onClose }: { onClose: () => void }) {
 
   return (
     <>
-      <div className="scrim absolute inset-0 z-40 bg-black/40" onClick={onClose} />
+      <div className="scrim fixed inset-0 z-40 bg-black/40" onClick={onClose} />
       <div
-        className="sheet absolute bottom-0 left-0 right-0 z-50"
+        className="sheet fixed bottom-0 left-0 right-0 z-50 mx-auto w-full max-w-screen-sm"
         style={{
           background: 'rgb(var(--surface))',
           borderRadius: '28px 28px 0 0',
@@ -36,6 +36,7 @@ export function CommunitySwitcherSheet({ onClose }: { onClose: () => void }) {
           padding: '10px 20px 28px',
           maxHeight: '85vh',
           overflowY: 'auto',
+          overscrollBehavior: 'contain',
         }}
       >
         <div

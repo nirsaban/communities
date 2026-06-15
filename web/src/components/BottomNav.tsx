@@ -67,7 +67,8 @@ export function BottomNav() {
   const unread = (notifs ?? []).filter((n) => !n.read).length;
 
   return (
-    <nav className="safe-bottom sticky bottom-0 z-30 border-t border-border bg-surface/95 backdrop-blur">
+    // Hidden at ≥1024 — the SideNav owns the role-aware nav on desktop.
+    <nav className="safe-bottom sticky bottom-0 z-30 border-t border-border bg-surface/95 backdrop-blur lg:hidden">
       <ul
         className="grid h-16"
         style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}
@@ -104,5 +105,105 @@ export function BottomNav() {
         })}
       </ul>
     </nav>
+  );
+}
+
+// Desktop sidebar — mirrors BottomNav's role-aware tab list but renders as a
+// fixed left rail at ≥1024. Mounted by HomeShell + RoleShell so both authed
+// shells pick it up. Hidden below 1024 — BottomNav is still the mobile nav.
+export function SideNav() {
+  const auth = useAuth();
+  const ctx = communityContext();
+  const { data: mine } = useMyCommunities();
+  const { data: managed } = useMyManagedEvents();
+  const { data: notifs } = useNotifications();
+  const active = pickActiveMembership(mine, ctx.currentCommunityId);
+  const role = resolveRole(auth.user, active);
+  const hasManagedEvent = (managed?.length ?? 0) > 0;
+
+  const items =
+    role === 'super'
+      ? SUPER_TABS
+      : role === 'admin' || role === 'subadmin'
+        ? ADMIN_TABS
+        : hasManagedEvent
+          ? EM_TABS
+          : MEMBER_TABS;
+  const unread = (notifs ?? []).filter((n) => !n.read).length;
+  const activeName =
+    active?.community.name ?? (role === 'super' ? 'Platform' : 'Communities');
+
+  return (
+    <aside
+      className="hidden lg:flex sticky top-0 self-start flex-col"
+      style={{
+        width: 'var(--side-nav-width)',
+        height: '100vh',
+        borderInlineEnd: '1px solid rgb(var(--border))',
+        background: 'rgb(var(--surface))',
+        padding: '18px 12px',
+        gap: 4,
+        flexShrink: 0,
+      }}
+    >
+      <div className="px-3 pb-3">
+        <div className="t-label-sm" style={{ fontSize: 10, letterSpacing: 0.8 }}>
+          {role === 'super'
+            ? 'PLATFORM'
+            : role === 'admin' || role === 'subadmin'
+              ? 'COMMUNITY'
+              : 'YOU’RE IN'}
+        </div>
+        <div className="t-title-md truncate" style={{ fontSize: 15, marginTop: 2 }}>
+          {activeName}
+        </div>
+      </div>
+      <ul className="flex flex-col gap-1">
+        {items.map((it) => {
+          const showBadge = it.to === '/me/notifications' && unread > 0;
+          return (
+            <li key={it.to}>
+              <NavLink
+                to={it.to}
+                end={it.to === '/admin' || it.to === '/super' || it.to === '/home'}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
+                    isActive
+                      ? 'bg-brand-wash text-brand-ink font-semibold'
+                      : 'text-muted hover:text-ink hover:bg-surface2'
+                  }`
+                }
+              >
+                {() => (
+                  <>
+                    <Icon name={it.icon} size={20} />
+                    <span className="flex-1 truncate">{it.label}</span>
+                    {showBadge && (
+                      <span
+                        style={{
+                          minWidth: 18,
+                          height: 18,
+                          padding: '0 5px',
+                          borderRadius: 999,
+                          background: 'rgb(var(--brand))',
+                          color: '#fff',
+                          fontSize: 10,
+                          fontWeight: 700,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        {unread > 99 ? '99+' : unread}
+                      </span>
+                    )}
+                  </>
+                )}
+              </NavLink>
+            </li>
+          );
+        })}
+      </ul>
+    </aside>
   );
 }

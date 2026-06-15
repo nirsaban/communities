@@ -9,6 +9,11 @@ import { parsePagination, cursorFilter, nextCursorFor } from '../utils/paginatio
 
 // GET /api/v1/discovery/communities
 // Returns active, public/application communities the caller is not already a member of.
+//
+// When ?recommended=1 is set, results are ranked by overlap between the
+// caller's `users.interests` and the community's name/description/category —
+// PRD 07 §4.1 "Communities for you". Communities with zero overlap are still
+// returned but sorted to the bottom so the rail never goes empty.
 export const listCommunities = asyncHandler(async (req: Request, res: Response) => {
   if (!req.user) throw AppError.unauthenticated();
   const { limit, cursor } = parsePagination({
@@ -16,6 +21,8 @@ export const listCommunities = asyncHandler(async (req: Request, res: Response) 
     cursor: req.query.cursor as string | undefined,
   });
   const q = (req.query.q as string | undefined)?.trim();
+  const recommended =
+    req.query.recommended === '1' || req.query.recommended === 'true';
 
   const myMemberships = await Membership.find({ userId: req.user._id }).select('communityId').lean();
   const excludedIds = myMemberships.map((m) => m.communityId);
@@ -31,10 +38,38 @@ export const listCommunities = asyncHandler(async (req: Request, res: Response) 
   }
   Object.assign(filter, cursorFilter(cursor));
 
-  const rows = await Community.find(filter).sort({ createdAt: -1, _id: -1 }).limit(limit + 1);
-  const items = rows.slice(0, limit);
+  // Recommendation mode pulls a wider window than `limit` (we still cap at
+  // 50 to keep the score loop cheap) then re-sorts in memory by interest
+  // overlap before truncating back to `limit`.
+  const fetchLimit = recommended ? Math.max(limit + 1, 50) : limit + 1;
+  const rows = await Community.find(filter)
+    .sort({ createdAt: -1, _id: -1 })
+    .limit(fetchLimit);
+
+  let ranked = rows.slice(0, recommended ? rows.length : limit);
+  if (recommended) {
+    const interests = (req.user.interests ?? []).map((i) => i.toLowerCase()).filter(Boolean);
+    const score = (c: typeof rows[number]): number => {
+      if (interests.length === 0) return 0;
+      const hay = `${c.name} ${c.description ?? ''} ${c.category ?? ''}`.toLowerCase();
+      let s = 0;
+      for (const i of interests) {
+        if (!i) continue;
+        if (hay.includes(i)) s += 2;
+        // tokenised partial match — pick up "Yoga" against "yoga retreats"
+        const tokens = i.split(/[\s/&-]+/);
+        for (const tok of tokens) {
+          if (tok.length >= 4 && hay.includes(tok)) s += 1;
+        }
+      }
+      return s;
+    };
+    ranked = [...ranked].sort((a, b) => score(b) - score(a)).slice(0, limit);
+  }
+
+  const items = ranked;
   const next =
-    rows.length > limit
+    !recommended && rows.length > limit
       ? nextCursorFor(items as unknown as { createdAt: Date; _id: mongoose.Types.ObjectId }[])
       : null;
   ok(

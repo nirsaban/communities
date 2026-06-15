@@ -13,6 +13,7 @@ import {
   useCommunityPosts,
   useMyCommunities,
   useNotifications,
+  useRecommendedCommunities,
 } from '../../lib/queries';
 import { communityContext } from '../../lib/community-context';
 import { fmtCents, fmtEventWhen } from '../../lib/format';
@@ -40,6 +41,8 @@ export function HomeFeedScreen() {
   const { data: posts } = useCommunityPosts(currentCid);
   const { data: initiatives } = useCommunityInitiatives(currentCid);
   const { data: notifs } = useNotifications();
+  const { data: recommended } = useRecommendedCommunities(6);
+  const interestRail = (recommended ?? []).slice(0, 6);
   const unreadCount = (notifs ?? []).filter((n) => !n.read).length;
 
   const pinnedPost = (posts ?? []).find((p) => p.pinned);
@@ -108,7 +111,7 @@ export function HomeFeedScreen() {
   }
 
   return (
-    <div className="relative">
+    <div className="relative content-wide">
       <Header
         communityName={currentMembership?.community.name}
         onSwitcher={() => setSwitcherOpen(true)}
@@ -116,7 +119,7 @@ export function HomeFeedScreen() {
         onBell={() => nav('/me/notifications')}
       />
 
-      <main className="px-4">
+      <main className="px-4 lg:px-8">
         {/* Greeting */}
         <div style={{ margin: '2px 0 16px' }}>
           <div className="t-display-md">{t.home.greeting(auth.user?.name)}</div>
@@ -270,9 +273,16 @@ export function HomeFeedScreen() {
             </div>
             <div className="flex flex-col gap-2.5" style={{ marginBottom: 18 }}>
               {activeInitiatives.map((i) => {
+                // i.goal is now a descriptive headline string (§3.9). Progress
+                // bar uses membersNeeded when present, falling back to a flat
+                // supporters tally with no bar.
+                const denom = i.membersNeeded ?? 0;
                 const pct =
-                  i.goal && i.goal > 0
-                    ? Math.min(100, Math.round(((i.progress ?? 0) / i.goal) * 100))
+                  denom > 0
+                    ? Math.min(
+                        100,
+                        Math.round(((i.progress ?? i.supporterCount) / denom) * 100),
+                      )
                     : null;
                 return (
                   <button
@@ -316,6 +326,69 @@ export function HomeFeedScreen() {
               })}
             </div>
           </>
+        )}
+        {interestRail.length > 0 && (
+          <section className="mt-7">
+            <div className="section-header">
+              <span className="sh-title">Communities for you</span>
+              <button
+                className="t-label-sm"
+                style={{
+                  background: 'transparent',
+                  border: 0,
+                  color: 'rgb(var(--brand-ink))',
+                  fontWeight: 600,
+                }}
+                onClick={() => nav('/discover')}
+              >
+                See all
+              </button>
+            </div>
+            <div
+              className="flex gap-3 overflow-x-auto pb-2"
+              style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}
+            >
+              {interestRail.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => nav(`/c/${c.id}`)}
+                  className="card text-start"
+                  style={{
+                    minWidth: 200,
+                    maxWidth: 220,
+                    padding: 12,
+                    scrollSnapAlign: 'start',
+                    flexShrink: 0,
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="grid h-9 w-9 place-items-center text-brand-on"
+                      style={{ borderRadius: 11, background: 'rgb(var(--brand))' }}
+                    >
+                      <Icon name="diversity_3" size={18} />
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="t-label-lg truncate" style={{ fontSize: 13.5 }}>
+                        {c.name}
+                      </div>
+                      <div className="t-body-md" style={{ margin: 0, fontSize: 11 }}>
+                        {c.memberCount.toLocaleString()} members
+                      </div>
+                    </div>
+                  </div>
+                  {c.description && (
+                    <p
+                      className="t-body-md line-clamp-2"
+                      style={{ margin: '8px 0 0', fontSize: 12 }}
+                    >
+                      {c.description}
+                    </p>
+                  )}
+                </button>
+              ))}
+            </div>
+          </section>
         )}
       </main>
 

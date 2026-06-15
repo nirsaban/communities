@@ -10,6 +10,10 @@ import { api, extractError } from '../../lib/api';
 type Settings = {
   maintenanceMode?: boolean;
   allowSignups?: boolean;
+  // Backend currently reports `payplus` (PRD 09 §3). Older builds used
+  // `stripeKeyMasked` — both are read in case the field name flips back.
+  paymentGateway?: 'payplus' | 'stripe' | string;
+  payplusKeyMasked?: string;
   stripeKeyMasked?: string;
 };
 
@@ -58,8 +62,14 @@ export function PlatformSettingsScreen() {
   // The "reveal" toggle used to swap one mask for another which was misleading.
   // Now reveal shows the masked key (which contains the real last4 from
   // backend), hidden state shows a fully obscured placeholder.
-  const backendMasked = local.stripeKeyMasked ?? '';
+  // Gateway label tracks the backend so a future Stripe switch flips the
+  // chip + colour automatically without another web release.
+  const gateway = local.paymentGateway ?? 'payplus';
+  const isStripe = gateway === 'stripe';
+  const backendMasked = (isStripe ? local.stripeKeyMasked : local.payplusKeyMasked) ?? local.payplusKeyMasked ?? local.stripeKeyMasked ?? '';
   const hasKey = backendMasked.length > 0;
+  const gatewayLabel = isStripe ? 'Stripe' : 'PayPlus';
+  const gatewayColor = isStripe ? '#635BFF' : 'rgb(var(--brand))';
 
   return (
     <Screen>
@@ -92,8 +102,8 @@ export function PlatformSettingsScreen() {
             <Card style={{ padding: 14, marginBottom: 18 }}>
               <div className="flex items-center justify-between" style={{ marginBottom: 10 }}>
                 <div className="flex items-center gap-2">
-                  <Icon name="credit_card" style={{ color: '#635BFF' }} />
-                  <span className="t-label-lg" style={{ fontSize: 13.5 }}>Stripe</span>
+                  <Icon name="credit_card" style={{ color: gatewayColor }} />
+                  <span className="t-label-lg" style={{ fontSize: 13.5 }}>{gatewayLabel}</span>
                 </div>
                 <span
                   className={`status-chip ${hasKey ? 'sc-pub' : 'sc-draft'}`}

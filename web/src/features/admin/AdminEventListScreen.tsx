@@ -47,7 +47,7 @@ export function AdminEventListScreen() {
   return (
     <Screen>
       <AppBar back title="Events" />
-      <main className="flex-1 px-5 pb-6">
+      <main className="flex-1 px-5 pb-6 content-wide lg:px-8">
         <div className="seg mb-4">
           {(Object.keys(TAB_LABELS) as Tab[]).map((t) => (
             <button

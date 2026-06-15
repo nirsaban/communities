@@ -122,6 +122,22 @@ export function useDiscoverCommunities(q?: string) {
   });
 }
 
+// "Communities for you" — interest-aware recommendation rail surfaced on
+// /home (PRD 07 §4.1). Hits the same endpoint with ?recommended=1 so the
+// server can score by overlap with `users.interests`.
+export function useRecommendedCommunities(limit = 6) {
+  return useQuery({
+    queryKey: ['discovery-recommended', limit],
+    queryFn: async (): Promise<CommunityCard[]> => {
+      const r = await api.get('/discovery/communities', {
+        params: { recommended: 1, limit },
+      });
+      return r.data?.data ?? [];
+    },
+    staleTime: 60_000,
+  });
+}
+
 export function useJoinCommunity() {
   const qc = useQueryClient();
   return useMutation({
@@ -683,7 +699,13 @@ export type Initiative = {
   status: 'draft' | 'submitted' | 'active' | 'completed' | 'rejected';
   supporterCount: number;
   iSupport: boolean;
-  goal?: number;
+  // §3.9 — descriptive goal headline ("collect 200 books"). Distinct from
+  // any numeric supporter target the older code path was checking.
+  goal?: string;
+  tags?: string[];
+  membersNeeded?: number;
+  budgetNote?: string;
+  targetDate?: string;
   progress?: number;
   commentCount: number;
   author: { id: string; name: string };
@@ -703,7 +725,12 @@ function normalizeInitiative(i: Record<string, unknown>): Initiative {
     status: (i.status as Initiative['status']) ?? 'submitted',
     supporterCount: Number(i.supporterCount ?? metrics.supporterCount ?? 0),
     iSupport: Boolean(i.iSupport ?? false),
-    goal: i.goal as number | undefined,
+    goal: i.goal as string | undefined,
+    tags: Array.isArray(i.tags) ? (i.tags as string[]) : undefined,
+    membersNeeded:
+      typeof i.membersNeeded === 'number' ? (i.membersNeeded as number) : undefined,
+    budgetNote: i.budgetNote as string | undefined,
+    targetDate: i.targetDate ? String(i.targetDate) : undefined,
     progress: i.progress as number | undefined,
     commentCount: Number(i.commentCount ?? metrics.commentCount ?? 0),
     author: { id: String(author.id ?? author._id ?? ''), name: String(author.name ?? 'Member') },
@@ -737,7 +764,19 @@ export function useInitiative(iid: string | undefined) {
 export function useCreateInitiative(cid: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (body: { title: string; description: string; category?: string }) =>
+    mutationFn: async (body: {
+      title: string;
+      description: string;
+      category?: 'event' | 'volunteer' | 'product' | 'social' | 'other';
+      coverImageUrl?: string;
+      targetDate?: string;
+      goal?: string;
+      tags?: string[];
+      membersNeeded?: number;
+      budgetNote?: string;
+      rulesAccepted?: boolean;
+      status?: 'draft' | 'submitted';
+    }) =>
       api.post(`/communities/${cid}/initiatives`, body),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['community-initiatives', cid] }),
   });
@@ -964,11 +1003,33 @@ export function useResendVerification() {
   });
 }
 
+type ProfilePatch = {
+  jobTitle?: string;
+  profession?: string;
+  company?: string;
+  livingLocation?: string;
+  relationshipStatus?: 'single' | 'in_relationship' | 'married' | 'other';
+  socials?: {
+    instagram?: string;
+    x?: string;
+    linkedin?: string;
+    facebook?: string;
+    tiktok?: string;
+    website?: string;
+  };
+};
+
 export function useUpdateMe() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (
-      patch: Partial<{ name: string; bio: string; photoUrl: string; interests: string[] }>,
+      patch: Partial<{
+        name: string;
+        bio: string;
+        photoUrl: string;
+        interests: string[];
+        profile: ProfilePatch;
+      }>,
     ) => api.patch('/auth/me', patch),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['me'] }),
   });
@@ -1031,6 +1092,16 @@ export function useRemoveMember(cid: string | undefined) {
     mutationFn: async (uid: string) =>
       api.delete(`/communities/${cid}/members/${uid}`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['members', cid] }),
+  });
+}
+
+export function useNotifyMember(cid: string | undefined) {
+  return useMutation({
+    mutationFn: async (input: { uid: string; title: string; body?: string }) =>
+      api.post(`/communities/${cid}/admin/members/${input.uid}/notify`, {
+        title: input.title,
+        body: input.body,
+      }),
   });
 }
 
@@ -1511,10 +1582,20 @@ export function useSuperCreateCommunity() {
   return useMutation({
     mutationFn: async (body: CreateCommunityInput) => {
       const r = await api.post('/super/communities', body);
-      return r.data?.data as {
+      const payload = r.data?.data as {
         community: { id: string; name: string; slug: string };
         invitation: { id: string; email: string; token?: string };
       };
+      // Backend echoes which mail driver actually delivered the invite on
+      // the response envelope's `meta` — not `data`. The success screen
+      // branches on this to swap "we sent an invite" for the "copy this
+      // link" affordance when MAIL_DRIVER=console (dev).
+      const mailDriver = (r.data?.meta?.mailDriver ?? undefined) as
+        | 'console'
+        | 'sendgrid'
+        | string
+        | undefined;
+      return { ...payload, mailDriver };
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['super-communities'] }),
   });

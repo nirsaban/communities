@@ -1,8 +1,11 @@
+import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { QRCodeSVG } from 'qrcode.react';
 import { AppBar, Screen } from '../../components/AppBar';
 import { AppButton } from '../../components/AppButton';
 import { Card } from '../../components/Card';
 import { Icon } from '../../components/Icon';
+import { useAuth } from '../../lib/auth';
 import { useEvent } from '../../lib/queries';
 import { fmtEventWhen } from '../../lib/format';
 import { t } from '../../i18n';
@@ -19,6 +22,22 @@ export function RsvpConfirmationScreen() {
   const { eid } = useParams<{ eid: string }>();
   const nav = useNavigate();
   const { data: ev } = useEvent(eid);
+  const auth = useAuth();
+  const [showQR, setShowQR] = useState(false);
+
+  // Ticket reference encoded in the QR — a tiny JSON envelope with the
+  // identifiers a future check-in scanner (PRD 06 §11) can verify against
+  // the server. The timestamp protects against replay-style abuse if the
+  // scanner ever wants to enforce a freshness window.
+  const ticketPayload = useMemo(() => {
+    if (!eid || !auth.user?.id) return null;
+    return JSON.stringify({
+      v: 1,
+      eid,
+      uid: auth.user.id,
+      ts: Date.now(),
+    });
+  }, [eid, auth.user?.id]);
 
   return (
     <Screen>
@@ -34,7 +53,7 @@ export function RsvpConfirmationScreen() {
           </button>
         }
       />
-      <main className="flex flex-1 flex-col items-center px-5 pb-10 text-center">
+      <main className="flex flex-1 flex-col items-center px-5 pb-10 text-center content-md lg:px-8">
         <div
           className="blob mt-6"
           style={{ background: 'rgb(var(--success-wash))', color: 'rgb(var(--success))' }}
@@ -61,6 +80,74 @@ export function RsvpConfirmationScreen() {
                     {ev.location.name}
                   </span>
                 )}
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {ev && ticketPayload && (
+          <Card className="mt-4 w-full p-4" style={{ borderStyle: 'dashed' }}>
+            <div className="flex items-center gap-2 mb-2">
+              <Icon name="confirmation_number" size={18} className="text-brand" />
+              <span className="t-label-lg">Your ticket</span>
+              <span style={{ flex: 1 }} />
+              <button
+                type="button"
+                onClick={() => setShowQR((v) => !v)}
+                className="t-label-sm"
+                style={{
+                  background: 'transparent',
+                  border: 0,
+                  color: 'rgb(var(--brand-ink))',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                }}
+              >
+                {showQR ? 'Hide QR' : 'Show QR'}
+              </button>
+            </div>
+
+            <div
+              className="grid"
+              style={{
+                gridTemplateColumns: showQR ? '160px 1fr' : '1fr',
+                gap: 14,
+                alignItems: 'center',
+              }}
+            >
+              {showQR && (
+                <div
+                  className="flex items-center justify-center"
+                  style={{
+                    background: '#fff',
+                    borderRadius: 12,
+                    padding: 10,
+                    boxShadow: 'var(--shadow-low)',
+                  }}
+                >
+                  <QRCodeSVG
+                    value={ticketPayload}
+                    size={140}
+                    level="M"
+                    includeMargin={false}
+                  />
+                </div>
+              )}
+              <div className="text-start">
+                <Row label="Event" value={ev.title} />
+                <Row label="When" value={fmtEventWhen(ev.startAt).line} />
+                {ev.location?.name && <Row label="Where" value={ev.location.name} />}
+                <Row
+                  label="Attendee"
+                  value={auth.user?.name || auth.user?.email || 'Member'}
+                />
+                <Row label="Status" value="Going" last />
+                <p
+                  className="t-body-md mt-3"
+                  style={{ margin: '8px 0 0', fontSize: 11.5, color: 'rgb(var(--muted))' }}
+                >
+                  Show this code at the door — the host scans it for check-in.
+                </p>
               </div>
             </div>
           </Card>
@@ -105,6 +192,27 @@ export function RsvpConfirmationScreen() {
         </div>
       </main>
     </Screen>
+  );
+}
+
+function Row({ label, value, last }: { label: string; value: string; last?: boolean }) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        gap: 10,
+        padding: '6px 0',
+        borderBottom: last ? 'none' : '1px solid rgb(var(--border))',
+      }}
+    >
+      <span className="t-body-md" style={{ margin: 0, fontSize: 12, color: 'rgb(var(--muted))' }}>
+        {label}
+      </span>
+      <span className="t-label-lg" style={{ fontSize: 13 }}>
+        {value}
+      </span>
+    </div>
   );
 }
 

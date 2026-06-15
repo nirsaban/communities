@@ -8,7 +8,13 @@ export type User = {
   globalRole: 'user' | 'superadmin' | string;
   status: 'active' | 'disabled' | string;
   interests?: string[];
-  onboarding?: { profileDone?: boolean; interestsDone?: boolean };
+  // Matches the backend SafeUser.onboarding shape (PRD 10 §6) so the
+  // /onboard/profile gate in landingPathAfterAuth can key off real timestamps
+  // rather than the older boolean shape that never matched the API.
+  onboarding?: {
+    profileCompletedAt?: string | null;
+    interestsCompletedAt?: string | null;
+  };
 };
 
 type AuthState = {

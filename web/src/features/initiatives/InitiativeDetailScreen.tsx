@@ -99,19 +99,39 @@ export function InitiativeDetailScreen() {
           <p className="t-body-lg mb-4">{it.description}</p>
 
           <Card className="p-3.5">
+            {it.goal && (
+              <p
+                className="t-body-md"
+                style={{
+                  margin: '0 0 8px',
+                  fontSize: 12,
+                  color: 'rgb(var(--brand-ink))',
+                }}
+              >
+                <Icon name="flag" size={13} /> {it.goal}
+              </p>
+            )}
             <div className="mb-2 flex items-center justify-between">
               <span className="t-label-lg">
-                {it.supporterCount} supporters{it.goal ? ` of ${it.goal}` : ''}
+                {it.supporterCount} supporters
+                {it.membersNeeded ? ` · ${it.membersNeeded} needed` : ''}
               </span>
-              {it.goal && (
-                <span className="t-label-sm" style={{ margin: 0, color: 'rgb(var(--brand-ink))' }}>
-                  {Math.round((it.supporterCount / it.goal) * 100)}%
+              {it.membersNeeded && it.membersNeeded > 0 && (
+                <span
+                  className="t-label-sm"
+                  style={{ margin: 0, color: 'rgb(var(--brand-ink))' }}
+                >
+                  {Math.round((it.supporterCount / it.membersNeeded) * 100)}%
                 </span>
               )}
             </div>
-            {it.goal && (
+            {it.membersNeeded && it.membersNeeded > 0 && (
               <div className="progress-track">
-                <span style={{ width: `${Math.min(100, (it.supporterCount / it.goal) * 100)}%` }} />
+                <span
+                  style={{
+                    width: `${Math.min(100, (it.supporterCount / it.membersNeeded) * 100)}%`,
+                  }}
+                />
               </div>
             )}
           </Card>

@@ -91,9 +91,43 @@ export function CommunityDetailScreen() {
           </div>
         </div>
 
+        {community.category && (
+          <div className="mt-3">
+            <Pill tone="neutral">
+              <Icon name="category" size={13} />
+              {community.category}
+            </Pill>
+          </div>
+        )}
+
         {community.description && (
           <p className="t-body-lg mt-4">{community.description}</p>
         )}
+
+        <section className="mt-5">
+          <div className="section-header">
+            <span className="sh-title">What to expect</span>
+          </div>
+          <div className="space-y-2">
+            {[
+              { icon: 'forum', label: 'Member discussions and announcements' },
+              { icon: 'event_available', label: 'Events you can RSVP to' },
+              { icon: 'rule', label: 'Clear community guidelines on join' },
+            ].map((row) => (
+              <div key={row.label} className="card flex items-center gap-3 p-3">
+                <span
+                  className="flex h-9 w-9 items-center justify-center text-brand"
+                  style={{ borderRadius: 11, background: 'rgb(var(--brand-wash))' }}
+                >
+                  <Icon name={row.icon} size={18} />
+                </span>
+                <span className="t-body-md flex-1" style={{ margin: 0, fontSize: 13.5 }}>
+                  {row.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
 
         <div className="mt-5">
           {!isMember ? (

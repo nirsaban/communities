@@ -47,9 +47,16 @@ export async function startSubscriptionCheckout(
 }
 
 export async function listMySubscriptions(userId: Types.ObjectId): Promise<ISubscription[]> {
+  const now = new Date();
   return Subscription.find({
     userId,
-    status: { $in: ['active', 'past_due', 'incomplete'] },
+    $or: [
+      { status: { $in: ['active', 'past_due', 'incomplete'] } },
+      // Cancelled-at-period-end subs that still grant access until the
+      // period actually ends should remain visible so the user sees the
+      // "cancels on <date>" state instead of an empty page.
+      { status: 'cancelled', currentPeriodEnd: { $gt: now } },
+    ],
   })
     .sort({ createdAt: -1 });
 }

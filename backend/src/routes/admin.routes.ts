@@ -37,6 +37,14 @@ communityAdminRouter.post(
 );
 communityAdminRouter.get('/:cid/admin/members/:uid', readLimiter, adminCtl.memberDetail);
 
+// §6.1 — admin sends a direct notification to a specific member.
+// Body: { title: string, body?: string }
+communityAdminRouter.post(
+  '/:cid/admin/members/:uid/notify',
+  writeLimiter,
+  adminCtl.notifyMember,
+);
+
 communityAdminRouter.get('/:cid/admin/moderation', readLimiter, adminCtl.moderationQueue);
 
 // Admin-only financial surface (sub-admin blocked).

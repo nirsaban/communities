@@ -46,12 +46,37 @@ export const resendVerificationSchema = z.object({
   email: emailSchema,
 });
 
+const socialsSchema = z
+  .object({
+    instagram: z.string().max(120).optional(),
+    x: z.string().max(120).optional(),
+    linkedin: z.string().max(200).optional(),
+    facebook: z.string().max(200).optional(),
+    tiktok: z.string().max(120).optional(),
+    website: z.string().max(200).optional(),
+  })
+  .partial();
+
+const profileSchema = z
+  .object({
+    jobTitle: z.string().max(100).optional(),
+    profession: z.string().max(100).optional(),
+    company: z.string().max(120).optional(),
+    livingLocation: z.string().max(120).optional(),
+    relationshipStatus: z
+      .enum(['single', 'in_relationship', 'married', 'other'])
+      .optional(),
+    socials: socialsSchema.optional(),
+  })
+  .partial();
+
 export const updateMeSchema = z
   .object({
     name: z.string().min(1).max(120).optional(),
     bio: z.string().max(1000).optional(),
     photoUrl: z.string().url().optional(),
     interests: z.array(z.string().max(40)).max(50).optional(),
+    profile: profileSchema.optional(),
   })
   .strict();
 

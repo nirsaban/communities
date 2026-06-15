@@ -229,6 +229,23 @@ export interface UpdateMeInput {
   bio?: string;
   photoUrl?: string;
   interests?: string[];
+  // §3.10 — networking + personal profile fields. All optional, edited from
+  // the member's own /profile/edit screen. Empty string clears a field.
+  profile?: {
+    jobTitle?: string;
+    profession?: string;
+    company?: string;
+    livingLocation?: string;
+    relationshipStatus?: 'single' | 'in_relationship' | 'married' | 'other';
+    socials?: {
+      instagram?: string;
+      x?: string;
+      linkedin?: string;
+      facebook?: string;
+      tiktok?: string;
+      website?: string;
+    };
+  };
 }
 
 export async function updateMe(user: IUser, input: UpdateMeInput): Promise<SafeUser> {
@@ -236,6 +253,28 @@ export async function updateMe(user: IUser, input: UpdateMeInput): Promise<SafeU
   if (input.bio !== undefined) user.bio = input.bio;
   if (input.photoUrl !== undefined) user.photoUrl = input.photoUrl;
   if (input.interests !== undefined) user.interests = input.interests;
+  if (input.profile) {
+    // Merge incoming patch with existing profile so callers can update one
+    // field without clobbering siblings.
+    const next = { ...(user.profile ?? {}), ...input.profile };
+    if (input.profile.socials) {
+      next.socials = { ...(user.profile?.socials ?? {}), ...input.profile.socials };
+    }
+    user.profile = next;
+    user.markModified('profile');
+  }
+  // Stamp onboarding milestones the moment the requirements are first met
+  // so /onboard/profile and /onboard/interests can be gated on them later
+  // (PRD 10 §6 — users.onboarding.{profileCompletedAt, interestsCompletedAt}).
+  if (!user.onboarding) {
+    user.onboarding = { profileCompletedAt: undefined, interestsCompletedAt: undefined } as IUser['onboarding'];
+  }
+  if (!user.onboarding.profileCompletedAt && user.name && user.name.trim().length > 0) {
+    user.onboarding.profileCompletedAt = new Date();
+  }
+  if (!user.onboarding.interestsCompletedAt && (user.interests?.length ?? 0) >= 3) {
+    user.onboarding.interestsCompletedAt = new Date();
+  }
   await user.save();
   return user.toSafeJSON();
 }

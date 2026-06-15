@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom';
-import { BottomNav } from './BottomNav';
+import { BottomNav, SideNav } from './BottomNav';
 import { Icon } from './Icon';
 import { useAuth } from '../lib/auth';
 import { communityContext } from '../lib/community-context';
@@ -33,16 +33,19 @@ export function RoleShell() {
 
   return (
     <div
-      className={`flex min-h-full flex-col bg-bg ${isSuper ? 'dark' : ''}`}
+      className={`flex min-h-full bg-bg ${isSuper ? 'dark' : ''}`}
       style={{ minHeight: '100dvh' }}
     >
-      {suspended && (
-        <SuspendedCommunityBanner name={community?.name ?? 'This community'} />
-      )}
-      <div className="flex-1 pb-2">
-        <Outlet />
+      <SideNav />
+      <div className="flex min-h-full flex-1 flex-col">
+        {suspended && (
+          <SuspendedCommunityBanner name={community?.name ?? 'This community'} />
+        )}
+        <div className="flex-1 pb-2">
+          <Outlet />
+        </div>
+        <BottomNav />
       </div>
-      <BottomNav />
     </div>
   );
 }

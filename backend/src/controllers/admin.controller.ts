@@ -335,6 +335,51 @@ export const memberDetail = asyncHandler(async (req: Request, res: Response) => 
   });
 });
 
+// POST /api/v1/communities/:cid/admin/members/:uid/notify
+// Send a direct notification from an admin/sub-admin to one member.
+// Body: { title: string, body?: string }
+export const notifyMember = asyncHandler(async (req: Request, res: Response) => {
+  const cid = communityIdFromReq(req);
+  if (!mongoose.Types.ObjectId.isValid(req.params.uid)) {
+    throw AppError.notFound('Member not found');
+  }
+  const m = await Membership.findOne({
+    communityId: cid,
+    userId: req.params.uid,
+    status: 'active',
+  });
+  if (!m) throw AppError.notFound('Member not found');
+  const title = typeof req.body?.title === 'string' ? req.body.title.trim() : '';
+  const body = typeof req.body?.body === 'string' ? req.body.body.trim() : '';
+  if (!title || title.length > 120) {
+    throw AppError.invalidInput('title must be 1-120 characters');
+  }
+  if (body.length > 1000) {
+    throw AppError.invalidInput('body must be ≤ 1000 characters');
+  }
+  const community = await Community.findById(cid).select('name').lean();
+  const sent = await getNotificationService().send({
+    userId: m.userId,
+    communityId: cid,
+    type: 'info',
+    title,
+    body,
+    payload: {
+      communityId: String(cid),
+      communityName: community?.name,
+      fromAdminId: req.user ? String(req.user._id) : null,
+    },
+  });
+  await auditFromReq(req, {
+    action: 'member.notify',
+    communityId: cid,
+    targetType: 'user',
+    targetId: m.userId,
+    metadata: { title },
+  });
+  ok(res, { id: String(sent._id), title: sent.title });
+});
+
 // GET /api/v1/communities/:cid/admin/moderation — recent posts (and any hidden).
 // In v1 we don't have a flagging model yet; this surface lets sub-admins act on
 // recent + already-hidden content (logged as a deviation for the UI).

@@ -152,6 +152,8 @@ export function EventQAScreen() {
       )}
 
       <main className="flex-1 px-5 pb-2">
+        {!isManager && <QAHowItWorks empty={!isLoading && filtered.length === 0} />}
+
         {isLoading && (
           <div className="space-y-3 pt-3">
             <Shimmer style={{ height: 110 }} />
@@ -266,6 +268,66 @@ export function EventQAScreen() {
         </footer>
       )}
     </Screen>
+  );
+}
+
+// Short explainer banner shown to members above the Q&A list. Persists a
+// dismissed flag in localStorage so repeat visitors only see it once, but the
+// banner is force-shown on empty/first-time visits so new attendees always
+// learn the rules of the room.
+function QAHowItWorks({ empty }: { empty: boolean }) {
+  const KEY = 'qa.howItWorks.dismissed';
+  const [dismissed, setDismissed] = useState<boolean>(() => {
+    try {
+      return window.localStorage.getItem(KEY) === '1';
+    } catch {
+      return false;
+    }
+  });
+  if (dismissed && !empty) return null;
+  return (
+    <div
+      className="card mt-3 mb-3"
+      style={{ padding: 12, background: 'rgb(var(--brand-wash))', borderColor: 'transparent' }}
+    >
+      <div className="flex items-start gap-2.5">
+        <span style={{ color: 'rgb(var(--brand-ink))', marginTop: 2 }}>
+          <Icon name="help" size={18} />
+        </span>
+        <div className="flex-1">
+          <div className="t-label-lg" style={{ marginBottom: 4 }}>
+            How Q&amp;A works
+          </div>
+          <ul
+            className="t-body-md"
+            style={{ margin: 0, paddingInlineStart: 16, lineHeight: 1.45 }}
+          >
+            <li>Anyone in the event can read the questions here.</li>
+            <li>RSVP'd attendees can ask new questions and upvote others.</li>
+            <li>Event managers and admins answer questions; their reply gets a verified badge.</li>
+            <li>Pinned answers stay at the top so latecomers see the most-asked questions first.</li>
+          </ul>
+        </div>
+        {!empty && (
+          <button
+            type="button"
+            aria-label="Dismiss"
+            className="ic-btn soft"
+            style={{ width: 28, height: 28 }}
+            onClick={() => {
+              try {
+                window.localStorage.setItem(KEY, '1');
+              } catch {
+                /* private mode — banner just won't persist dismissal */
+              }
+              setDismissed(true);
+            }}
+          >
+            <Icon name="close" size={16} />
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 
