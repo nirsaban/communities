@@ -3,13 +3,9 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 
-# Install deps. We intentionally skip package-lock.json because the local copy
-# pins resolved URLs at a private artifactory the build container can't reach.
-# Fresh resolution from package.json against the public registry is fine — Vite
-# pins majors and React+TS are stable.
-COPY package.json ./
-RUN npm config set registry https://registry.npmjs.org/ \
-  && npm install --no-audit --no-fund --no-package-lock
+# Install deps from public npm, honoring the committed package-lock.json.
+COPY package*.json ./
+RUN npm install --no-audit --no-fund
 
 # Copy sources and build.
 COPY tsconfig.json tsconfig.tsbuildinfo* postcss.config.js tailwind.config.js vite.config.ts index.html ./

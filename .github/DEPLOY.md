@@ -66,10 +66,11 @@ Otherwise the deploy runs automatically on push.
   service requires. The workflow's "Ensure .env.prod" step now auto-appends
   missing keys from `.env.prod.example`. If the env example was updated this
   push, the next deploy will pick it up.
-- **Build fails on web lockfile** — the web Dockerfile force-skips
-  `package-lock.json` (it pins to a private artifactory). If you see
-  `paybox.jfrog.io` auth errors, the Dockerfile change didn't ship — `git pull`
-  on the VPS first.
+- **`npm error code E401` during the build** — a committed `package-lock.json`
+  has a `resolved` URL pointing at a private registry the build can't auth to.
+  All lockfiles must resolve from `https://registry.npmjs.org/` only. Re-run
+  `npm install` on a machine whose npm registry is the public one (check with
+  `npm config get registry`) and commit the regenerated lockfile.
 
 ## Rollback
 
