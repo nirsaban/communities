@@ -5,6 +5,7 @@ import { useEvent, useMyCommunities, type MembershipRole } from '../lib/queries'
 import { Screen } from '../components/AppBar';
 import { LoadingDots } from '../components/LoadingDots';
 import { SplashScreen } from '../features/auth/SplashScreen';
+import { AboutScreen } from '../features/marketing/AboutScreen';
 import { LoginScreen } from '../features/auth/LoginScreen';
 import { RegisterScreen } from '../features/auth/RegisterScreen';
 import { ForgotPasswordScreen } from '../features/auth/ForgotPasswordScreen';
@@ -193,6 +194,7 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<SplashScreen />} />
+      <Route path="/about" element={<AboutScreen />} />
       <Route path="/welcome" element={<OnboardingCarouselScreen />} />
       <Route path="/login" element={<LoginScreen />} />
       <Route path="/signup" element={<RegisterScreen />} />
