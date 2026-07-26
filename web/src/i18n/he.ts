@@ -226,6 +226,14 @@ export const t = {
     finalCtaSubtitle: 'נראה לכם איך זה עובד על הקהילה שלכם, בלי התחייבות.',
     finalCtaButton: 'דברו איתנו',
     footerTagline: 'נבנה על ידי GeniriFlow',
+    leadFormNameLabel: 'שם',
+    leadFormContactLabel: 'טלפון או אימייל',
+    leadFormMessageLabel: 'ספרו לנו קצת (לא חובה)',
+    leadFormSubmit: 'דברו איתנו',
+    leadFormSubmitting: 'שולח...',
+    leadFormSuccessTitle: 'תודה!',
+    leadFormSuccessBody: 'קיבלנו את הפרטים, נחזור אליכם בקרוב.',
+    leadFormErrorBody: 'משהו השתבש בשליחה — נסו שוב או כתבו לנו ישירות.',
   },
 };
 

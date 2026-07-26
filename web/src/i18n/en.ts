@@ -228,5 +228,13 @@ export const t: Strings = {
     finalCtaSubtitle: "We'll show you how it works on your own community, no commitment.",
     finalCtaButton: "Let's talk",
     footerTagline: 'Built by GeniriFlow',
+    leadFormNameLabel: 'Name',
+    leadFormContactLabel: 'Phone or email',
+    leadFormMessageLabel: 'Tell us a bit (optional)',
+    leadFormSubmit: "Let's talk",
+    leadFormSubmitting: 'Sending...',
+    leadFormSuccessTitle: 'Thanks!',
+    leadFormSuccessBody: "We've got your details — we'll be in touch soon.",
+    leadFormErrorBody: 'Something went wrong sending this — try again or email us directly.',
   },
 };

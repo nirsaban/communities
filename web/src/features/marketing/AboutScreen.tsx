@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { t } from '../../i18n';
+import { LeadForm } from './LeadForm';
 
 const FEATURE_KEYS = [1, 2, 3, 4, 5, 6] as const;
 
@@ -61,15 +62,12 @@ export function AboutScreen() {
 
       {/* final cta */}
       <section className="border-t border-border bg-brand">
-        <div className="mx-auto max-w-2xl px-6 py-20 text-center">
+        <div className="mx-auto max-w-lg px-6 py-20 text-center">
           <h2 className="font-display text-3xl font-bold text-brand-on">{l.finalCtaTitle}</h2>
           <p className="mt-4 text-brand-on/85">{l.finalCtaSubtitle}</p>
-          <a
-            href="mailto:hello@geniriflow.com"
-            className="mt-8 inline-flex items-center rounded-full bg-surface px-7 py-3 text-sm font-bold text-brand-ink transition-transform hover:scale-105"
-          >
-            {l.finalCtaButton}
-          </a>
+          <div className="mt-8">
+            <LeadForm />
+          </div>
         </div>
       </section>
 
